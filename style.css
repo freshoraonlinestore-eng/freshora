@@ -3,8 +3,8 @@
 ========================= */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f6f7fb;
+  font-family: system-ui, Arial, sans-serif;
+  background: #f4f6f8;
   color: #111;
 }
 
@@ -15,7 +15,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 15px 18px;
   background: #111;
   color: white;
 }
@@ -23,13 +23,14 @@ header {
 header a {
   color: white;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 /* =========================
-   PRODUCTS GRID
+   GRID
 ========================= */
-#products, #list {
+#products,
+#list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 15px;
@@ -37,54 +38,71 @@ header a {
 }
 
 /* =========================
-   CARD DESIGN
+   CARD
 ========================= */
 .card {
   background: white;
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: 0.2s;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: 0.2s;
 }
 
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
 }
 
 .card img {
   width: 100%;
-  height: 140px;
+  height: 160px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .card h3 {
-  margin: 8px 0 4px;
-  font-size: 16px;
+  margin: 5px 0;
+  font-size: 15px;
 }
 
 .card p {
   margin: 0;
   color: #444;
+  font-weight: 500;
 }
 
 /* =========================
-   BUTTONS
+   BUTTONS (IMPORTANT FIX)
 ========================= */
 button {
-  margin-top: 8px;
-  padding: 8px 10px;
+  padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  background: #111;
-  color: white;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 13px;
+  transition: 0.2s;
 }
 
+/* Buy / Order button */
+button:nth-of-type(2) {
+  background: #111;
+  color: white;
+}
+
+/* Add to Cart button */
+button:nth-of-type(1) {
+  background: #00c853;
+  color: white;
+}
+
+/* Hover effect */
 button:hover {
-  opacity: 0.8;
+  opacity: 0.85;
+  transform: scale(1.02);
 }
 
 /* =========================
@@ -99,11 +117,21 @@ button:hover {
 
 input {
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #ddd;
   outline: none;
+  font-size: 14px;
 }
 
 input:focus {
   border-color: #111;
+}
+
+/* =========================
+   EMPTY STATES
+========================= */
+.empty {
+  text-align: center;
+  padding: 20px;
+  color: #777;
 }
