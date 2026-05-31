@@ -9,21 +9,51 @@ body {
 }
 
 /* =========================
-   HEADER
+   HEADER (PRO STYLE)
 ========================= */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 18px;
+  padding: 12px 16px;
   background: #111;
   color: white;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
+/* CART + ADMIN LINKS */
 header a {
   color: white;
   text-decoration: none;
   font-weight: 600;
+  background: #222;
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition: 0.2s;
+}
+
+header a:hover {
+  background: #333;
+}
+
+/* CART BADGE */
+#cartCount {
+  background: red;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+/* SEARCH BAR */
+#searchInput {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  width: 200px;
 }
 
 /* =========================
@@ -38,7 +68,7 @@ header a {
 }
 
 /* =========================
-   CARD
+   CARD (PRO UI)
 ========================= */
 .card {
   background: white;
@@ -53,7 +83,7 @@ header a {
 }
 
 .card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
 }
 
 .card img {
@@ -75,7 +105,7 @@ header a {
 }
 
 /* =========================
-   BUTTONS (IMPORTANT FIX)
+   BUTTONS (FIXED VISIBILITY)
 ========================= */
 button {
   padding: 10px;
@@ -87,22 +117,22 @@ button {
   transition: 0.2s;
 }
 
-/* Buy / Order button */
-button:nth-of-type(2) {
-  background: #111;
-  color: white;
-}
-
-/* Add to Cart button */
+/* ADD TO CART */
 button:nth-of-type(1) {
   background: #00c853;
   color: white;
 }
 
-/* Hover effect */
+/* BUY NOW */
+button:nth-of-type(2) {
+  background: #111;
+  color: white;
+}
+
+/* HOVER */
 button:hover {
   opacity: 0.85;
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 /* =========================
@@ -128,10 +158,31 @@ input:focus {
 }
 
 /* =========================
-   EMPTY STATES
+   EMPTY STATE
 ========================= */
 .empty {
   text-align: center;
   padding: 20px;
   color: #777;
+}
+
+/* =========================
+   CART DRAWER (if used in Step 5)
+========================= */
+.cart-drawer {
+  position: fixed;
+  right: -400px;
+  top: 0;
+  width: 320px;
+  height: 100%;
+  background: white;
+  box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+  padding: 15px;
+  transition: 0.3s;
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.cart-drawer.open {
+  right: 0;
 }
