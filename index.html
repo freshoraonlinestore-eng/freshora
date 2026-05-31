@@ -1,31 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Freshora Online Store</title>
+<title>Freshora Store</title>
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <header>
   <h1>Freshora Online Store</h1>
-  <a href="admin.html">Admin</a>
+  <a href="login.html">Admin Login</a>
 </header>
 
-<section class="search">
-  <input type="text" id="search" placeholder="Search products...">
-</section>
+<div id="products"></div>
 
-<section id="products"></section>
-
-<div class="cart-box">
-  <h3>Cart</h3>
-  <div id="cart"></div>
-  <button onclick="checkout()">Checkout WhatsApp</button>
-</div>
-
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
