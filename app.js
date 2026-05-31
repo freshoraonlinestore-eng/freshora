@@ -2,29 +2,35 @@ import { db, collection, onSnapshot } from "./firebase.js";
 
 const productsDiv = document.getElementById("products");
 
+/* =========================
+   CART STATE
+========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 /* =========================
-   CART COUNT UPDATE
+   SAVE CART
+========================= */
+function saveCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartCount();
+  renderCart();
+}
+
+/* =========================
+   UPDATE CART COUNT
 ========================= */
 function updateCartCount() {
   const el = document.getElementById("cartCount");
   if (el) {
-    el.innerText = cart.length;
+    el.innerText = cart.reduce((sum, i) => sum + i.qty, 0);
   }
 }
 
 /* =========================
-   CART DRAWER TOGGLE (IMPORTANT FIX)
+   CART TOGGLE
 ========================= */
 window.toggleCart = function () {
   const drawer = document.getElementById("cartDrawer");
-
-  if (!drawer) {
-    console.error("cartDrawer not found");
-    return;
-  }
-
   drawer.classList.toggle("open");
   renderCart();
 };
@@ -34,19 +40,21 @@ window.toggleCart = function () {
 ========================= */
 window.addToCart = function (id, name, price, image) {
 
-  cart.push({
-    id,
-    name,
-    price,
-    image,
-    qty: 1
-  });
+  let existing = cart.find(item => item.id === id);
 
-  localStorage.setItem("cart", JSON.stringify(cart));
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      id,
+      name,
+      price: Number(price),
+      image,
+      qty: 1
+    });
+  }
 
-  updateCartCount();
-  renderCart();
-
+  saveCart();
   alert("Added to cart 🛒");
 };
 
@@ -55,10 +63,28 @@ window.addToCart = function (id, name, price, image) {
 ========================= */
 window.removeItem = function (index) {
   cart.splice(index, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
+  saveCart();
+};
 
-  updateCartCount();
-  renderCart();
+/* =========================
+   QTY +
+========================= */
+window.increaseQty = function (index) {
+  cart[index].qty++;
+  saveCart();
+};
+
+/* =========================
+   QTY -
+========================= */
+window.decreaseQty = function (index) {
+  cart[index].qty--;
+
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
+
+  saveCart();
 };
 
 /* =========================
@@ -66,10 +92,7 @@ window.removeItem = function (index) {
 ========================= */
 window.clearCart = function () {
   cart = [];
-  localStorage.setItem("cart", JSON.stringify(cart));
-
-  updateCartCount();
-  renderCart();
+  saveCart();
 };
 
 /* =========================
@@ -86,35 +109,55 @@ function renderCart() {
   let total = 0;
 
   cart.forEach((item, index) => {
-    total += Number(item.price);
+
+    total += item.price * item.qty;
 
     cartItems.innerHTML += `
       <div class="card">
+
         <img src="${item.image}">
+
         <h4>${item.name}</h4>
+
         <p>Rs ${item.price}</p>
 
+        <p>Qty: ${item.qty}</p>
+
+        <button onclick="increaseQty(${index})">+</button>
+        <button onclick="decreaseQty(${index})">-</button>
         <button onclick="removeItem(${index})">Remove</button>
+
       </div>
     `;
   });
 
-  if (cartTotal) {
-    cartTotal.innerText = "Total: Rs " + total;
-  }
+  cartTotal.innerText = "Total: Rs " + total;
 }
 
 /* =========================
-   LOAD PRODUCTS (FIREBASE)
+   WHATSAPP CHECKOUT
+========================= */
+window.checkout = function () {
+
+  let msg = "🛒 Order Details:%0A%0A";
+  let total = 0;
+
+  cart.forEach(item => {
+    msg += `${item.name} x${item.qty} = Rs ${item.price * item.qty}%0A`;
+    total += item.price * item.qty;
+  });
+
+  msg += `%0A💰 Total: Rs ${total}`;
+
+  window.open("https://wa.me/94752425790?text=" + msg);
+};
+
+/* =========================
+   LOAD PRODUCTS
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
 
   productsDiv.innerHTML = "";
-
-  if (snap.empty) {
-    productsDiv.innerHTML = "<p class='empty'>No products found</p>";
-    return;
-  }
 
   snap.forEach((docItem) => {
     const p = docItem.data();
@@ -132,35 +175,15 @@ onSnapshot(collection(db, "products"), (snap) => {
           Add to Cart
         </button>
 
-        <button onclick="order('${p.name}','${p.price}')">
+        <button onclick="checkout()">
           Buy Now
         </button>
 
       </div>
     `;
   });
-});
 
-/* =========================
-   WHATSAPP ORDER
-========================= */
-window.order = function (name, price) {
-  const msg = `I want to order: ${name} - Rs ${price}`;
-  window.open("https://wa.me/94752425790?text=" + encodeURIComponent(msg));
-};
-
-/* =========================
-   SEARCH FILTER
-========================= */
-document.addEventListener("input", (e) => {
-  if (e.target.id === "searchInput") {
-    let value = e.target.value.toLowerCase();
-
-    document.querySelectorAll(".card").forEach(card => {
-      card.style.display =
-        card.innerText.toLowerCase().includes(value) ? "block" : "none";
-    });
-  }
+  updateCartCount();
 });
 
 /* =========================
