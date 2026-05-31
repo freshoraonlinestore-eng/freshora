@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cart - Freshora</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Your Cart</h1>
+  <a href="index.html">Back</a>
+</header>
+
+<div id="cart"></div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+const cartDiv = document.getElementById("cart");
+
+function renderCart() {
+
+  cartDiv.innerHTML = "";
+
+  let total = 0;
+
+  cart.forEach((item, index) => {
+
+    total += Number(item.price);
+
+    cartDiv.innerHTML += `
+      <div class="card">
+        <img src="${item.image}">
+        <h3>${item.name}</h3>
+        <p>Rs ${item.price}</p>
+
+        <button onclick="removeItem(${index})">
+          Remove
+        </button>
+      </div>
+    `;
+  });
+
+  cartDiv.innerHTML += `
+    <h2 style="padding:15px">
+      Total: Rs ${total}
+    </h2>
+  `;
+}
+
+function removeItem(index) {
+  cart.splice(index, 1);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  renderCart();
+}
+
+renderCart();
+</script>
+
+</body>
+</html>
