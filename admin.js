@@ -1,36 +1,33 @@
-let products = JSON.parse(localStorage.getItem("products")) || [];
+import {
+  db, collection, addDoc, getDocs, deleteDoc, doc
+} from "./firebase.js";
 
-function addProduct() {
-  let name = document.getElementById("pname").value;
-  let price = document.getElementById("pprice").value;
-  let img = document.getElementById("pimg").value;
+const list = document.getElementById("list");
 
-  products.push({ name, price, img });
-  localStorage.setItem("products", JSON.stringify(products));
+window.addProduct = async () => {
+  await addDoc(collection(db, "products"), {
+    name: name.value,
+    price: price.value,
+    image: image.value
+  });
 
-  render();
-}
+  load();
+};
 
-function render() {
-  let html = "";
-  products.forEach((p, i) => {
-    html += `
+async function load() {
+  const snap = await getDocs(collection(db, "products"));
+  list.innerHTML = "";
+
+  snap.forEach(d => {
+    const p = d.data();
+
+    list.innerHTML += `
       <div class="card">
-        <img src="${p.img}">
         <h3>${p.name}</h3>
-        <p>Rs ${p.price}</p>
-        <button onclick="deleteProduct(${i})">Delete</button>
+        <p>${p.price}</p>
       </div>
     `;
   });
-
-  document.getElementById("adminProducts").innerHTML = html;
 }
 
-function deleteProduct(i) {
-  products.splice(i, 1);
-  localStorage.setItem("products", JSON.stringify(products));
-  render();
-}
-
-render();
+load();
