@@ -4,27 +4,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Freshora Store</title>
+
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
+
   <h1>Freshora Online Store</h1>
 
+  <!-- SEARCH BAR -->
+  <input id="searchInput" placeholder="Search products..." />
+
+  <!-- CART + ADMIN -->
   <div style="display:flex; gap:15px; align-items:center;">
 
-    <a href="cart.html">
+    <a href="javascript:void(0)" onclick="toggleCart()">
       🛒 Cart (<span id="cartCount">0</span>)
     </a>
 
     <a href="login.html">Admin</a>
 
   </div>
+
 </header>
 
+<!-- PRODUCTS -->
 <div id="products"></div>
 
+<!-- CART DRAWER -->
+<div id="cartDrawer" class="cart-drawer">
+
+  <h2>🛒 Your Cart</h2>
+
+  <div id="cartItems"></div>
+
+  <h3 id="cartTotal"></h3>
+
+  <button onclick="clearCart()">Clear Cart</button>
+  <button onclick="toggleCart()">Close</button>
+
+</div>
+
+<!-- APP SCRIPT -->
 <script type="module" src="app.js"></script>
 
 <!-- DEBUG TOOL (DO NOT REMOVE) -->
