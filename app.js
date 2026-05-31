@@ -1,12 +1,11 @@
-import {
-  db,
-  collection,
-  onSnapshot
-} from "./firebase.js";
+import { db, collection, onSnapshot } from "./firebase.js";
 
 const productsDiv = document.getElementById("products");
 
 onSnapshot(collection(db, "products"), (snap) => {
+
+  console.log("DATA LOADED:", snap.size);
+
   productsDiv.innerHTML = "";
 
   snap.forEach((docItem) => {
@@ -17,6 +16,7 @@ onSnapshot(collection(db, "products"), (snap) => {
         <img src="${p.image}">
         <h3>${p.name}</h3>
         <p>Rs ${p.price}</p>
+
         <button onclick="order('${p.name}','${p.price}')">
           Order
         </button>
