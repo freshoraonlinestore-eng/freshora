@@ -1,33 +1,109 @@
+/* =========================
+   GLOBAL
+========================= */
 body {
-  font-family: Arial;
   margin: 0;
-  background: #0f172a;
-  color: white;
+  font-family: Arial, sans-serif;
+  background: #f6f7fb;
+  color: #111;
 }
 
+/* =========================
+   HEADER
+========================= */
 header {
   display: flex;
   justify-content: space-between;
-  padding: 15px;
-  background: #111827;
+  align-items: center;
+  padding: 15px 20px;
+  background: #111;
+  color: white;
 }
 
+header a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* =========================
+   PRODUCTS GRID
+========================= */
+#products, #list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  padding: 15px;
+}
+
+/* =========================
+   CARD DESIGN
+========================= */
 .card {
   background: white;
-  color: black;
-  margin: 10px;
+  border-radius: 12px;
   padding: 10px;
-  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: 0.2s;
+  text-align: center;
 }
 
-img {
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.card img {
   width: 100%;
+  height: 140px;
+  object-fit: cover;
   border-radius: 10px;
 }
 
+.card h3 {
+  margin: 8px 0 4px;
+  font-size: 16px;
+}
+
+.card p {
+  margin: 0;
+  color: #444;
+}
+
+/* =========================
+   BUTTONS
+========================= */
 button {
-  background: green;
-  color: white;
-  padding: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
   border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #111;
+  color: white;
+  font-weight: bold;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+/* =========================
+   ADMIN FORM
+========================= */
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+}
+
+input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
+}
+
+input:focus {
+  border-color: #111;
 }
