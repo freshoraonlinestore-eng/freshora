@@ -1,14 +1,15 @@
 import {
-  db, collection, getDocs
+  db,
+  collection,
+  onSnapshot
 } from "./firebase.js";
 
 const productsDiv = document.getElementById("products");
 
-async function loadProducts() {
-  const snap = await getDocs(collection(db, "products"));
+onSnapshot(collection(db, "products"), (snap) => {
   productsDiv.innerHTML = "";
 
-  snap.forEach(docItem => {
+  snap.forEach((docItem) => {
     const p = docItem.data();
 
     productsDiv.innerHTML += `
@@ -16,15 +17,15 @@ async function loadProducts() {
         <img src="${p.image}">
         <h3>${p.name}</h3>
         <p>Rs ${p.price}</p>
-        <button onclick="order('${p.name}', '${p.price}')">Order</button>
+        <button onclick="order('${p.name}','${p.price}')">
+          Order
+        </button>
       </div>
     `;
   });
-}
+});
 
 window.order = (name, price) => {
   const msg = `I want to order: ${name} - Rs ${price}`;
-  window.open(`https://wa.me/94752425790?text=${msg}`);
+  window.open("https://wa.me/94752425790?text=" + msg);
 };
-
-loadProducts();
