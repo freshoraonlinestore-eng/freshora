@@ -1,26 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel</title>
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <h2>Admin Panel</h2>
 
-<div class="admin-form">
-  <input id="pname" placeholder="Product Name">
-  <input id="pprice" placeholder="Price (LKR)">
-  <input id="pimg" placeholder="Image URL">
-  <button onclick="addProduct()">Add Product</button>
-</div>
+<input id="name" placeholder="Product Name">
+<input id="price" placeholder="Price">
+<input id="image" placeholder="Image URL">
+<button onclick="addProduct()">Add Product</button>
 
-<h3>Products</h3>
-<div id="adminProducts"></div>
+<div id="list"></div>
 
-<script src="admin.js"></script>
+<script type="module" src="admin.js"></script>
 </body>
 </html>
