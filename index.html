@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Freshora Online Store</title>
+<link rel="stylesheet" href="style.css"/>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" class="logo"/>
+  <h1>Freshora Online Store</h1>
+  <button onclick="toggleCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+  <button onclick="showAdminLogin()">Admin</button>
+</header>
+
+<section class="hero">
+  <h2>Fresh Products • Best Prices</h2>
+</section>
+
+<section id="products" class="grid"></section>
+
+<div id="cartPanel" class="cart">
+  <h3>Your Cart</h3>
+  <div id="cartItems"></div>
+  <button onclick="checkoutWhatsApp()">Checkout via WhatsApp</button>
+</div>
+
+<div id="adminLogin" class="modal">
+  <div class="box">
+    <h3>Admin Login</h3>
+    <input id="email" placeholder="Email"/>
+    <input id="password" type="password" placeholder="Password"/>
+    <button onclick="loginAdmin()">Login</button>
+    <button onclick="closeAdminLogin()">Close</button>
+  </div>
+</div>
+
+<div id="adminPanel" class="admin">
+  <h2>Admin Panel</h2>
+  <input id="pname" placeholder="Product Name"/>
+  <input id="pprice" placeholder="Price"/>
+  <input id="pimg" placeholder="Image URL"/>
+  <button onclick="addProduct()">Add Product</button>
+
+  <div id="adminProducts"></div>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script src="firebase.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
