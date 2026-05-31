@@ -2,74 +2,164 @@ import {
   db,
   collection,
   addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
   onSnapshot
 } from "./firebase.js";
 
 const list = document.getElementById("list");
 
-// ADD PRODUCT
 window.addProduct = async () => {
+
   try {
 
-    const name = document.getElementById("name").value.trim();
-    const price = document.getElementById("price").value.trim();
-    const image = document.getElementById("image").value.trim();
+    const name =
+      document.getElementById("name").value.trim();
 
-    if (!name || !price || !image) {
-      alert("Please fill all fields");
+    const price =
+      document.getElementById("price").value.trim();
+
+    const file =
+      document.getElementById("imageFile").files[0];
+
+    if (!name || !price || !file) {
+      alert("Fill all fields");
       return;
     }
 
-    await addDoc(collection(db, "products"), {
-      name,
-      price,
-      image,
-      createdAt: Date.now()
-    });
+    const formData = new FormData();
 
-    // Clear inputs
+    formData.append("file", file);
+
+    formData.append(
+      "upload_preset",
+      "freshora_upload"
+    );
+
+    const cloudinaryResponse =
+      await fetch(
+        "https://api.cloudinary.com/v1_1/dayvblw7g/image/upload",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+    const cloudinaryData =
+      await cloudinaryResponse.json();
+
+    const imageUrl =
+      cloudinaryData.secure_url;
+
+    await addDoc(
+      collection(db, "products"),
+      {
+        name,
+        price,
+        image: imageUrl,
+        createdAt: Date.now()
+      }
+    );
+
     document.getElementById("name").value = "";
     document.getElementById("price").value = "";
-    document.getElementById("image").value = "";
+    document.getElementById("imageFile").value = "";
 
-    alert("Product Added Successfully");
+    alert("Product Added");
 
   } catch (error) {
+
     console.error(error);
-    alert("Error adding product");
+
+    alert("Upload Failed");
   }
 };
 
-// REALTIME LOAD
-onSnapshot(collection(db, "products"), (snap) => {
+window.deleteProduct = async (id) => {
 
-  list.innerHTML = "";
-
-  if (snap.empty) {
-    list.innerHTML = "<p>No products found</p>";
+  if (!confirm("Delete product?"))
     return;
+
+  await deleteDoc(
+    doc(db, "products", id)
+  );
+};
+
+window.editProduct = async (
+  id,
+  oldName,
+  oldPrice
+) => {
+
+  const newName =
+    prompt(
+      "Product Name",
+      oldName
+    );
+
+  if (!newName) return;
+
+  const newPrice =
+    prompt(
+      "Price",
+      oldPrice
+    );
+
+  if (!newPrice) return;
+
+  await updateDoc(
+    doc(db, "products", id),
+    {
+      name: newName,
+      price: newPrice
+    }
+  );
+};
+
+onSnapshot(
+  collection(db, "products"),
+  (snap) => {
+
+    list.innerHTML = "";
+
+    snap.forEach((item) => {
+
+      const p = item.data();
+
+      list.innerHTML += `
+        <div class="card">
+
+          <img
+            src="${p.image}"
+            width="120"
+          >
+
+          <h3>${p.name}</h3>
+
+          <p>Rs ${p.price}</p>
+
+          <button onclick="
+            editProduct(
+              '${item.id}',
+              '${p.name}',
+              '${p.price}'
+            )
+          ">
+            Edit
+          </button>
+
+          <button onclick="
+            deleteProduct(
+              '${item.id}'
+            )
+          ">
+            Delete
+          </button>
+
+        </div>
+      `;
+    });
+
   }
-
-  snap.forEach((docItem) => {
-
-    const p = docItem.data();
-
-    list.innerHTML += `
-      <div class="card">
-        <img src="${p.image}" alt="${p.name}" width="100">
-        <h3>${p.name}</h3>
-        <p>Rs ${p.price}</p>
-      </div>
-    `;
-  });
-
-}, (error) => {
-
-  console.error(error);
-
-  list.innerHTML = `
-    <p style="color:red">
-      Failed to load products
-    </p>
-  `;
-});
+);
