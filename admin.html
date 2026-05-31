@@ -1,20 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin Panel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Freshora Admin Panel</title>
+
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<h2>Admin Panel</h2>
+<h2>Freshora Admin Panel</h2>
 
-<input id="name" placeholder="Product Name">
-<input id="price" placeholder="Price">
-<input id="image" placeholder="Image URL">
-<button onclick="addProduct()">Add Product</button>
+<div class="admin-form">
+
+  <input
+    id="name"
+    type="text"
+    placeholder="Product Name"
+  >
+
+  <input
+    id="price"
+    type="number"
+    placeholder="Price"
+  >
+
+  <input
+    id="imageFile"
+    type="file"
+    accept="image/*"
+  >
+
+  <button onclick="addProduct()">
+    Add Product
+  </button>
+
+</div>
+
+<hr>
 
 <div id="list"></div>
 
 <script type="module" src="admin.js"></script>
+
 </body>
 </html>
