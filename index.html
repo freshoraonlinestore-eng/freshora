@@ -12,6 +12,7 @@
 
 <body>
 
+<!-- HEADER (CLEAN) -->
 <header class="header">
 
   <div class="logo"
@@ -25,10 +26,6 @@
 
     <button onclick="toggleDarkMode()" class="icon-btn">
       🌙
-    </button>
-
-    <button class="cart-btn" onclick="toggleCart()">
-      🛒 <span id="cartCount">0</span>
     </button>
 
   </div>
@@ -49,7 +46,7 @@
 <!-- PRODUCTS -->
 <div id="products"></div>
 
-<!-- FLOATING CART -->
+<!-- FLOATING CART (ONLY ENTRY POINT) -->
 <div class="floating-cart" onclick="toggleCart()">
   🛒 <span id="floatingCartCount">0</span>
 </div>
@@ -80,7 +77,7 @@
 
 </div>
 
-<!-- MODAL -->
+<!-- PRODUCT MODAL -->
 <div id="productModal" class="modal">
 
   <div class="modal-content">
@@ -92,6 +89,7 @@
     <div class="modal-details">
 
       <h2 id="modalName"></h2>
+
       <p id="modalPrice"></p>
 
       <div class="rating">⭐⭐⭐⭐⭐</div>
@@ -101,14 +99,6 @@
     </div>
 
   </div>
-
-</div>
-
-<!-- MOBILE NAV -->
-<div class="mobile-nav">
-
-  <a href="#">🏠 Home</a>
-  <a href="javascript:void(0)" onclick="toggleCart()">🛒 Cart</a>
 
 </div>
 
