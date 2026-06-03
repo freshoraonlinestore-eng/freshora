@@ -16,12 +16,9 @@
 
 <body>
 
-<!-- =========================
-     HEADER
-========================= -->
 <header class="header">
 
-  <!-- SECRET ADMIN ACCESS -->
+  <!-- SECRET ADMIN -->
   <div class="logo"
        ondblclick="window.location='login.html'">
 
@@ -35,25 +32,16 @@
     placeholder="Search products..."
   >
 
-  <!-- ACTIONS -->
   <div class="header-actions">
 
-    <!-- DARK MODE -->
-    <button class="icon-btn"
-            onclick="toggleDarkMode()">
-
+    <button onclick="toggleDarkMode()">
       🌙
-
     </button>
 
-    <!-- CART -->
     <button class="cart-btn"
             onclick="toggleCart()">
 
-      🛒
-      <span id="cartCount">
-        0
-      </span>
+      🛒 <span id="cartCount">0</span>
 
     </button>
 
@@ -61,72 +49,67 @@
 
 </header>
 
-<!-- =========================
-     CATEGORY FILTER
-========================= -->
+<!-- CATEGORY -->
 <div class="category-bar">
 
-  <button class="cat-btn active">
+  <button class="cat-btn active"
+          onclick="filterCategory('all')">
+
     All
+
   </button>
 
-  <button class="cat-btn">
+  <button class="cat-btn"
+          onclick="filterCategory('Grocery')">
+
     Grocery
+
   </button>
 
-  <button class="cat-btn">
+  <button class="cat-btn"
+          onclick="filterCategory('Drinks')">
+
     Drinks
+
   </button>
 
-  <button class="cat-btn">
+  <button class="cat-btn"
+          onclick="filterCategory('Snacks')">
+
     Snacks
+
   </button>
 
-  <button class="cat-btn">
+  <button class="cat-btn"
+          onclick="filterCategory('Beauty')">
+
     Beauty
+
   </button>
 
 </div>
 
-<!-- =========================
-     PRODUCTS
-========================= -->
-<div id="products">
+<!-- PRODUCTS -->
+<div id="products"></div>
 
-  <!-- SKELETON -->
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-
-</div>
-
-<!-- =========================
-     FLOATING CART
-========================= -->
+<!-- FLOATING CART -->
 <div class="floating-cart"
      onclick="toggleCart()">
 
   🛒
-
   <span id="floatingCartCount">
     0
   </span>
 
 </div>
 
-<!-- =========================
-     CART DRAWER
-========================= -->
+<!-- CART -->
 <div id="cartDrawer"
      class="cart-drawer">
 
-  <!-- CART HEADER -->
   <div class="cart-header">
 
-    <h2>
-      Your Cart
-    </h2>
+    <h2>Your Cart</h2>
 
     <button onclick="toggleCart()">
       ✕
@@ -134,10 +117,8 @@
 
   </div>
 
-  <!-- ITEMS -->
   <div id="cartItems"></div>
 
-  <!-- CHECKOUT -->
   <div class="sticky-checkout">
 
     <h3 id="cartTotal">
@@ -145,8 +126,8 @@
     </h3>
 
     <button
-      onclick="checkout()"
-      class="checkout-btn">
+      class="checkout-btn"
+      onclick="checkout()">
 
       Checkout
 
@@ -160,9 +141,7 @@
 
 </div>
 
-<!-- =========================
-     PRODUCT MODAL
-========================= -->
+<!-- MODAL -->
 <div id="productModal"
      class="modal">
 
@@ -187,10 +166,6 @@
         ⭐⭐⭐⭐⭐
       </div>
 
-      <div class="stock">
-        In Stock
-      </div>
-
       <button id="modalAddBtn">
         Add to Cart
       </button>
@@ -201,9 +176,7 @@
 
 </div>
 
-<!-- =========================
-     MOBILE NAV
-========================= -->
+<!-- MOBILE NAV -->
 <div class="mobile-nav">
 
   <a href="#">
@@ -219,9 +192,6 @@
 
 </div>
 
-<!-- =========================
-     APP
-========================= -->
 <script type="module"
         src="app.js"></script>
 
