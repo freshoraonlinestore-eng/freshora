@@ -4,116 +4,104 @@
 <head>
 
   <meta charset="UTF-8">
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Freshora Admin Panel</title>
 
-<link rel="stylesheet" href="admin-ui.css">
+  <link rel="stylesheet" href="admin-ui.css">
 
 </head>
 
 <body class="admin-body">
 
-  <!-- =========================
-       TOP BAR
-  ========================= -->
-  <header class="admin-header">
+<!-- =========================
+     PROTECTION SCRIPT (IMPORTANT)
+========================= -->
+<script type="module" src="protected.js"></script>
 
-    <h2>
-      Admin Dashboard
-    </h2>
+<!-- =========================
+     TOP BAR
+========================= -->
+<header class="admin-header">
 
-    <div class="admin-actions">
+  <h2>Admin Dashboard</h2>
 
-      <button onclick="logout()"
-              class="logout-btn">
+  <div class="admin-actions">
 
-        Logout
-
-      </button>
-
-      <a href="index.html">
-        Store
-      </a>
-
-    </div>
-
-  </header>
-
-  <!-- =========================
-       ANALYTICS
-  ========================= -->
-  <section class="analytics">
-
-    <div class="card stat-card">
-      <h3>Total Products</h3>
-      <p id="totalProducts">0</p>
-    </div>
-
-    <div class="card stat-card">
-      <h3>Total Orders</h3>
-      <p id="totalOrders">0</p>
-    </div>
-
-    <div class="card stat-card">
-      <h3>Total Revenue</h3>
-      <p id="totalRevenue">Rs 0</p>
-    </div>
-
-  </section>
-
-  <!-- =========================
-       PRODUCT FORM
-  ========================= -->
-  <section class="admin-form">
-
-    <h3>Add / Edit Product</h3>
-
-    <input id="name"
-           placeholder="Product Name">
-
-    <input id="price"
-           placeholder="Price">
-
-    <input id="image"
-           placeholder="Image URL">
-
-    <input id="category"
-           placeholder="Category (Drinks, Snacks...)">
-
-    <input id="discount"
-           placeholder="Discount %">
-
-    <input id="stock"
-           placeholder="Stock (In Stock / Out of Stock)">
-
-    <textarea id="description"
-              placeholder="Product Description"></textarea>
-
-    <button onclick="addOrUpdateProduct()"
-            id="submitBtn">
-
-      Add Product
-
+    <button onclick="logout()" class="logout-btn">
+      Logout
     </button>
 
-  </section>
+    <a href="index.html">
+      Store
+    </a>
 
-  <!-- =========================
-       PRODUCT LIST
-  ========================= -->
-  <section id="list"
-           class="product-list">
+    <a href="orders.html">
+      Orders
+    </a>
 
-  </section>
+  </div>
 
-  <!-- =========================
-       SCRIPT
-  ========================= -->
-  <script type="module"
-          src="admin.js"></script>
+</header>
+
+<!-- =========================
+     ANALYTICS
+========================= -->
+<section class="analytics">
+
+  <div class="stat-card">
+    <h3>Total Products</h3>
+    <p id="totalProducts">0</p>
+  </div>
+
+  <div class="stat-card">
+    <h3>Total Orders</h3>
+    <p id="totalOrders">0</p>
+  </div>
+
+  <div class="stat-card">
+    <h3>Total Revenue</h3>
+    <p id="totalRevenue">Rs 0</p>
+  </div>
+
+</section>
+
+<!-- =========================
+     PRODUCT FORM
+========================= -->
+<section class="admin-form">
+
+  <h3>Add / Edit Product</h3>
+
+  <input id="name" placeholder="Product Name">
+  <input id="price" placeholder="Price">
+
+  <!-- 🔥 UPGRADED IMAGE UPLOAD -->
+  <input type="file" id="imageFile" accept="image/*">
+
+  <input id="category" placeholder="Category">
+  <input id="discount" placeholder="Discount %">
+  <input id="stock" placeholder="Stock">
+
+  <textarea id="description" placeholder="Description"></textarea>
+
+  <button onclick="uploadAndSaveProduct()" id="submitBtn">
+    Upload & Add Product
+  </button>
+
+</section>
+
+<!-- =========================
+     PRODUCT LIST
+========================= -->
+<section id="list" class="product-list"></section>
+
+<!-- =========================
+     SCRIPTS
+========================= -->
+<script type="module" src="firebase.js"></script>
+<script type="module" src="analytics.js"></script>
+<script type="module" src="admin.js"></script>
 
 </body>
 </html>
