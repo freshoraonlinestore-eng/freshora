@@ -2,22 +2,21 @@ import {
   db,
   auth,
   collection,
-  addDoc,
   onSnapshot,
-  deleteDoc,
+  addDoc,
   updateDoc,
+  deleteDoc,
   doc,
   signOut,
   onAuthStateChanged
 } from "./firebase.js";
 
 /* =========================
-   PROTECT ADMIN PAGE
+   AUTH PROTECTION
 ========================= */
 onAuthStateChanged(auth, (user) => {
 
   if (!user) {
-
     window.location.href = "login.html";
   }
 });
@@ -43,11 +42,11 @@ const submitBtn = document.getElementById("submitBtn");
 let editId = null;
 
 /* =========================
-   ADD OR UPDATE PRODUCT
+   ADD / UPDATE PRODUCT
 ========================= */
 window.addOrUpdateProduct = async function () {
 
-  const productData = {
+  const product = {
     name: nameEl.value,
     price: Number(priceEl.value),
     image: imageEl.value,
@@ -57,7 +56,7 @@ window.addOrUpdateProduct = async function () {
     description: descEl.value || ""
   };
 
-  if (!productData.name || !productData.price || !productData.image) {
+  if (!product.name || !product.price || !product.image) {
     alert("Please fill required fields");
     return;
   }
@@ -69,7 +68,7 @@ window.addOrUpdateProduct = async function () {
       /* =========================
          UPDATE PRODUCT
       ========================= */
-      await updateDoc(doc(db, "products", editId), productData);
+      await updateDoc(doc(db, "products", editId), product);
 
       submitBtn.innerText = "Add Product";
       editId = null;
@@ -77,15 +76,14 @@ window.addOrUpdateProduct = async function () {
     } else {
 
       /* =========================
-         ADD PRODUCT
+         CREATE PRODUCT
       ========================= */
-      await addDoc(collection(db, "products"), productData);
+      await addDoc(collection(db, "products"), product);
     }
 
     clearForm();
 
   } catch (error) {
-
     console.log(error);
     alert("Error saving product");
   }
@@ -110,10 +108,64 @@ function clearForm() {
 ========================= */
 window.deleteProduct = async function (id) {
 
-  if (!confirm("Delete this product?")) return;
+  const confirmDelete = confirm("Are you sure you want to delete this product?");
 
-  await deleteDoc(doc(db, "products", id));
+  if (!confirmDelete) return;
+
+  try {
+
+    await deleteDoc(doc(db, "products", id));
+
+  } catch (error) {
+
+    console.log(error);
+    alert("Delete failed");
+  }
 };
+
+/* =========================
+   LOAD PRODUCTS (REALTIME)
+========================= */
+onSnapshot(collection(db, "products"), (snap) => {
+
+  list.innerHTML = "";
+
+  snap.forEach((docItem) => {
+
+    const data = docItem.data();
+    const id = docItem.id;
+
+    list.innerHTML += `
+      <div class="card admin-card">
+
+        <img src="${data.image}">
+
+        <h3>${data.name}</h3>
+
+        <p>Rs ${data.price}</p>
+
+        <p>Category: ${data.category || "N/A"}</p>
+
+        <p>Discount: ${data.discount || 0}%</p>
+
+        <p>Stock: ${data.stock || "N/A"}</p>
+
+        <div style="display:flex; gap:10px; justify-content:center;">
+
+          <button onclick='editProduct("${id}", ${JSON.stringify(data)})'>
+            Edit
+          </button>
+
+          <button onclick='deleteProduct("${id}")'>
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+    `;
+  });
+});
 
 /* =========================
    EDIT PRODUCT
@@ -142,47 +194,3 @@ window.logout = async function () {
 
   window.location.href = "login.html";
 };
-
-/* =========================
-   LOAD PRODUCTS
-========================= */
-onSnapshot(collection(db, "products"), (snap) => {
-
-  list.innerHTML = "";
-
-  snap.forEach((docItem) => {
-
-    const p = docItem.data();
-    const id = docItem.id;
-
-    list.innerHTML += `
-      <div class="card admin-card">
-
-        <img src="${p.image}">
-
-        <h3>${p.name}</h3>
-
-        <p>Rs ${p.price}</p>
-
-        <p>${p.category || ""}</p>
-
-        <p>Discount: ${p.discount || 0}%</p>
-
-        <p>${p.stock || ""}</p>
-
-        <div style="display:flex; gap:8px; justify-content:center;">
-
-          <button onclick='editProduct("${id}", ${JSON.stringify(p)})'>
-            Edit
-          </button>
-
-          <button onclick='deleteProduct("${id}")'>
-            Delete
-          </button>
-
-        </div>
-
-      </div>
-    `;
-  });
-});
