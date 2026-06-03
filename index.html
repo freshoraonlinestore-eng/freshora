@@ -62,26 +62,44 @@
 </header>
 
 <!-- =========================
-     HERO SECTION
+     QUICK CATEGORY SECTION
 ========================= -->
 
-<section class="hero-section">
+<section class="quick-categories">
 
-  <div class="hero-content">
+  <div class="quick-card"
+       onclick="filterCategory('Grocery')">
 
-    <span class="hero-badge">
-      Premium Online Store
-    </span>
+    <span>🛒</span>
 
-    <h1>
-      Fresh Grocery &
-      Daily Essentials
-    </h1>
+    <p>Grocery</p>
 
-    <p>
-      Discover quality products,
-      fast delivery and premium shopping experience.
-    </p>
+  </div>
+
+  <div class="quick-card"
+       onclick="filterCategory('Drinks')">
+
+    <span>🥤</span>
+
+    <p>Drinks</p>
+
+  </div>
+
+  <div class="quick-card"
+       onclick="filterCategory('Snacks')">
+
+    <span>🍟</span>
+
+    <p>Snacks</p>
+
+  </div>
+
+  <div class="quick-card"
+       onclick="filterCategory('Beauty')">
+
+    <span>✨</span>
+
+    <p>Beauty</p>
 
   </div>
 
@@ -136,7 +154,7 @@
 </section>
 
 <!-- =========================
-     PRODUCTS HEADER
+     PRODUCTS TOP
 ========================= -->
 
 <section class="products-top">
@@ -144,11 +162,11 @@
   <div>
 
     <h2>
-      Featured Products
+      Popular Products
     </h2>
 
     <p>
-      Best selling premium products
+      Freshora premium collection
     </p>
 
   </div>
@@ -192,7 +210,7 @@
       </h2>
 
       <p>
-        Review your items
+        Your selected products
       </p>
 
     </div>
@@ -205,10 +223,8 @@
 
   </div>
 
-  <!-- CART ITEMS -->
   <div id="cartItems"></div>
 
-  <!-- CHECKOUT -->
   <div class="sticky-checkout">
 
     <div class="checkout-total-box">
@@ -216,9 +232,7 @@
       <span>Total</span>
 
       <h3 id="cartTotal">
-
         Rs 0
-
       </h3>
 
     </div>
