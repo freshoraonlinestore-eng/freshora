@@ -5,6 +5,10 @@ import {
   addDoc
 } from "./firebase.js";
 
+/* =========================
+   ELEMENTS
+========================= */
+
 const productsDiv =
 document.getElementById("products");
 
@@ -39,17 +43,25 @@ function updateCartCount(){
 
   const total =
   cart.reduce(
-    (sum, item) => sum + item.qty,
+    (sum,item)=>sum + item.qty,
     0
   );
 
-  document.getElementById(
-    "cartCount"
-  ).innerText = total;
+  const cartCount =
+  document.getElementById("cartCount");
 
+  const floatingCartCount =
   document.getElementById(
     "floatingCartCount"
-  ).innerText = total;
+  );
+
+  if(cartCount){
+    cartCount.innerText = total;
+  }
+
+  if(floatingCartCount){
+    floatingCartCount.innerText = total;
+  }
 }
 
 /* =========================
@@ -77,13 +89,13 @@ window.addToCart = function(
 ){
 
   const existing =
-  cart.find(i => i.id === id);
+  cart.find(item => item.id === id);
 
   if(existing){
 
     existing.qty++;
 
-  } else {
+  }else{
 
     cart.push({
       id,
@@ -100,7 +112,7 @@ window.addToCart = function(
 };
 
 /* =========================
-   REMOVE
+   REMOVE ITEM
 ========================= */
 
 window.removeItem = function(index){
@@ -108,6 +120,8 @@ window.removeItem = function(index){
   cart.splice(index,1);
 
   saveCart();
+
+  showToast("Item removed");
 };
 
 /* =========================
@@ -142,6 +156,8 @@ window.clearCart = function(){
   cart = [];
 
   saveCart();
+
+  showToast("Cart cleared");
 };
 
 /* =========================
@@ -163,9 +179,9 @@ function renderCart(){
   if(cart.length === 0){
 
     cartItems.innerHTML = `
-      <p class="empty">
-        Cart is empty
-      </p>
+      <div class="empty">
+        <h3>Cart is Empty</h3>
+      </div>
     `;
 
     cartTotal.innerText =
@@ -238,10 +254,12 @@ window.checkout = async function(){
   let total = 0;
 
   cart.forEach(item => {
+
     total += item.price * item.qty;
   });
 
   /* SAVE ORDER */
+
   await addDoc(
     collection(db,"orders"),
     {
@@ -361,7 +379,7 @@ document.addEventListener("input",(e)=>{
 });
 
 /* =========================
-   PRODUCTS
+   RENDER PRODUCTS
 ========================= */
 
 function renderProducts(products){
@@ -369,9 +387,10 @@ function renderProducts(products){
   productsDiv.innerHTML = "";
 
   const search =
-  document.getElementById(
-    "searchInput"
-  ).value.toLowerCase();
+  document
+  .getElementById("searchInput")
+  .value
+  .toLowerCase();
 
   const filtered =
   products.filter(product => {
@@ -392,66 +411,146 @@ function renderProducts(products){
   if(filtered.length === 0){
 
     productsDiv.innerHTML = `
-      <p class="empty">
-        No products found
-      </p>
+      <div class="empty">
+
+        <h3>
+          No products found
+        </h3>
+
+      </div>
     `;
 
     return;
   }
 
-  filtered.forEach(product => {
+  filtered.forEach((product) => {
+
+    const discount =
+    Number(product.discount || 0);
+
+    const originalPrice =
+    Number(product.price);
+
+    const discountedPrice =
+    discount > 0
+    ? Math.round(
+        originalPrice -
+        (originalPrice * discount / 100)
+      )
+    : originalPrice;
+
+    const stockText =
+    product.stock || "In Stock";
+
+    const stockClass =
+    stockText.toLowerCase()
+    .includes("out")
+    ? "out-stock"
+    : "in-stock";
 
     productsDiv.innerHTML += `
 
       <div class="card fade-in">
 
-        <div class="discount-badge">
-          -20%
-        </div>
+        ${
+          discount > 0
+          ? `
+            <div class="discount-badge">
+              ${discount}% OFF
+            </div>
+          `
+          : ""
+        }
 
-        <img
-          src="${product.image}"
-          loading="lazy"
-        >
+        <div class="image-wrap">
+
+          <img
+            src="${product.image}"
+            loading="lazy"
+            alt="${product.name}"
+          >
+
+        </div>
 
         <div class="card-content">
 
-          <h3>${product.name}</h3>
+          <div class="product-category">
 
-          <p>Rs ${product.price}</p>
+            ${product.category || "General"}
 
-          <div class="rating">
-            ⭐⭐⭐⭐⭐
+          </div>
+
+          <h3 class="product-title">
+
+            ${product.name}
+
+          </h3>
+
+          <div class="rating-row">
+
+            <div class="stars">
+              ⭐⭐⭐⭐⭐
+            </div>
+
+            <span class="rating-count">
+              (4.9)
+            </span>
+
+          </div>
+
+          <div class="price-box">
+
+            ${
+              discount > 0
+              ? `
+                <span class="old-price">
+                  Rs ${originalPrice}
+                </span>
+              `
+              : ""
+            }
+
+            <span class="new-price">
+              Rs ${discountedPrice}
+            </span>
+
+          </div>
+
+          <div class="stock ${stockClass}">
+
+            ${stockText}
+
           </div>
 
           <div class="card-buttons">
 
-            <button onclick="openModal(
-              '${product.id}',
-              '${product.name}',
-              '${product.price}',
-              '${product.image}'
-            )">
+            <button
+              class="view-btn"
+              onclick="openModal(
+                '${product.id}',
+                '${product.name}',
+                '${discountedPrice}',
+                '${product.image}'
+              )">
 
               View
 
             </button>
 
+            <button
+              class="add-cart-btn"
+              onclick="addToCart(
+                '${product.id}',
+                '${product.name}',
+                '${discountedPrice}',
+                '${product.image}'
+              )">
+
+              Add to Cart
+
+            </button>
+
           </div>
-
-          <button
-            class="add-cart-btn"
-            onclick="addToCart(
-              '${product.id}',
-              '${product.name}',
-              '${product.price}',
-              '${product.image}'
-            )">
-
-            Add to Cart
-
-          </button>
 
         </div>
 
