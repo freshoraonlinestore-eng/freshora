@@ -2,46 +2,33 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Freshora Store</title>
 
-<link rel="stylesheet" href="login.css">
-
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header class="header">
 
-  <!-- SECRET ADMIN -->
   <div class="logo"
        ondblclick="window.location='login.html'">
-
     Freshora
-
   </div>
 
-  <!-- SEARCH -->
-  <input
-    id="searchInput"
-    placeholder="Search products..."
-  >
+  <input id="searchInput" placeholder="Search products...">
 
   <div class="header-actions">
 
-    <button onclick="toggleDarkMode()">
+    <button onclick="toggleDarkMode()" class="icon-btn">
       🌙
     </button>
 
-    <button class="cart-btn"
-            onclick="toggleCart()">
-
+    <button class="cart-btn" onclick="toggleCart()">
       🛒 <span id="cartCount">0</span>
-
     </button>
 
   </div>
@@ -49,42 +36,13 @@
 </header>
 
 <!-- CATEGORY -->
-<div class="category-bar">
+<div class="category-bar" id="categoryBar">
 
-  <button class="cat-btn active"
-          onclick="filterCategory('all')">
-
-    All
-
-  </button>
-
-  <button class="cat-btn"
-          onclick="filterCategory('Grocery')">
-
-    Grocery
-
-  </button>
-
-  <button class="cat-btn"
-          onclick="filterCategory('Drinks')">
-
-    Drinks
-
-  </button>
-
-  <button class="cat-btn"
-          onclick="filterCategory('Snacks')">
-
-    Snacks
-
-  </button>
-
-  <button class="cat-btn"
-          onclick="filterCategory('Beauty')">
-
-    Beauty
-
-  </button>
+  <button class="cat-btn active" onclick="filterCategory('all')">All</button>
+  <button class="cat-btn" onclick="filterCategory('Grocery')">Grocery</button>
+  <button class="cat-btn" onclick="filterCategory('Drinks')">Drinks</button>
+  <button class="cat-btn" onclick="filterCategory('Snacks')">Snacks</button>
+  <button class="cat-btn" onclick="filterCategory('Beauty')">Beauty</button>
 
 </div>
 
@@ -92,44 +50,26 @@
 <div id="products"></div>
 
 <!-- FLOATING CART -->
-<div class="floating-cart"
-     onclick="toggleCart()">
-
-  🛒
-  <span id="floatingCartCount">
-    0
-  </span>
-
+<div class="floating-cart" onclick="toggleCart()">
+  🛒 <span id="floatingCartCount">0</span>
 </div>
 
-<!-- CART -->
-<div id="cartDrawer"
-     class="cart-drawer">
+<!-- CART DRAWER -->
+<div id="cartDrawer" class="cart-drawer">
 
   <div class="cart-header">
-
     <h2>Your Cart</h2>
-
-    <button onclick="toggleCart()">
-      ✕
-    </button>
-
+    <button onclick="toggleCart()">✕</button>
   </div>
 
   <div id="cartItems"></div>
 
   <div class="sticky-checkout">
 
-    <h3 id="cartTotal">
-      Total: Rs 0
-    </h3>
+    <h3 id="cartTotal">Total: Rs 0</h3>
 
-    <button
-      class="checkout-btn"
-      onclick="checkout()">
-
+    <button class="checkout-btn" onclick="checkout()">
       Checkout
-
     </button>
 
     <button onclick="clearCart()">
@@ -141,33 +81,22 @@
 </div>
 
 <!-- MODAL -->
-<div id="productModal"
-     class="modal">
+<div id="productModal" class="modal">
 
   <div class="modal-content">
 
-    <span class="close"
-          onclick="closeModal()">
-
-      &times;
-
-    </span>
+    <span class="close" onclick="closeModal()">×</span>
 
     <img id="modalImage">
 
     <div class="modal-details">
 
       <h2 id="modalName"></h2>
-
       <p id="modalPrice"></p>
 
-      <div class="rating">
-        ⭐⭐⭐⭐⭐
-      </div>
+      <div class="rating">⭐⭐⭐⭐⭐</div>
 
-      <button id="modalAddBtn">
-        Add to Cart
-      </button>
+      <button id="modalAddBtn">Add to Cart</button>
 
     </div>
 
@@ -178,21 +107,12 @@
 <!-- MOBILE NAV -->
 <div class="mobile-nav">
 
-  <a href="#">
-    🏠 Home
-  </a>
-
-  <a href="javascript:void(0)"
-     onclick="toggleCart()">
-
-    🛒 Cart
-
-  </a>
+  <a href="#">🏠 Home</a>
+  <a href="javascript:void(0)" onclick="toggleCart()">🛒 Cart</a>
 
 </div>
 
-<script type="module"
-        src="app.js"></script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
