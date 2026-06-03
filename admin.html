@@ -1,49 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Freshora Admin Panel</title>
+  <meta charset="UTF-8">
 
-<link rel="stylesheet" href="style.css">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Freshora Admin Panel</title>
+
+  <link rel="stylesheet"
+        href="style.css">
+
 </head>
 
-<body>
+<body class="admin-body">
 
-<h2>Freshora Admin Panel</h2>
+  <!-- =========================
+       TOP BAR
+  ========================= -->
+  <header class="admin-header">
 
-<div class="admin-form">
+    <h2>
+      Admin Dashboard
+    </h2>
 
-  <input
-    id="name"
-    type="text"
-    placeholder="Product Name"
-  >
+    <div class="admin-actions">
 
-  <input
-    id="price"
-    type="number"
-    placeholder="Price"
-  >
+      <button onclick="logout()"
+              class="logout-btn">
 
-  <input
-    id="imageFile"
-    type="file"
-    accept="image/*"
-  >
+        Logout
 
-  <button onclick="addProduct()">
-    Add Product
-  </button>
+      </button>
 
-</div>
+      <a href="index.html">
+        Store
+      </a>
 
-<hr>
+    </div>
 
-<div id="list"></div>
+  </header>
 
-<script type="module" src="admin.js"></script>
+  <!-- =========================
+       ANALYTICS
+  ========================= -->
+  <section class="analytics">
+
+    <div class="card stat-card">
+      <h3>Total Products</h3>
+      <p id="totalProducts">0</p>
+    </div>
+
+    <div class="card stat-card">
+      <h3>Total Orders</h3>
+      <p id="totalOrders">0</p>
+    </div>
+
+    <div class="card stat-card">
+      <h3>Total Revenue</h3>
+      <p id="totalRevenue">Rs 0</p>
+    </div>
+
+  </section>
+
+  <!-- =========================
+       PRODUCT FORM
+  ========================= -->
+  <section class="admin-form">
+
+    <h3>Add / Edit Product</h3>
+
+    <input id="name"
+           placeholder="Product Name">
+
+    <input id="price"
+           placeholder="Price">
+
+    <input id="image"
+           placeholder="Image URL">
+
+    <input id="category"
+           placeholder="Category (Drinks, Snacks...)">
+
+    <input id="discount"
+           placeholder="Discount %">
+
+    <input id="stock"
+           placeholder="Stock (In Stock / Out of Stock)">
+
+    <textarea id="description"
+              placeholder="Product Description"></textarea>
+
+    <button onclick="addOrUpdateProduct()"
+            id="submitBtn">
+
+      Add Product
+
+    </button>
+
+  </section>
+
+  <!-- =========================
+       PRODUCT LIST
+  ========================= -->
+  <section id="list"
+           class="product-list">
+
+  </section>
+
+  <!-- =========================
+       SCRIPT
+  ========================= -->
+  <script type="module"
+          src="admin.js"></script>
 
 </body>
 </html>
