@@ -4,7 +4,6 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0">
 
@@ -22,9 +21,12 @@
 ========================= -->
 <header class="header">
 
-  <!-- LOGO -->
-  <div class="logo">
+  <!-- SECRET ADMIN ACCESS -->
+  <div class="logo"
+       ondblclick="window.location='login.html'">
+
     Freshora
+
   </div>
 
   <!-- SEARCH -->
@@ -33,18 +35,27 @@
     placeholder="Search products..."
   >
 
-  <!-- HEADER ACTIONS -->
+  <!-- ACTIONS -->
   <div class="header-actions">
 
     <!-- DARK MODE -->
-    <button onclick="toggleDarkMode()">
+    <button class="icon-btn"
+            onclick="toggleDarkMode()">
+
       🌙
+
     </button>
 
-    <!-- ADMIN -->
-    <a href="login.html">
-      Admin
-    </a>
+    <!-- CART -->
+    <button class="cart-btn"
+            onclick="toggleCart()">
+
+      🛒
+      <span id="cartCount">
+        0
+      </span>
+
+    </button>
 
   </div>
 
@@ -114,7 +125,7 @@
   <div class="cart-header">
 
     <h2>
-      Shopping Cart
+      Your Cart
     </h2>
 
     <button onclick="toggleCart()">
@@ -123,38 +134,26 @@
 
   </div>
 
-  <!-- CART ITEMS -->
+  <!-- ITEMS -->
   <div id="cartItems"></div>
 
   <!-- CHECKOUT -->
   <div class="sticky-checkout">
 
-    <div class="checkout-top">
-
-      <span>
-        Total
-      </span>
-
-      <h3 id="cartTotal">
-        Rs 0
-      </h3>
-
-    </div>
+    <h3 id="cartTotal">
+      Total: Rs 0
+    </h3>
 
     <button
       onclick="checkout()"
       class="checkout-btn">
 
-      Proceed to Checkout
+      Checkout
 
     </button>
 
-    <button
-      class="clear-btn"
-      onclick="clearCart()">
-
+    <button onclick="clearCart()">
       Clear Cart
-
     </button>
 
   </div>
@@ -169,7 +168,6 @@
 
   <div class="modal-content">
 
-    <!-- CLOSE -->
     <span class="close"
           onclick="closeModal()">
 
@@ -177,45 +175,22 @@
 
     </span>
 
-    <!-- IMAGE -->
     <img id="modalImage">
 
-    <!-- CONTENT -->
-    <div class="modal-body">
+    <div class="modal-details">
 
-      <!-- TITLE -->
       <h2 id="modalName"></h2>
 
-      <!-- RATING -->
+      <p id="modalPrice"></p>
+
       <div class="rating">
-        ⭐ 4.9 (120 Reviews)
+        ⭐⭐⭐⭐⭐
       </div>
 
-      <!-- PRICE -->
-      <div class="price-box">
-
-        <span id="modalPrice"></span>
-
-        <span class="old-price">
-          Rs 5990
-        </span>
-
-      </div>
-
-      <!-- STOCK -->
       <div class="stock">
-        ✔ In Stock
+        In Stock
       </div>
 
-      <!-- DESCRIPTION -->
-      <p class="modal-desc">
-
-        Premium quality Freshora product.
-        Fast delivery available islandwide.
-
-      </p>
-
-      <!-- BUTTON -->
       <button id="modalAddBtn">
         Add to Cart
       </button>
@@ -232,29 +207,20 @@
 <div class="mobile-nav">
 
   <a href="#">
-    🏠
-    <span>Home</span>
+    🏠 Home
   </a>
 
   <a href="javascript:void(0)"
      onclick="toggleCart()">
 
-    🛒
-    <span>Cart</span>
-
-  </a>
-
-  <a href="login.html">
-
-    ⚙
-    <span>Admin</span>
+    🛒 Cart
 
   </a>
 
 </div>
 
 <!-- =========================
-     APP JS
+     APP
 ========================= -->
 <script type="module"
         src="app.js"></script>
