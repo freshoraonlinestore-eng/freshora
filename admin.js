@@ -1,165 +1,188 @@
 import {
   db,
+  auth,
   collection,
   addDoc,
+  onSnapshot,
   deleteDoc,
   updateDoc,
   doc,
-  onSnapshot
+  signOut,
+  onAuthStateChanged
 } from "./firebase.js";
 
+/* =========================
+   PROTECT ADMIN PAGE
+========================= */
+onAuthStateChanged(auth, (user) => {
+
+  if (!user) {
+
+    window.location.href = "login.html";
+  }
+});
+
+/* =========================
+   ELEMENTS
+========================= */
 const list = document.getElementById("list");
 
-window.addProduct = async () => {
+const nameEl = document.getElementById("name");
+const priceEl = document.getElementById("price");
+const imageEl = document.getElementById("image");
+const categoryEl = document.getElementById("category");
+const discountEl = document.getElementById("discount");
+const stockEl = document.getElementById("stock");
+const descEl = document.getElementById("description");
+
+const submitBtn = document.getElementById("submitBtn");
+
+/* =========================
+   EDIT STATE
+========================= */
+let editId = null;
+
+/* =========================
+   ADD OR UPDATE PRODUCT
+========================= */
+window.addOrUpdateProduct = async function () {
+
+  const productData = {
+    name: nameEl.value,
+    price: Number(priceEl.value),
+    image: imageEl.value,
+    category: categoryEl.value || "General",
+    discount: Number(discountEl.value || 0),
+    stock: stockEl.value || "In Stock",
+    description: descEl.value || ""
+  };
+
+  if (!productData.name || !productData.price || !productData.image) {
+    alert("Please fill required fields");
+    return;
+  }
 
   try {
 
-    const name =
-      document.getElementById("name").value.trim();
+    if (editId) {
 
-    const price =
-      document.getElementById("price").value.trim();
+      /* =========================
+         UPDATE PRODUCT
+      ========================= */
+      await updateDoc(doc(db, "products", editId), productData);
 
-    const file =
-      document.getElementById("imageFile").files[0];
+      submitBtn.innerText = "Add Product";
+      editId = null;
 
-    if (!name || !price || !file) {
-      alert("Fill all fields");
-      return;
+    } else {
+
+      /* =========================
+         ADD PRODUCT
+      ========================= */
+      await addDoc(collection(db, "products"), productData);
     }
 
-    const formData = new FormData();
-
-    formData.append("file", file);
-
-    formData.append(
-      "upload_preset",
-      "freshora_upload"
-    );
-
-    const cloudinaryResponse =
-      await fetch(
-        "https://api.cloudinary.com/v1_1/dayvblw7g/image/upload",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
-
-    const cloudinaryData =
-      await cloudinaryResponse.json();
-
-    const imageUrl =
-      cloudinaryData.secure_url;
-
-    await addDoc(
-      collection(db, "products"),
-      {
-        name,
-        price,
-        image: imageUrl,
-        createdAt: Date.now()
-      }
-    );
-
-    document.getElementById("name").value = "";
-    document.getElementById("price").value = "";
-    document.getElementById("imageFile").value = "";
-
-    alert("Product Added");
+    clearForm();
 
   } catch (error) {
 
-    console.error(error);
-
-    alert("Upload Failed");
+    console.log(error);
+    alert("Error saving product");
   }
 };
 
-window.deleteProduct = async (id) => {
+/* =========================
+   CLEAR FORM
+========================= */
+function clearForm() {
 
-  if (!confirm("Delete product?"))
-    return;
+  nameEl.value = "";
+  priceEl.value = "";
+  imageEl.value = "";
+  categoryEl.value = "";
+  discountEl.value = "";
+  stockEl.value = "";
+  descEl.value = "";
+}
 
-  await deleteDoc(
-    doc(db, "products", id)
-  );
+/* =========================
+   DELETE PRODUCT
+========================= */
+window.deleteProduct = async function (id) {
+
+  if (!confirm("Delete this product?")) return;
+
+  await deleteDoc(doc(db, "products", id));
 };
 
-window.editProduct = async (
-  id,
-  oldName,
-  oldPrice
-) => {
+/* =========================
+   EDIT PRODUCT
+========================= */
+window.editProduct = function (id, data) {
 
-  const newName =
-    prompt(
-      "Product Name",
-      oldName
-    );
+  editId = id;
 
-  if (!newName) return;
+  nameEl.value = data.name;
+  priceEl.value = data.price;
+  imageEl.value = data.image;
+  categoryEl.value = data.category;
+  discountEl.value = data.discount;
+  stockEl.value = data.stock;
+  descEl.value = data.description;
 
-  const newPrice =
-    prompt(
-      "Price",
-      oldPrice
-    );
-
-  if (!newPrice) return;
-
-  await updateDoc(
-    doc(db, "products", id),
-    {
-      name: newName,
-      price: newPrice
-    }
-  );
+  submitBtn.innerText = "Update Product";
 };
 
-onSnapshot(
-  collection(db, "products"),
-  (snap) => {
+/* =========================
+   LOGOUT
+========================= */
+window.logout = async function () {
 
-    list.innerHTML = "";
+  await signOut(auth);
 
-    snap.forEach((item) => {
+  window.location.href = "login.html";
+};
 
-      const p = item.data();
+/* =========================
+   LOAD PRODUCTS
+========================= */
+onSnapshot(collection(db, "products"), (snap) => {
 
-      list.innerHTML += `
-        <div class="card">
+  list.innerHTML = "";
 
-          <img
-            src="${p.image}"
-            width="120"
-          >
+  snap.forEach((docItem) => {
 
-          <h3>${p.name}</h3>
+    const p = docItem.data();
+    const id = docItem.id;
 
-          <p>Rs ${p.price}</p>
+    list.innerHTML += `
+      <div class="card admin-card">
 
-          <button onclick="
-            editProduct(
-              '${item.id}',
-              '${p.name}',
-              '${p.price}'
-            )
-          ">
+        <img src="${p.image}">
+
+        <h3>${p.name}</h3>
+
+        <p>Rs ${p.price}</p>
+
+        <p>${p.category || ""}</p>
+
+        <p>Discount: ${p.discount || 0}%</p>
+
+        <p>${p.stock || ""}</p>
+
+        <div style="display:flex; gap:8px; justify-content:center;">
+
+          <button onclick='editProduct("${id}", ${JSON.stringify(p)})'>
             Edit
           </button>
 
-          <button onclick="
-            deleteProduct(
-              '${item.id}'
-            )
-          ">
+          <button onclick='deleteProduct("${id}")'>
             Delete
           </button>
 
         </div>
-      `;
-    });
 
-  }
-);
+      </div>
+    `;
+  });
+});
