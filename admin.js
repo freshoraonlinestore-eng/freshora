@@ -36,13 +36,13 @@ const categoryEl = document.getElementById("category");
 const discountEl = document.getElementById("discount");
 const stockEl = document.getElementById("stock");
 const descEl = document.getElementById("description");
-
 const submitBtn = document.getElementById("submitBtn");
 
 /* =========================
-   EDIT STATE
+   STATE
 ========================= */
 let editId = null;
+let isSaving = false;
 
 /* =========================
    TOAST
@@ -63,10 +63,13 @@ function toast(msg) {
 }
 
 /* =========================
-   IMAGE UPLOAD (FIREBASE STORAGE)
+   IMAGE UPLOAD
 ========================= */
 async function uploadImage(file) {
-  const storageRef = ref(storage, "products/" + Date.now() + "_" + file.name);
+  const storageRef = ref(
+    storage,
+    "products/" + Date.now() + "_" + file.name
+  );
 
   await uploadBytes(storageRef, file);
 
@@ -78,46 +81,56 @@ async function uploadImage(file) {
 ========================= */
 window.addOrUpdateProduct = async function () {
 
+  if (isSaving) return;
+
+  const name = nameEl.value.trim();
+  const price = Number(priceEl.value);
   const file = document.getElementById("imageFile")?.files[0];
 
-  let imageURL = imageEl.value;
+  if (!name || !price) {
+    toast("❌ Name & Price required");
+    return;
+  }
+
+  isSaving = true;
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Saving...";
 
   try {
 
-    /* upload image if file selected */
+    let imageURL = imageEl.value;
+
     if (file) {
       imageURL = await uploadImage(file);
     }
 
+    if (!imageURL) {
+      toast("❌ Image required");
+      return;
+    }
+
     const product = {
-      name: nameEl.value.trim(),
-      price: Number(priceEl.value),
+      name,
+      price,
       image: imageURL,
       category: categoryEl.value || "General",
-      discount: Number(discountEl.value || 0),
+      discount: Math.min(Number(discountEl.value || 0), 90),
       stock: stockEl.value || "In Stock",
       description: descEl.value || "",
       createdAt: Date.now()
     };
 
-    if (!product.name || !product.price || !product.image) {
-      toast("❌ Fill required fields");
-      return;
-    }
-
     if (editId) {
 
       await updateDoc(doc(db, "products", editId), product);
-
       toast("✅ Product Updated");
 
-      submitBtn.innerText = "Add Product";
       editId = null;
+      submitBtn.innerText = "Add Product";
 
     } else {
 
       await addDoc(collection(db, "products"), product);
-
       toast("✅ Product Added");
     }
 
@@ -127,12 +140,17 @@ window.addOrUpdateProduct = async function () {
     console.log(err);
     toast("❌ Error saving product");
   }
+
+  isSaving = false;
+  submitBtn.disabled = false;
+  submitBtn.innerText = "Add Product";
 };
 
 /* =========================
    CLEAR FORM
 ========================= */
 function clearForm() {
+
   nameEl.value = "";
   priceEl.value = "";
   imageEl.value = "";
@@ -141,8 +159,8 @@ function clearForm() {
   stockEl.value = "";
   descEl.value = "";
 
-  const fileInput = document.getElementById("imageFile");
-  if (fileInput) fileInput.value = "";
+  const file = document.getElementById("imageFile");
+  if (file) file.value = "";
 }
 
 /* =========================
@@ -156,48 +174,6 @@ window.deleteProduct = async function (id) {
 
   toast("🗑 Deleted");
 };
-
-/* =========================
-   LOAD PRODUCTS
-========================= */
-onSnapshot(collection(db, "products"), (snap) => {
-
-  list.innerHTML = "";
-
-  snap.forEach((docItem) => {
-
-    const data = docItem.data();
-    const id = docItem.id;
-
-    list.innerHTML += `
-      <div class="card admin-card">
-
-        <img src="${data.image}" loading="lazy">
-
-        <h3>${data.name}</h3>
-
-        <p>Rs ${data.price}</p>
-
-        <small>Category: ${data.category || "-"}</small><br>
-        <small>Discount: ${data.discount || 0}%</small><br>
-        <small>Stock: ${data.stock || "-"}</small>
-
-        <div class="admin-actions">
-
-          <button onclick='editProduct("${id}", ${JSON.stringify(data)})'>
-            Edit
-          </button>
-
-          <button onclick='deleteProduct("${id}")'>
-            Delete
-          </button>
-
-        </div>
-
-      </div>
-    `;
-  });
-});
 
 /* =========================
    EDIT PRODUCT
@@ -218,8 +194,60 @@ window.editProduct = function (id, data) {
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 
-  toast("✏ Editing mode");
+  toast("✏ Edit Mode");
 };
+
+/* =========================
+   LOAD PRODUCTS
+========================= */
+onSnapshot(collection(db, "products"), (snap) => {
+
+  list.innerHTML = "";
+
+  let totalProducts = 0;
+
+  snap.forEach((docItem) => {
+
+    const data = docItem.data();
+    const id = docItem.id;
+
+    totalProducts++;
+
+    list.innerHTML += `
+      <div class="card admin-card">
+
+        <img src="${data.image}" loading="lazy">
+
+        <h3>${data.name}</h3>
+
+        <p>Rs ${data.price}</p>
+
+        <small>Category: ${data.category || "-"}</small><br>
+        <small>Discount: ${data.discount || 0}%</small><br>
+        <small>Stock: ${data.stock || "-"}</small>
+
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+
+          <button onclick='editProduct("${id}", ${JSON.stringify(data)})'>
+            Edit
+          </button>
+
+          <button onclick='deleteProduct("${id}")'>
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+    `;
+  });
+
+  /* =========================
+     ANALYTICS UPDATE
+  ========================= */
+  const totalEl = document.getElementById("totalProducts");
+  if (totalEl) totalEl.innerText = totalProducts;
+});
 
 /* =========================
    LOGOUT
