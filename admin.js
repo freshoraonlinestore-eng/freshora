@@ -63,9 +63,11 @@ function toast(msg) {
 }
 
 /* =========================
-   IMAGE UPLOAD
+   IMAGE UPLOAD (SAFE)
 ========================= */
 async function uploadImage(file) {
+  if (!file) return null;
+
   const storageRef = ref(
     storage,
     "products/" + Date.now() + "_" + file.name
@@ -87,6 +89,8 @@ window.addOrUpdateProduct = async function () {
   const price = Number(priceEl.value);
   const file = document.getElementById("imageFile")?.files[0];
 
+  const imageFromInput = imageEl.value.trim();
+
   if (!name || !price) {
     toast("❌ Name & Price required");
     return;
@@ -98,15 +102,16 @@ window.addOrUpdateProduct = async function () {
 
   try {
 
-    let imageURL = imageEl.value;
+    let imageURL = imageFromInput;
 
+    // upload file if exists
     if (file) {
       imageURL = await uploadImage(file);
     }
 
     if (!imageURL) {
       toast("❌ Image required");
-      return;
+      throw new Error("No image");
     }
 
     const product = {
@@ -170,25 +175,28 @@ window.deleteProduct = async function (id) {
 
   if (!confirm("Delete this product?")) return;
 
-  await deleteDoc(doc(db, "products", id));
-
-  toast("🗑 Deleted");
+  try {
+    await deleteDoc(doc(db, "products", id));
+    toast("🗑 Deleted");
+  } catch (e) {
+    toast("❌ Delete failed");
+  }
 };
 
 /* =========================
-   EDIT PRODUCT
+   EDIT PRODUCT (SAFE)
 ========================= */
 window.editProduct = function (id, data) {
 
   editId = id;
 
-  nameEl.value = data.name;
-  priceEl.value = data.price;
-  imageEl.value = data.image;
-  categoryEl.value = data.category;
-  discountEl.value = data.discount;
-  stockEl.value = data.stock;
-  descEl.value = data.description;
+  nameEl.value = data.name || "";
+  priceEl.value = data.price || "";
+  imageEl.value = data.image || "";
+  categoryEl.value = data.category || "";
+  discountEl.value = data.discount || 0;
+  stockEl.value = data.stock || "";
+  descEl.value = data.description || "";
 
   submitBtn.innerText = "Update Product";
 
@@ -198,7 +206,7 @@ window.editProduct = function (id, data) {
 };
 
 /* =========================
-   LOAD PRODUCTS
+   LOAD PRODUCTS + ANALYTICS
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
 
@@ -212,6 +220,8 @@ onSnapshot(collection(db, "products"), (snap) => {
     const id = docItem.id;
 
     totalProducts++;
+
+    const safeData = encodeURIComponent(JSON.stringify(data));
 
     list.innerHTML += `
       <div class="card admin-card">
@@ -228,11 +238,11 @@ onSnapshot(collection(db, "products"), (snap) => {
 
         <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
 
-          <button onclick='editProduct("${id}", ${JSON.stringify(data)})'>
+          <button onclick="editProduct('${id}', JSON.parse(decodeURIComponent('${safeData}')))">
             Edit
           </button>
 
-          <button onclick='deleteProduct("${id}")'>
+          <button onclick="deleteProduct('${id}')">
             Delete
           </button>
 
@@ -242,9 +252,6 @@ onSnapshot(collection(db, "products"), (snap) => {
     `;
   });
 
-  /* =========================
-     ANALYTICS UPDATE
-  ========================= */
   const totalEl = document.getElementById("totalProducts");
   if (totalEl) totalEl.innerText = totalProducts;
 });
