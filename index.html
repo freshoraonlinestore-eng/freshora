@@ -48,101 +48,53 @@
 
   </div>
 
-  <div class="header-actions">
-
-    <button onclick="toggleDarkMode()"
-            class="icon-btn">
-
-      🌙
-
-    </button>
-
-  </div>
-
 </header>
 
 <!-- =========================
-     QUICK CATEGORY SECTION
+     FILTER / CATEGORY
 ========================= -->
 
-<section class="quick-categories">
+<section class="filter-section">
 
-  <div class="quick-card"
-       onclick="filterCategory('Grocery')">
+  <div class="filter-top">
 
-    <span>🛒</span>
-
-    <p>Grocery</p>
-
-  </div>
-
-  <div class="quick-card"
-       onclick="filterCategory('Drinks')">
-
-    <span>🥤</span>
-
-    <p>Drinks</p>
+    <h2>
+      Browse Categories
+    </h2>
 
   </div>
 
-  <div class="quick-card"
-       onclick="filterCategory('Snacks')">
+  <div class="category-grid">
 
-    <span>🍟</span>
-
-    <p>Snacks</p>
-
-  </div>
-
-  <div class="quick-card"
-       onclick="filterCategory('Beauty')">
-
-    <span>✨</span>
-
-    <p>Beauty</p>
-
-  </div>
-
-</section>
-
-<!-- =========================
-     CATEGORY BAR
-========================= -->
-
-<section class="category-wrapper">
-
-  <div class="category-bar"
-       id="categoryBar">
-
-    <button class="cat-btn active"
+    <button class="filter-card active"
             onclick="filterCategory('all')">
 
-      All
+      All Products
 
     </button>
 
-    <button class="cat-btn"
+    <button class="filter-card"
             onclick="filterCategory('Grocery')">
 
       Grocery
 
     </button>
 
-    <button class="cat-btn"
+    <button class="filter-card"
             onclick="filterCategory('Drinks')">
 
       Drinks
 
     </button>
 
-    <button class="cat-btn"
+    <button class="filter-card"
             onclick="filterCategory('Snacks')">
 
       Snacks
 
     </button>
 
-    <button class="cat-btn"
+    <button class="filter-card"
             onclick="filterCategory('Beauty')">
 
       Beauty
@@ -154,27 +106,7 @@
 </section>
 
 <!-- =========================
-     PRODUCTS TOP
-========================= -->
-
-<section class="products-top">
-
-  <div>
-
-    <h2>
-      Popular Products
-    </h2>
-
-    <p>
-      Freshora premium collection
-    </p>
-
-  </div>
-
-</section>
-
-<!-- =========================
-     PRODUCTS GRID
+     PRODUCTS
 ========================= -->
 
 <main id="products"></main>
@@ -185,8 +117,6 @@
 
 <div class="floating-cart"
      onclick="toggleCart()">
-
-  🛒
 
   <span id="floatingCartCount">
     0
@@ -279,8 +209,15 @@
 
         <h2 id="modalName"></h2>
 
-        <div class="rating">
-          ⭐⭐⭐⭐⭐
+        <!-- PRODUCT RATING -->
+        <div class="product-rating">
+
+          <span>★★★★★</span>
+
+          <small>
+            4.9 Rating
+          </small>
+
         </div>
 
       </div>
@@ -298,6 +235,44 @@
   </div>
 
 </div>
+
+<!-- =========================
+     SOCIAL MEDIA
+========================= -->
+
+<footer class="footer">
+
+  <h3>
+    Follow Freshora
+  </h3>
+
+  <div class="social-links">
+
+    <a href="#">
+      Facebook
+    </a>
+
+    <a href="#">
+      Instagram
+    </a>
+
+    <a href="#">
+      TikTok
+    </a>
+
+    <a href="#">
+      WhatsApp
+    </a>
+
+  </div>
+
+  <p class="footer-copy">
+
+    © 2026 Freshora Store
+
+  </p>
+
+</footer>
 
 <!-- =========================
      OVERLAY
