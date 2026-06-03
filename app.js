@@ -20,6 +20,7 @@ function saveCart() {
   );
 
   updateCartCount();
+
   renderCart();
 }
 
@@ -33,11 +34,11 @@ function updateCartCount() {
     0
   );
 
-  const el =
+  const top =
     document.getElementById("cartCount");
 
-  if (el) {
-    el.innerText = totalQty;
+  if (top) {
+    top.innerText = totalQty;
   }
 
   const floating =
@@ -70,6 +71,7 @@ function showToast(text) {
     document.createElement("div");
 
   toast.className = "toast";
+
   toast.innerText = text;
 
   document.body.appendChild(toast);
@@ -86,7 +88,7 @@ function showToast(text) {
       toast.remove();
     }, 300);
 
-  }, 2000);
+  }, 2200);
 }
 
 /* =========================
@@ -131,7 +133,7 @@ window.removeItem = function (index) {
 
   saveCart();
 
-  showToast("Removed item ❌");
+  showToast("Item removed ❌");
 };
 
 /* =========================
@@ -152,6 +154,7 @@ window.decreaseQty = function (index) {
   cart[index].qty--;
 
   if (cart[index].qty <= 0) {
+
     cart.splice(index, 1);
   }
 
@@ -190,9 +193,9 @@ function renderCart() {
   if (cart.length === 0) {
 
     cartItems.innerHTML = `
-      <p class="empty">
-        Cart is empty
-      </p>
+      <div class="empty">
+        🛒 Your cart is empty
+      </div>
     `;
 
     cartTotal.innerText = "Total: Rs 0";
@@ -205,7 +208,8 @@ function renderCart() {
     total += item.price * item.qty;
 
     cartItems.innerHTML += `
-      <div class="cart-item">
+
+      <div class="cart-item fade-in">
 
         <img src="${item.image}">
 
@@ -396,6 +400,42 @@ document.addEventListener("input", (e) => {
 });
 
 /* =========================
+   CATEGORY BUTTONS
+========================= */
+document.querySelectorAll(".cat-btn")
+  .forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+      document.querySelectorAll(".cat-btn")
+        .forEach(b => b.classList.remove("active"));
+
+      btn.classList.add("active");
+
+      const category =
+        btn.innerText.toLowerCase();
+
+      if (category === "all") {
+
+        renderProducts(allProducts);
+
+      } else {
+
+        const filtered =
+          allProducts.filter(item => {
+
+            return (
+              item.category &&
+              item.category.toLowerCase() === category
+            );
+          });
+
+        renderProducts(filtered);
+      }
+    });
+  });
+
+/* =========================
    RENDER PRODUCTS
 ========================= */
 function renderProducts(products) {
@@ -405,9 +445,9 @@ function renderProducts(products) {
   if (products.length === 0) {
 
     productsDiv.innerHTML = `
-      <p class="empty">
+      <div class="empty">
         No products found
-      </p>
+      </div>
     `;
 
     return;
@@ -424,6 +464,10 @@ function renderProducts(products) {
 
       <div class="card fade-in">
 
+        <div class="sale-badge">
+          SALE
+        </div>
+
         <img
           src="${product.image}"
           loading="lazy"
@@ -434,6 +478,10 @@ function renderProducts(products) {
           <h3>${product.name}</h3>
 
           <p>Rs ${product.price}</p>
+
+          <div class="stock">
+            In Stock
+          </div>
 
           <div class="rating">
             ⭐⭐⭐⭐⭐
@@ -485,6 +533,15 @@ function renderProducts(products) {
 /* =========================
    LOAD PRODUCTS
 ========================= */
+productsDiv.innerHTML = `
+
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+
+`;
+
 onSnapshot(
   collection(db, "products"),
   (snap) => {
@@ -508,7 +565,7 @@ onSnapshot(
 );
 
 /* =========================
-   CLOSE MODAL OUTSIDE CLICK
+   CLOSE MODAL
 ========================= */
 window.onclick = function (e) {
 
@@ -529,4 +586,6 @@ window.addEventListener("load", () => {
   updateCartCount();
 
   renderCart();
+
+  showToast("Freshora Loaded 🚀");
 });
