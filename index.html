@@ -17,10 +17,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 <body>
 
-<!-- =========================
-     TOP SOCIAL BAR
-========================= -->
-
+<!-- TOP SOCIAL BAR -->
 <div class="top-social-bar">
 
   <div class="social-links">
@@ -45,176 +42,119 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 </div>
 
-<!-- =========================
-     HEADER
-========================= -->
-
+<!-- HEADER -->
 <header class="header">
 
-  <!-- LOGO -->
-  <div class="logo"
-       ondblclick="window.location='login.html'">
-
+  <div class="logo" ondblclick="window.location='login.html'">
     Freshora
-
   </div>
 
-  <!-- SEARCH -->
   <div class="header-center">
 
     <div class="search-box">
 
       <i class="fa-solid fa-magnifying-glass"></i>
 
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Search products..."
-      >
+      <input type="text" id="searchInput" placeholder="Search products...">
 
     </div>
 
   </div>
 
-  <!-- DARK MODE -->
   <div class="header-right">
 
-    <button onclick="toggleDarkMode()"
-            class="icon-btn">
-
+    <button onclick="toggleDarkMode()" class="icon-btn">
       🌙
-
     </button>
 
   </div>
 
 </header>
 
-<!-- =========================
-     FILTER BAR
-========================= -->
-
+<!-- FILTER -->
 <section class="advanced-search">
 
   <div class="filter-grid">
 
-    <!-- CATEGORY -->
-    <select id="categoryFilter"
-            onchange="filterCategory(this.value)">
-
+    <select id="categoryFilter" onchange="filterCategory(this.value)">
       <option value="all">All Categories</option>
       <option value="Grocery">Grocery</option>
       <option value="Drinks">Drinks</option>
       <option value="Snacks">Snacks</option>
       <option value="Beauty">Beauty</option>
-
     </select>
 
-    <!-- PRICE -->
     <select id="priceFilter">
-
       <option value="all">All Prices</option>
       <option value="500">Under Rs 500</option>
       <option value="1000">Under Rs 1000</option>
       <option value="2000">Under Rs 2000</option>
-
     </select>
 
-    <!-- DISCOUNT -->
     <select id="discountFilter">
-
       <option value="all">All Discounts</option>
       <option value="10">10%+ Discount</option>
       <option value="20">20%+ Discount</option>
       <option value="30">30%+ Discount</option>
-
     </select>
 
   </div>
 
 </section>
 
-<!-- =========================
-     PRODUCTS
-========================= -->
+<!-- PRODUCTS -->
+<section id="products" class="products-grid"></section>
 
-<section id="products"
-         class="products-grid">
-
-</section>
-
-<!-- =========================
-     FLOATING CART
-========================= -->
-
-<div class="floating-cart"
-     onclick="toggleCart()">
-
+<!-- FLOATING CART -->
+<div class="floating-cart" onclick="toggleCart()">
   <i class="fa-solid fa-cart-shopping"></i>
-
-  <span id="floatingCartCount">
-    0
-  </span>
-
+  <span id="floatingCartCount">0</span>
 </div>
 
-<!-- =========================
-     CART DRAWER
-========================= -->
-
-<div id="cartDrawer"
-     class="cart-drawer">
+<!-- CART DRAWER -->
+<div id="cartDrawer" class="cart-drawer">
 
   <div class="cart-header">
-
     <h2>Your Cart</h2>
-
-    <button onclick="toggleCart()">
-      ✕
-    </button>
-
+    <button onclick="toggleCart()">✕</button>
   </div>
 
   <div id="cartItems"></div>
 
+  <!-- =========================
+       CUSTOMER FORM (ADDED HERE)
+  ========================= -->
+  <div class="checkout-form">
+
+    <input type="text" id="cusName" placeholder="Your Name">
+    <input type="text" id="cusPhone" placeholder="Phone Number">
+    <input type="text" id="cusAddress" placeholder="Delivery Address">
+
+  </div>
+
   <div class="sticky-checkout">
 
-    <h3 id="cartTotal">
-      Total: Rs 0
-    </h3>
+    <h3 id="cartTotal">Total: Rs 0</h3>
 
-    <button class="checkout-btn"
-            onclick="checkout()">
-
+    <button class="checkout-btn" onclick="checkout()">
       Checkout
-
     </button>
 
-    <button class="clear-btn"
-            onclick="clearCart()">
-
+    <button class="clear-btn" onclick="clearCart()">
       Clear Cart
-
     </button>
 
   </div>
 
 </div>
 
-<!-- =========================
-     PRODUCT MODAL
-========================= -->
-
-<div id="productModal"
-     class="modal">
+<!-- PRODUCT MODAL -->
+<div id="productModal" class="modal">
 
   <div class="modal-content">
 
-    <span class="close"
-          onclick="closeModal()">
-
+    <span class="close" onclick="closeModal()">
       &times;
-
     </span>
 
     <img id="modalImage">
@@ -222,20 +162,14 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     <div class="modal-details">
 
       <h2 id="modalName"></h2>
-
       <p id="modalPrice"></p>
 
-      <!-- RATING -->
       <div class="rating-box">
-
-        <div class="rating-stars">
-          ⭐⭐⭐⭐⭐
-        </div>
+        <div class="rating-stars">⭐⭐⭐⭐⭐</div>
 
         <button class="rate-btn">
           Add Rating
         </button>
-
       </div>
 
       <button id="modalAddBtn">
@@ -248,8 +182,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 </div>
 
-<script type="module"
-        src="app.js"></script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
