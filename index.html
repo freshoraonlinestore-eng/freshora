@@ -4,24 +4,14 @@
 <head>
 
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Freshora Store</title>
 
+<link rel="stylesheet" href="style.css">
+
 <link rel="stylesheet"
-      href="style.css">
-
-<link rel="preconnect"
-      href="https://fonts.googleapis.com">
-
-<link rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet">
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
 </head>
 
@@ -40,66 +30,70 @@
 
   </div>
 
-  <div class="header-search">
+  <div class="header-right">
 
-    <input id="searchInput"
-           type="text"
-           placeholder="Search products...">
+    <button onclick="toggleDarkMode()"
+            class="icon-btn">
+
+      <i class="fa-solid fa-moon"></i>
+
+    </button>
 
   </div>
 
 </header>
 
 <!-- =========================
-     FILTER / CATEGORY
+     ADVANCED SEARCH
 ========================= -->
 
-<section class="filter-section">
+<section class="advanced-search">
 
-  <div class="filter-top">
+  <div class="search-box">
 
-    <h2>
-      Browse Categories
-    </h2>
+    <i class="fa-solid fa-magnifying-glass"></i>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search products..."
+    >
 
   </div>
 
-  <div class="category-grid">
+  <div class="filter-grid">
 
-    <button class="filter-card active"
-            onclick="filterCategory('all')">
+    <!-- CATEGORY -->
+    <select id="categoryFilter"
+            onchange="filterCategory(this.value)">
 
-      All Products
+      <option value="all">All Categories</option>
+      <option value="Grocery">Grocery</option>
+      <option value="Drinks">Drinks</option>
+      <option value="Snacks">Snacks</option>
+      <option value="Beauty">Beauty</option>
 
-    </button>
+    </select>
 
-    <button class="filter-card"
-            onclick="filterCategory('Grocery')">
+    <!-- PRICE -->
+    <select id="priceFilter">
 
-      Grocery
+      <option value="all">All Prices</option>
+      <option value="500">Under Rs 500</option>
+      <option value="1000">Under Rs 1000</option>
+      <option value="2000">Under Rs 2000</option>
 
-    </button>
+    </select>
 
-    <button class="filter-card"
-            onclick="filterCategory('Drinks')">
+    <!-- DISCOUNT -->
+    <select id="discountFilter">
 
-      Drinks
+      <option value="all">All Discounts</option>
+      <option value="10">10%+ Discount</option>
+      <option value="20">20%+ Discount</option>
+      <option value="30">30%+ Discount</option>
 
-    </button>
-
-    <button class="filter-card"
-            onclick="filterCategory('Snacks')">
-
-      Snacks
-
-    </button>
-
-    <button class="filter-card"
-            onclick="filterCategory('Beauty')">
-
-      Beauty
-
-    </button>
+    </select>
 
   </div>
 
@@ -109,7 +103,10 @@
      PRODUCTS
 ========================= -->
 
-<main id="products"></main>
+<section id="products"
+         class="products-grid">
+
+</section>
 
 <!-- =========================
      FLOATING CART
@@ -117,6 +114,8 @@
 
 <div class="floating-cart"
      onclick="toggleCart()">
+
+  <i class="fa-solid fa-cart-shopping"></i>
 
   <span id="floatingCartCount">
     0
@@ -133,22 +132,10 @@
 
   <div class="cart-header">
 
-    <div>
-
-      <h2>
-        Shopping Cart
-      </h2>
-
-      <p>
-        Your selected products
-      </p>
-
-    </div>
+    <h2>Your Cart</h2>
 
     <button onclick="toggleCart()">
-
       ✕
-
     </button>
 
   </div>
@@ -157,24 +144,18 @@
 
   <div class="sticky-checkout">
 
-    <div class="checkout-total-box">
-
-      <span>Total</span>
-
-      <h3 id="cartTotal">
-        Rs 0
-      </h3>
-
-    </div>
+    <h3 id="cartTotal">
+      Total: Rs 0
+    </h3>
 
     <button class="checkout-btn"
             onclick="checkout()">
 
-      Checkout via WhatsApp
+      Checkout
 
     </button>
 
-    <button class="clear-cart-btn"
+    <button class="clear-btn"
             onclick="clearCart()">
 
       Clear Cart
@@ -197,7 +178,7 @@
     <span class="close"
           onclick="closeModal()">
 
-      ×
+      &times;
 
     </span>
 
@@ -205,29 +186,25 @@
 
     <div class="modal-details">
 
-      <div class="modal-top">
-
-        <h2 id="modalName"></h2>
-
-        <!-- PRODUCT RATING -->
-        <div class="product-rating">
-
-          <span>★★★★★</span>
-
-          <small>
-            4.9 Rating
-          </small>
-
-        </div>
-
-      </div>
+      <h2 id="modalName"></h2>
 
       <p id="modalPrice"></p>
 
+      <!-- RATING -->
+      <div class="rating-box">
+
+        <div class="rating-stars">
+          ⭐⭐⭐⭐⭐
+        </div>
+
+        <button class="rate-btn">
+          Add Rating
+        </button>
+
+      </div>
+
       <button id="modalAddBtn">
-
         Add to Cart
-
       </button>
 
     </div>
@@ -240,52 +217,37 @@
      SOCIAL MEDIA
 ========================= -->
 
-<footer class="footer">
+<footer class="social-footer">
 
-  <h3>
-    Follow Freshora
-  </h3>
+  <a href="https://facebook.com"
+     target="_blank">
 
-  <div class="social-links">
+    <i class="fab fa-facebook-f"></i>
 
-    <a href="#">
-      Facebook
-    </a>
+  </a>
 
-    <a href="#">
-      Instagram
-    </a>
+  <a href="https://instagram.com"
+     target="_blank">
 
-    <a href="#">
-      TikTok
-    </a>
+    <i class="fab fa-instagram"></i>
 
-    <a href="#">
-      WhatsApp
-    </a>
+  </a>
 
-  </div>
+  <a href="https://tiktok.com"
+     target="_blank">
 
-  <p class="footer-copy">
+    <i class="fab fa-tiktok"></i>
 
-    © 2026 Freshora Store
+  </a>
 
-  </p>
+  <a href="https://wa.me/94752425790"
+     target="_blank">
+
+    <i class="fab fa-whatsapp"></i>
+
+  </a>
 
 </footer>
-
-<!-- =========================
-     OVERLAY
-========================= -->
-
-<div class="overlay"
-     onclick="toggleCart()">
-
-</div>
-
-<!-- =========================
-     SCRIPT
-========================= -->
 
 <script type="module"
         src="app.js"></script>
