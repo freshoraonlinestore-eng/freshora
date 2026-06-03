@@ -15,11 +15,6 @@
 <body class="admin-body">
 
 <!-- =========================
-     PROTECTION SCRIPT (IMPORTANT)
-========================= -->
-<script type="module" src="protected.js"></script>
-
-<!-- =========================
      TOP BAR
 ========================= -->
 <header class="admin-header">
@@ -32,13 +27,7 @@
       Logout
     </button>
 
-    <a href="index.html">
-      Store
-    </a>
-
-    <a href="orders.html">
-      Orders
-    </a>
+    <a href="index.html">Store</a>
 
   </div>
 
@@ -49,17 +38,17 @@
 ========================= -->
 <section class="analytics">
 
-  <div class="stat-card">
+  <div class="card stat-card">
     <h3>Total Products</h3>
     <p id="totalProducts">0</p>
   </div>
 
-  <div class="stat-card">
+  <div class="card stat-card">
     <h3>Total Orders</h3>
     <p id="totalOrders">0</p>
   </div>
 
-  <div class="stat-card">
+  <div class="card stat-card">
     <h3>Total Revenue</h3>
     <p id="totalRevenue">Rs 0</p>
   </div>
@@ -76,17 +65,29 @@
   <input id="name" placeholder="Product Name">
   <input id="price" placeholder="Price">
 
-  <!-- 🔥 UPGRADED IMAGE UPLOAD -->
+  <!-- 🔥 CLOUDINARY IMAGE UPLOAD -->
   <input type="file" id="imageFile" accept="image/*">
+  <p id="uploadStatus"></p>
 
-  <input id="category" placeholder="Category">
+  <button type="button"
+          onclick="document.getElementById('imageFile').value=''"
+          class="clear-btn">
+    Clear Image
+  </button>
+
+  <input id="category" placeholder="Category (Drinks, Snacks...)">
   <input id="discount" placeholder="Discount %">
-  <input id="stock" placeholder="Stock">
+  <input id="stock" placeholder="Stock (In Stock / Out of Stock)">
 
-  <textarea id="description" placeholder="Description"></textarea>
+  <textarea id="description" placeholder="Product Description"></textarea>
 
-  <button onclick="uploadAndSaveProduct()" id="submitBtn">
-    Upload & Add Product
+  <button onclick="addOrUpdateProduct()" id="submitBtn">
+    Add Product
+  </button>
+
+  <!-- CLEAR ALL -->
+  <button type="button" onclick="clearForm()" class="clear-btn">
+    Clear All Fields
   </button>
 
 </section>
@@ -97,10 +98,8 @@
 <section id="list" class="product-list"></section>
 
 <!-- =========================
-     SCRIPTS
+     SCRIPT
 ========================= -->
-<script type="module" src="firebase.js"></script>
-<script type="module" src="analytics.js"></script>
 <script type="module" src="admin.js"></script>
 
 </body>
