@@ -4,34 +4,42 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>Freshora Store</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet"
+      href="style.css">
 
 </head>
 
 <body>
 
-<!-- HEADER -->
+<!-- =========================
+     HEADER
+========================= -->
 <header class="header">
 
   <div class="logo">
     Freshora
   </div>
 
+  <!-- SEARCH -->
   <input
     id="searchInput"
     placeholder="Search products..."
   >
 
+  <!-- ACTIONS -->
   <div class="header-actions">
 
+    <!-- DARK MODE -->
     <button onclick="toggleDarkMode()">
       🌙
     </button>
 
+    <!-- CART -->
     <a href="javascript:void(0)"
        onclick="toggleCart()">
 
@@ -39,6 +47,7 @@
 
     </a>
 
+    <!-- ADMIN -->
     <a href="login.html">
       Admin
     </a>
@@ -47,10 +56,49 @@
 
 </header>
 
-<!-- PRODUCTS -->
-<div id="products"></div>
+<!-- =========================
+     CATEGORY FILTER
+========================= -->
+<div class="category-bar">
 
-<!-- FLOATING CART -->
+  <button class="cat-btn active">
+    All
+  </button>
+
+  <button class="cat-btn">
+    Grocery
+  </button>
+
+  <button class="cat-btn">
+    Drinks
+  </button>
+
+  <button class="cat-btn">
+    Snacks
+  </button>
+
+  <button class="cat-btn">
+    Beauty
+  </button>
+
+</div>
+
+<!-- =========================
+     PRODUCTS
+========================= -->
+<div id="products">
+
+  <!-- SKELETON LOADING -->
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+
+</div>
+
+<!-- =========================
+     FLOATING CART
+========================= -->
 <div class="floating-cart"
      onclick="toggleCart()">
 
@@ -58,13 +106,18 @@
 
 </div>
 
-<!-- CART DRAWER -->
+<!-- =========================
+     CART DRAWER
+========================= -->
 <div id="cartDrawer"
      class="cart-drawer">
 
+  <!-- HEADER -->
   <div class="cart-header">
 
-    <h2>Your Cart</h2>
+    <h2>
+      Your Cart
+    </h2>
 
     <button onclick="toggleCart()">
       ✕
@@ -72,8 +125,10 @@
 
   </div>
 
+  <!-- CART ITEMS -->
   <div id="cartItems"></div>
 
+  <!-- CHECKOUT -->
   <div class="sticky-checkout">
 
     <h3 id="cartTotal">
@@ -96,7 +151,9 @@
 
 </div>
 
-<!-- PRODUCT MODAL -->
+<!-- =========================
+     PRODUCT MODAL
+========================= -->
 <div id="productModal"
      class="modal">
 
@@ -115,6 +172,16 @@
 
     <p id="modalPrice"></p>
 
+    <!-- RATING -->
+    <div class="rating">
+      ⭐⭐⭐⭐⭐
+    </div>
+
+    <!-- STOCK -->
+    <div class="stock">
+      In Stock
+    </div>
+
     <button id="modalAddBtn">
       Add to Cart
     </button>
@@ -123,6 +190,31 @@
 
 </div>
 
+<!-- =========================
+     MOBILE NAVIGATION
+========================= -->
+<div class="mobile-nav">
+
+  <a href="#">
+    🏠 Home
+  </a>
+
+  <a href="javascript:void(0)"
+     onclick="toggleCart()">
+
+    🛒 Cart
+
+  </a>
+
+  <a href="login.html">
+    ⚙ Admin
+  </a>
+
+</div>
+
+<!-- =========================
+     APP SCRIPT
+========================= -->
 <script type="module"
         src="app.js"></script>
 
