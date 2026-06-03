@@ -20,10 +20,14 @@ function saveCart() {
    UPDATE CART COUNT
 ========================= */
 function updateCartCount() {
+
+  const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+
   const el = document.getElementById("cartCount");
-  if (el) {
-    el.innerText = cart.reduce((sum, i) => sum + i.qty, 0);
-  }
+  if (el) el.innerText = totalQty;
+
+  const floating = document.getElementById("floatingCartCount");
+  if (floating) floating.innerText = totalQty;
 }
 
 /* =========================
@@ -31,7 +35,11 @@ function updateCartCount() {
 ========================= */
 window.toggleCart = function () {
   const drawer = document.getElementById("cartDrawer");
+
+  if (!drawer) return;
+
   drawer.classList.toggle("open");
+
   renderCart();
 };
 
@@ -45,6 +53,7 @@ window.addToCart = function (id, name, price, image) {
   if (existing) {
     existing.qty += 1;
   } else {
+
     cart.push({
       id,
       name,
@@ -52,9 +61,11 @@ window.addToCart = function (id, name, price, image) {
       image,
       qty: 1
     });
+
   }
 
   saveCart();
+
   alert("Added to cart 🛒");
 };
 
@@ -78,6 +89,7 @@ window.increaseQty = function (index) {
    QTY -
 ========================= */
 window.decreaseQty = function (index) {
+
   cart[index].qty--;
 
   if (cart[index].qty <= 0) {
@@ -99,6 +111,7 @@ window.clearCart = function () {
    RENDER CART
 ========================= */
 function renderCart() {
+
   const cartItems = document.getElementById("cartItems");
   const cartTotal = document.getElementById("cartTotal");
 
@@ -123,9 +136,17 @@ function renderCart() {
 
         <p>Qty: ${item.qty}</p>
 
-        <button onclick="increaseQty(${index})">+</button>
-        <button onclick="decreaseQty(${index})">-</button>
-        <button onclick="removeItem(${index})">Remove</button>
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+
+          <button onclick="increaseQty(${index})">+</button>
+
+          <button onclick="decreaseQty(${index})">-</button>
+
+          <button onclick="removeItem(${index})">
+            Remove
+          </button>
+
+        </div>
 
       </div>
     `;
@@ -140,17 +161,73 @@ function renderCart() {
 window.checkout = function () {
 
   let msg = "🛒 Order Details:%0A%0A";
+
   let total = 0;
 
   cart.forEach(item => {
+
     msg += `${item.name} x${item.qty} = Rs ${item.price * item.qty}%0A`;
+
     total += item.price * item.qty;
   });
 
   msg += `%0A💰 Total: Rs ${total}`;
 
-  window.open("https://wa.me/94752425790?text=" + msg);
+  window.open(
+    "https://wa.me/94752425790?text=" + msg
+  );
 };
+
+/* =========================
+   PRODUCT POPUP MODAL
+========================= */
+window.openModal = function (id, name, price, image) {
+
+  const modal = document.getElementById("productModal");
+
+  if (!modal) return;
+
+  modal.style.display = "block";
+
+  document.getElementById("modalImage").src = image;
+  document.getElementById("modalName").innerText = name;
+  document.getElementById("modalPrice").innerText = "Rs " + price;
+
+  document.getElementById("modalAddBtn").onclick = () => {
+    addToCart(id, name, price, image);
+  };
+};
+
+/* =========================
+   CLOSE MODAL
+========================= */
+window.closeModal = function () {
+
+  const modal = document.getElementById("productModal");
+
+  if (!modal) return;
+
+  modal.style.display = "none";
+};
+
+/* =========================
+   SEARCH FILTER
+========================= */
+document.addEventListener("input", (e) => {
+
+  if (e.target.id === "searchInput") {
+
+    let value = e.target.value.toLowerCase();
+
+    document.querySelectorAll(".card").forEach(card => {
+
+      card.style.display =
+        card.innerText.toLowerCase().includes(value)
+          ? "flex"
+          : "none";
+    });
+  }
+});
 
 /* =========================
    LOAD PRODUCTS
@@ -159,7 +236,19 @@ onSnapshot(collection(db, "products"), (snap) => {
 
   productsDiv.innerHTML = "";
 
+  if (snap.empty) {
+
+    productsDiv.innerHTML = `
+      <p class="empty">
+        No products found
+      </p>
+    `;
+
+    return;
+  }
+
   snap.forEach((docItem) => {
+
     const p = docItem.data();
 
     productsDiv.innerHTML += `
@@ -171,12 +260,26 @@ onSnapshot(collection(db, "products"), (snap) => {
 
         <p>Rs ${p.price}</p>
 
-        <button onclick="addToCart('${docItem.id}','${p.name}','${p.price}','${p.image}')">
-          Add to Cart
+        <button onclick="openModal(
+          '${docItem.id}',
+          '${p.name}',
+          '${p.price}',
+          '${p.image}'
+        )">
+
+          View Product
+
         </button>
 
-        <button onclick="checkout()">
-          Buy Now
+        <button onclick="addToCart(
+          '${docItem.id}',
+          '${p.name}',
+          '${p.price}',
+          '${p.image}'
+        )">
+
+          Add to Cart
+
         </button>
 
       </div>
@@ -190,6 +293,8 @@ onSnapshot(collection(db, "products"), (snap) => {
    INIT
 ========================= */
 window.addEventListener("load", () => {
+
   updateCartCount();
+
   renderCart();
 });
