@@ -11,11 +11,13 @@ import {
 
 const productsDiv = document.getElementById("products");
 
+/* =========================
+   STATE
+========================= */
+
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-
 let allProducts = [];
-let currentCategory = "all";
 
 /* =========================
    TOAST
@@ -37,7 +39,7 @@ function showToast(text){
 }
 
 /* =========================
-   CART
+   CART SYSTEM
 ========================= */
 
 function saveCart(){
@@ -49,8 +51,8 @@ function saveCart(){
 function updateCartCount(){
   const total = cart.reduce((s,i)=>s+i.qty,0);
 
-  const c1 = document.getElementById("floatingCartCount");
-  if(c1) c1.innerText = total;
+  const el = document.getElementById("floatingCartCount");
+  if(el) el.innerText = total;
 }
 
 /* =========================
@@ -87,7 +89,7 @@ window.addToCart = function(id,name,price,image){
   else cart.push({id,name,price:Number(price),image,qty:1});
 
   saveCart();
-  showToast("Added to cart 🛒");
+  showToast("Added 🛒");
 };
 
 window.removeItem = function(index){
@@ -112,7 +114,7 @@ window.clearCart = function(){
 };
 
 /* =========================
-   CART DRAWER
+   CART DRAWER (FIX SAFE)
 ========================= */
 
 window.toggleCart = function(){
@@ -125,9 +127,11 @@ function renderCart(){
   const box = document.getElementById("cartItems");
   const totalBox = document.getElementById("cartTotal");
 
+  if(!box || !totalBox) return;
+
   box.innerHTML = "";
 
-  if(cart.length===0){
+  if(cart.length === 0){
     box.innerHTML = `<p class="empty">Cart empty</p>`;
     totalBox.innerText = "Total: Rs 0";
     return;
@@ -161,32 +165,38 @@ function renderCart(){
 }
 
 /* =========================
-   RATING SYSTEM (STEP 7)
+   RATING SYSTEM (FIXED)
 ========================= */
 
 window.setRating = async function(productId,rating){
 
-  await addDoc(collection(db,"ratings"),{
-    productId,
-    rating,
-    createdAt:Date.now()
-  });
+  try{
+    await addDoc(collection(db,"ratings"),{
+      productId,
+      rating,
+      createdAt:Date.now()
+    });
 
-  showToast("Thanks for rating ⭐");
+    showToast("Thanks for rating ⭐");
+  }catch(err){
+    showToast("Rating failed");
+  }
 };
+
+/* =========================
+   STARS UI
+========================= */
 
 function renderStars(id){
   let html = "";
-
   for(let i=1;i<=5;i++){
     html += `<span class="star" onclick="setRating('${id}',${i})">⭐</span>`;
   }
-
   return html;
 }
 
 /* =========================
-   PRODUCTS RENDER
+   FILTER SYSTEM
 ========================= */
 
 function applyFilters(products){
@@ -197,13 +207,17 @@ function applyFilters(products){
 
   return products.filter(p=>{
 
-    let okCat = category==="all" || p.category===category;
-    let okPrice = price==="all" || Number(p.price)<=Number(price);
-    let okDis = discount==="all" || (p.discount||0)>=Number(discount);
+    const okCat = category==="all" || p.category===category;
+    const okPrice = price==="all" || Number(p.price)<=Number(price);
+    const okDis = discount==="all" || (p.discount||0)>=Number(discount);
 
     return okCat && okPrice && okDis;
   });
 }
+
+/* =========================
+   PRODUCTS RENDER
+========================= */
 
 function renderProducts(products){
 
@@ -225,6 +239,7 @@ function renderProducts(products){
   filtered.forEach(p=>{
 
     const discount = p.discount || 0;
+
     const newPrice = discount
       ? Math.round(p.price - (p.price*discount/100))
       : p.price;
@@ -236,7 +251,10 @@ function renderProducts(products){
 
         ${discount ? `<div class="discount-badge">${discount}% OFF</div>` : ""}
 
-        <button class="wishlist-btn" onclick="toggleWishlist('${p.id}')">${heart}</button>
+        <button class="wishlist-btn"
+          onclick="toggleWishlist('${p.id}')">
+          ${heart}
+        </button>
 
         <img src="${p.image}">
 
