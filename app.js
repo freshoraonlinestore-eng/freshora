@@ -1,18 +1,25 @@
-import { db, collection, onSnapshot } from "./firebase.js";
+import {
+  db,
+  collection,
+  onSnapshot,
+  addDoc
+} from "./firebase.js";
 
-const productsDiv = document.getElementById("products");
+const productsDiv =
+document.getElementById("products");
 
-/* =========================
-   STATE
-========================= */
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+let cart =
+JSON.parse(localStorage.getItem("cart")) || [];
+
 let allProducts = [];
+
+let currentCategory = "all";
 
 /* =========================
    SAVE CART
 ========================= */
-function saveCart() {
+
+function saveCart(){
 
   localStorage.setItem(
     "cart",
@@ -25,97 +32,65 @@ function saveCart() {
 }
 
 /* =========================
-   UPDATE CART COUNT
+   CART COUNT
 ========================= */
-function updateCartCount() {
 
-  const totalQty = cart.reduce(
-    (sum, i) => sum + i.qty,
+function updateCartCount(){
+
+  const total =
+  cart.reduce(
+    (sum, item) => sum + item.qty,
     0
   );
 
-  const top =
-    document.getElementById("cartCount");
+  document.getElementById(
+    "cartCount"
+  ).innerText = total;
 
-  if (top) {
-    top.innerText = totalQty;
-  }
-
-  const floating =
-    document.getElementById("floatingCartCount");
-
-  if (floating) {
-    floating.innerText = totalQty;
-  }
+  document.getElementById(
+    "floatingCartCount"
+  ).innerText = total;
 }
 
 /* =========================
    TOGGLE CART
 ========================= */
-window.toggleCart = function () {
 
-  const drawer =
-    document.getElementById("cartDrawer");
+window.toggleCart = function(){
 
-  drawer.classList.toggle("open");
+  document
+  .getElementById("cartDrawer")
+  .classList.toggle("open");
 
   renderCart();
 };
 
 /* =========================
-   TOAST
-========================= */
-function showToast(text) {
-
-  const toast =
-    document.createElement("div");
-
-  toast.className = "toast";
-
-  toast.innerText = text;
-
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-
-    toast.classList.remove("show");
-
-    setTimeout(() => {
-      toast.remove();
-    }, 300);
-
-  }, 2200);
-}
-
-/* =========================
    ADD TO CART
 ========================= */
-window.addToCart = function (
+
+window.addToCart = function(
   id,
   name,
   price,
   image
-) {
+){
 
-  let existing =
-    cart.find(item => item.id === id);
+  const existing =
+  cart.find(i => i.id === id);
 
-  if (existing) {
+  if(existing){
 
-    existing.qty += 1;
+    existing.qty++;
 
   } else {
 
     cart.push({
       id,
       name,
-      price: Number(price),
+      price:Number(price),
       image,
-      qty: 1
+      qty:1
     });
   }
 
@@ -125,37 +100,34 @@ window.addToCart = function (
 };
 
 /* =========================
-   REMOVE ITEM
+   REMOVE
 ========================= */
-window.removeItem = function (index) {
 
-  cart.splice(index, 1);
+window.removeItem = function(index){
+
+  cart.splice(index,1);
 
   saveCart();
-
-  showToast("Item removed ❌");
 };
 
 /* =========================
-   QTY +
+   QTY
 ========================= */
-window.increaseQty = function (index) {
+
+window.increaseQty = function(index){
 
   cart[index].qty++;
 
   saveCart();
 };
 
-/* =========================
-   QTY -
-========================= */
-window.decreaseQty = function (index) {
+window.decreaseQty = function(index){
 
   cart[index].qty--;
 
-  if (cart[index].qty <= 0) {
+  if(cart[index].qty <= 0){
 
-    cart.splice(index, 1);
+    cart.splice(index,1);
   }
 
   saveCart();
@@ -164,52 +136,51 @@ window.decreaseQty = function (index) {
 /* =========================
    CLEAR CART
 ========================= */
-window.clearCart = function () {
+
+window.clearCart = function(){
 
   cart = [];
 
   saveCart();
-
-  showToast("Cart cleared");
 };
 
 /* =========================
    RENDER CART
 ========================= */
-function renderCart() {
+
+function renderCart(){
 
   const cartItems =
-    document.getElementById("cartItems");
+  document.getElementById("cartItems");
 
   const cartTotal =
-    document.getElementById("cartTotal");
-
-  if (!cartItems) return;
+  document.getElementById("cartTotal");
 
   cartItems.innerHTML = "";
 
   let total = 0;
 
-  if (cart.length === 0) {
+  if(cart.length === 0){
 
     cartItems.innerHTML = `
-      <div class="empty">
-        🛒 Your cart is empty
-      </div>
+      <p class="empty">
+        Cart is empty
+      </p>
     `;
 
-    cartTotal.innerText = "Total: Rs 0";
+    cartTotal.innerText =
+    "Total: Rs 0";
 
     return;
   }
 
-  cart.forEach((item, index) => {
+  cart.forEach((item,index)=>{
 
     total += item.price * item.qty;
 
     cartItems.innerHTML += `
 
-      <div class="cart-item fade-in">
+      <div class="cart-item">
 
         <img src="${item.image}">
 
@@ -248,50 +219,66 @@ function renderCart() {
   });
 
   cartTotal.innerText =
-    "Total: Rs " + total;
+  "Total: Rs " + total;
 }
 
 /* =========================
    CHECKOUT
 ========================= */
-window.checkout = function () {
 
-  if (cart.length === 0) {
+window.checkout = async function(){
 
-    showToast("Cart is empty");
+  if(cart.length === 0){
+
+    showToast("Cart Empty");
 
     return;
   }
 
-  let msg =
-    "🛒 Freshora Order Details:%0A%0A";
-
   let total = 0;
 
   cart.forEach(item => {
-
-    msg +=
-      `${item.name} x${item.qty} = Rs ${item.price * item.qty}%0A`;
-
     total += item.price * item.qty;
   });
 
-  msg += `%0A💰 Total: Rs ${total}`;
+  /* SAVE ORDER */
+  await addDoc(
+    collection(db,"orders"),
+    {
+      items:cart,
+      total,
+      createdAt:Date.now()
+    }
+  );
+
+  let msg =
+  "🛒 Freshora Order:%0A%0A";
+
+  cart.forEach(item=>{
+
+    msg +=
+    `${item.name} x${item.qty}%0A`;
+  });
+
+  msg += `%0ATotal: Rs ${total}`;
 
   window.open(
     "https://wa.me/94752425790?text=" + msg
   );
+
+  showToast("Order Sent ✅");
 };
 
 /* =========================
    MODAL
 ========================= */
-window.openModal = function (
+
+window.openModal = function(
   id,
   name,
   price,
   image
-) {
+){
 
   document.getElementById(
     "productModal"
@@ -322,7 +309,7 @@ window.openModal = function (
   };
 };
 
-window.closeModal = function () {
+window.closeModal = function(){
 
   document.getElementById(
     "productModal"
@@ -332,7 +319,8 @@ window.closeModal = function () {
 /* =========================
    DARK MODE
 ========================= */
-window.toggleDarkMode = function () {
+
+window.toggleDarkMode = function(){
 
   document.body.classList.toggle("dark");
 
@@ -342,37 +330,20 @@ window.toggleDarkMode = function () {
   );
 };
 
-if (
+if(
   localStorage.getItem("darkMode")
   === "true"
-) {
-
+){
   document.body.classList.add("dark");
 }
 
 /* =========================
-   WISHLIST
+   CATEGORY FILTER
 ========================= */
-window.toggleWishlist = function (id) {
 
-  if (wishlist.includes(id)) {
+window.filterCategory = function(category){
 
-    wishlist =
-      wishlist.filter(item => item !== id);
-
-    showToast("Removed from wishlist");
-
-  } else {
-
-    wishlist.push(id);
-
-    showToast("Added to wishlist ❤️");
-  }
-
-  localStorage.setItem(
-    "wishlist",
-    JSON.stringify(wishlist)
-  );
+  currentCategory = category;
 
   renderProducts(allProducts);
 };
@@ -380,92 +351,63 @@ window.toggleWishlist = function (id) {
 /* =========================
    SEARCH
 ========================= */
-document.addEventListener("input", (e) => {
 
-  if (e.target.id === "searchInput") {
+document.addEventListener("input",(e)=>{
 
-    const value =
-      e.target.value.toLowerCase();
+  if(e.target.id === "searchInput"){
 
-    const filtered =
-      allProducts.filter(item => {
-
-        return item.name
-          .toLowerCase()
-          .includes(value);
-      });
-
-    renderProducts(filtered);
+    renderProducts(allProducts);
   }
 });
 
 /* =========================
-   CATEGORY BUTTONS
+   PRODUCTS
 ========================= */
-document.querySelectorAll(".cat-btn")
-  .forEach(btn => {
 
-    btn.addEventListener("click", () => {
-
-      document.querySelectorAll(".cat-btn")
-        .forEach(b => b.classList.remove("active"));
-
-      btn.classList.add("active");
-
-      const category =
-        btn.innerText.toLowerCase();
-
-      if (category === "all") {
-
-        renderProducts(allProducts);
-
-      } else {
-
-        const filtered =
-          allProducts.filter(item => {
-
-            return (
-              item.category &&
-              item.category.toLowerCase() === category
-            );
-          });
-
-        renderProducts(filtered);
-      }
-    });
-  });
-
-/* =========================
-   RENDER PRODUCTS
-========================= */
-function renderProducts(products) {
+function renderProducts(products){
 
   productsDiv.innerHTML = "";
 
-  if (products.length === 0) {
+  const search =
+  document.getElementById(
+    "searchInput"
+  ).value.toLowerCase();
+
+  const filtered =
+  products.filter(product => {
+
+    const matchSearch =
+    product.name
+    .toLowerCase()
+    .includes(search);
+
+    const matchCategory =
+    currentCategory === "all"
+    ||
+    product.category === currentCategory;
+
+    return matchSearch && matchCategory;
+  });
+
+  if(filtered.length === 0){
 
     productsDiv.innerHTML = `
-      <div class="empty">
+      <p class="empty">
         No products found
-      </div>
+      </p>
     `;
 
     return;
   }
 
-  products.forEach((product) => {
-
-    const heart =
-      wishlist.includes(product.id)
-      ? "❤️"
-      : "🤍";
+  filtered.forEach(product => {
 
     productsDiv.innerHTML += `
 
       <div class="card fade-in">
 
-        <div class="sale-badge">
-          SALE
+        <div class="discount-badge">
+          -20%
         </div>
 
         <img
@@ -479,23 +421,11 @@ function renderProducts(products) {
 
           <p>Rs ${product.price}</p>
 
-          <div class="stock">
-            In Stock
-          </div>
-
           <div class="rating">
             ⭐⭐⭐⭐⭐
           </div>
 
           <div class="card-buttons">
-
-            <button
-              class="wishlist-btn"
-              onclick="toggleWishlist('${product.id}')">
-
-              ${heart}
-
-            </button>
 
             <button onclick="openModal(
               '${product.id}',
@@ -531,30 +461,50 @@ function renderProducts(products) {
 }
 
 /* =========================
+   TOAST
+========================= */
+
+function showToast(text){
+
+  const toast =
+  document.createElement("div");
+
+  toast.className = "toast";
+
+  toast.innerText = text;
+
+  document.body.appendChild(toast);
+
+  setTimeout(()=>{
+    toast.classList.add("show");
+  },100);
+
+  setTimeout(()=>{
+
+    toast.classList.remove("show");
+
+    setTimeout(()=>{
+      toast.remove();
+    },300);
+
+  },2000);
+}
+
+/* =========================
    LOAD PRODUCTS
 ========================= */
-productsDiv.innerHTML = `
-
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-  <div class="skeleton"></div>
-
-`;
 
 onSnapshot(
-  collection(db, "products"),
-  (snap) => {
+  collection(db,"products"),
+  (snap)=>{
 
     allProducts = [];
 
-    snap.forEach((docItem) => {
-
-      const p = docItem.data();
+    snap.forEach(docItem=>{
 
       allProducts.push({
-        id: docItem.id,
-        ...p
+        id:docItem.id,
+        ...docItem.data()
       });
     });
 
@@ -565,27 +515,12 @@ onSnapshot(
 );
 
 /* =========================
-   CLOSE MODAL
-========================= */
-window.onclick = function (e) {
-
-  const modal =
-    document.getElementById("productModal");
-
-  if (e.target === modal) {
-
-    modal.style.display = "none";
-  }
-};
-
-/* =========================
    INIT
 ========================= */
-window.addEventListener("load", () => {
+
+window.addEventListener("load",()=>{
 
   updateCartCount();
 
   renderCart();
-
-  showToast("Freshora Loaded 🚀");
 });
