@@ -10,131 +10,65 @@ import {
 ========================= */
 
 const productsDiv = document.getElementById("products");
-const cartDrawer = document.getElementById("cartDrawer");
-
-/* =========================
-   STATE
-========================= */
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let allProducts = [];
-let currentCategory = "all";
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
+let allProducts = [];
+let currentCategory = "all";
+
 /* =========================
-   SAVE CART
+   TOAST
 ========================= */
 
-function saveCart() {
+function showToast(text){
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerText = text;
+
+  document.body.appendChild(toast);
+
+  setTimeout(()=>toast.classList.add("show"),100);
+
+  setTimeout(()=>{
+    toast.classList.remove("show");
+    setTimeout(()=>toast.remove(),300);
+  },2000);
+}
+
+/* =========================
+   CART
+========================= */
+
+function saveCart(){
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartCount();
   renderCart();
 }
 
-/* =========================
-   SAVE WISHLIST
-========================= */
+function updateCartCount(){
+  const total = cart.reduce((s,i)=>s+i.qty,0);
 
-function saveWishlist() {
-  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  const c1 = document.getElementById("floatingCartCount");
+  if(c1) c1.innerText = total;
 }
-
-/* =========================
-   CART COUNT
-========================= */
-
-function updateCartCount() {
-  const total = cart.reduce((sum, item) => sum + item.qty, 0);
-
-  const cartCount = document.getElementById("cartCount");
-  const floatingCartCount = document.getElementById("floatingCartCount");
-
-  if (cartCount) cartCount.innerText = total;
-  if (floatingCartCount) floatingCartCount.innerText = total;
-}
-
-/* =========================
-   TOGGLE CART
-========================= */
-
-window.toggleCart = function () {
-  cartDrawer.classList.toggle("open");
-  renderCart();
-};
-
-/* =========================
-   ADD TO CART
-========================= */
-
-window.addToCart = function (id, name, price, image) {
-  const existing = cart.find(i => i.id === id);
-
-  if (existing) {
-    existing.qty++;
-  } else {
-    cart.push({
-      id,
-      name,
-      price: Number(price),
-      image,
-      qty: 1
-    });
-  }
-
-  saveCart();
-  showToast("Added to cart 🛒");
-};
-
-/* =========================
-   REMOVE ITEM
-========================= */
-
-window.removeItem = function (index) {
-  cart.splice(index, 1);
-  saveCart();
-  showToast("Item removed");
-};
-
-/* =========================
-   QTY
-========================= */
-
-window.increaseQty = function (index) {
-  cart[index].qty++;
-  saveCart();
-};
-
-window.decreaseQty = function (index) {
-  cart[index].qty--;
-  if (cart[index].qty <= 0) cart.splice(index, 1);
-  saveCart();
-};
-
-/* =========================
-   CLEAR CART
-========================= */
-
-window.clearCart = function () {
-  if (!cart.length) return;
-
-  if (confirm("Clear cart?")) {
-    cart = [];
-    saveCart();
-    showToast("Cart cleared");
-  }
-};
 
 /* =========================
    WISHLIST
 ========================= */
 
-window.toggleWishlist = function (id) {
-  if (wishlist.includes(id)) {
-    wishlist = wishlist.filter(i => i !== id);
-    showToast("Removed from wishlist");
-  } else {
+function saveWishlist(){
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+}
+
+window.toggleWishlist = function(id){
+
+  if(wishlist.includes(id)){
+    wishlist = wishlist.filter(i=>i!==id);
+    showToast("Removed ❤️");
+  }else{
     wishlist.push(id);
-    showToast("Added to wishlist ❤️");
+    showToast("Added ❤️");
   }
 
   saveWishlist();
@@ -142,41 +76,78 @@ window.toggleWishlist = function (id) {
 };
 
 /* =========================
-   RENDER CART
+   CART ACTIONS
 ========================= */
 
-function renderCart() {
-  const cartItems = document.getElementById("cartItems");
-  const cartTotal = document.getElementById("cartTotal");
+window.addToCart = function(id,name,price,image){
 
-  cartItems.innerHTML = "";
-  let total = 0;
+  const ex = cart.find(i=>i.id===id);
 
-  if (!cart.length) {
-    cartItems.innerHTML = `
-      <div class="empty-cart">
-        <h3>🛒 Cart is empty</h3>
-        <p>Add products to continue</p>
-      </div>
-    `;
-    cartTotal.innerText = "Total: Rs 0";
+  if(ex) ex.qty++;
+  else cart.push({id,name,price:Number(price),image,qty:1});
+
+  saveCart();
+  showToast("Added to cart 🛒");
+};
+
+window.removeItem = function(index){
+  cart.splice(index,1);
+  saveCart();
+};
+
+window.increaseQty = function(i){
+  cart[i].qty++;
+  saveCart();
+};
+
+window.decreaseQty = function(i){
+  cart[i].qty--;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  saveCart();
+};
+
+window.clearCart = function(){
+  cart = [];
+  saveCart();
+};
+
+/* =========================
+   CART DRAWER
+========================= */
+
+window.toggleCart = function(){
+  document.getElementById("cartDrawer").classList.toggle("open");
+  renderCart();
+};
+
+function renderCart(){
+
+  const box = document.getElementById("cartItems");
+  const totalBox = document.getElementById("cartTotal");
+
+  box.innerHTML = "";
+
+  if(cart.length===0){
+    box.innerHTML = `<p class="empty">Cart empty</p>`;
+    totalBox.innerText = "Total: Rs 0";
     return;
   }
 
-  cart.forEach((item, index) => {
-    total += item.price * item.qty;
+  let total = 0;
 
-    cartItems.innerHTML += `
+  cart.forEach((i,index)=>{
+    total += i.price*i.qty;
+
+    box.innerHTML += `
       <div class="cart-item">
-        <img src="${item.image}" />
-
-        <div class="cart-info">
-          <h4>${item.name}</h4>
-          <p>Rs ${item.price}</p>
+        <img src="${i.image}">
+        <div>
+          <h4>${i.name}</h4>
+          <p>Rs ${i.price}</p>
 
           <div class="qty-box">
             <button onclick="decreaseQty(${index})">-</button>
-            <span>${item.qty}</span>
+            <span>${i.qty}</span>
             <button onclick="increaseQty(${index})">+</button>
           </div>
         </div>
@@ -186,207 +157,134 @@ function renderCart() {
     `;
   });
 
-  cartTotal.innerText = "Total: Rs " + total.toLocaleString();
+  totalBox.innerText = "Total: Rs " + total;
 }
 
 /* =========================
-   CHECKOUT
+   RATING SYSTEM (STEP 7)
 ========================= */
 
-window.checkout = async function () {
-  if (!cart.length) {
-    showToast("Cart Empty");
-    return;
+window.setRating = async function(productId,rating){
+
+  await addDoc(collection(db,"ratings"),{
+    productId,
+    rating,
+    createdAt:Date.now()
+  });
+
+  showToast("Thanks for rating ⭐");
+};
+
+function renderStars(id){
+  let html = "";
+
+  for(let i=1;i<=5;i++){
+    html += `<span class="star" onclick="setRating('${id}',${i})">⭐</span>`;
   }
 
-  let total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-
-  await addDoc(collection(db, "orders"), {
-    items: cart,
-    total,
-    createdAt: Date.now()
-  });
-
-  let msg = "🛒 Freshora Order:%0A%0A";
-
-  cart.forEach(item => {
-    msg += `${item.name} x${item.qty}%0A`;
-  });
-
-  msg += `%0ATotal: Rs ${total}`;
-
-  window.open("https://wa.me/94752425790?text=" + msg);
-
-  showToast("Order Sent ✅");
-};
-
-/* =========================
-   MODAL
-========================= */
-
-window.openModal = function (id, name, price, image) {
-  document.getElementById("productModal").style.display = "block";
-  document.getElementById("modalImage").src = image;
-  document.getElementById("modalName").innerText = name;
-  document.getElementById("modalPrice").innerText = "Rs " + price;
-
-  document.getElementById("modalAddBtn").onclick = () => {
-    addToCart(id, name, price, image);
-  };
-};
-
-window.closeModal = function () {
-  document.getElementById("productModal").style.display = "none";
-};
-
-/* =========================
-   DARK MODE
-========================= */
-
-window.toggleDarkMode = function () {
-  document.body.classList.toggle("dark");
-
-  localStorage.setItem(
-    "darkMode",
-    document.body.classList.contains("dark")
-  );
-};
-
-if (localStorage.getItem("darkMode") === "true") {
-  document.body.classList.add("dark");
+  return html;
 }
 
 /* =========================
-   CATEGORY FILTER (FIXED)
+   PRODUCTS RENDER
 ========================= */
 
-window.filterCategory = function (category, event) {
-  currentCategory = category;
-  renderProducts(allProducts);
+function applyFilters(products){
 
-  document.querySelectorAll(".cat-btn")
-    .forEach(btn => btn.classList.remove("active"));
+  const price = document.getElementById("priceFilter")?.value || "all";
+  const discount = document.getElementById("discountFilter")?.value || "all";
+  const category = document.getElementById("categoryFilter")?.value || "all";
 
-  if (event && event.target) {
-    event.target.classList.add("active");
-  }
-};
+  return products.filter(p=>{
 
-/* =========================
-   SEARCH
-========================= */
+    let okCat = category==="all" || p.category===category;
+    let okPrice = price==="all" || Number(p.price)<=Number(price);
+    let okDis = discount==="all" || (p.discount||0)>=Number(discount);
 
-document.addEventListener("input", (e) => {
-  if (e.target.id === "searchInput") {
-    renderProducts(allProducts);
-  }
-});
+    return okCat && okPrice && okDis;
+  });
+}
 
-/* =========================
-   RENDER PRODUCTS (FINAL CLEAN UI)
-========================= */
+function renderProducts(products){
 
-function renderProducts(products) {
   productsDiv.innerHTML = "";
 
-  const search = document
-    .getElementById("searchInput")
-    .value.toLowerCase();
+  const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
 
-  const filtered = products.filter(p => {
-    const matchSearch = p.name.toLowerCase().includes(search);
-    const matchCategory =
-      currentCategory === "all" || p.category === currentCategory;
+  let filtered = products.filter(p =>
+    p.name.toLowerCase().includes(search)
+  );
 
-    return matchSearch && matchCategory;
-  });
+  filtered = applyFilters(filtered);
 
-  if (!filtered.length) {
-    productsDiv.innerHTML = `<p class="empty">No products found</p>`;
+  if(filtered.length===0){
+    productsDiv.innerHTML = `<p class="empty">No products</p>`;
     return;
   }
 
-  filtered.forEach(product => {
-    const heart = wishlist.includes(product.id) ? "❤️" : "🤍";
+  filtered.forEach(p=>{
 
-    const discount = Number(product.discount || 0);
-    const original = Number(product.price);
+    const discount = p.discount || 0;
+    const newPrice = discount
+      ? Math.round(p.price - (p.price*discount/100))
+      : p.price;
 
-    const finalPrice =
-      discount > 0
-        ? Math.round(original - (original * discount / 100))
-        : original;
+    const heart = wishlist.includes(p.id) ? "❤️" : "🤍";
 
     productsDiv.innerHTML += `
       <div class="card fade-in">
 
-        <button class="wishlist-btn"
-          onclick="toggleWishlist('${product.id}')">
-          ${heart}
-        </button>
+        ${discount ? `<div class="discount-badge">${discount}% OFF</div>` : ""}
 
-        <img src="${product.image}" loading="lazy"/>
+        <button class="wishlist-btn" onclick="toggleWishlist('${p.id}')">${heart}</button>
+
+        <img src="${p.image}">
 
         <div class="card-content">
 
-          <h3>${product.name}</h3>
+          <h3>${p.name}</h3>
 
           <div class="price-box">
-            ${discount > 0 ? `<span class="old-price">Rs ${original}</span>` : ""}
-            <span class="new-price">Rs ${finalPrice}</span>
+            ${discount ? `<span class="old-price">Rs ${p.price}</span>` : ""}
+            <span class="new-price">Rs ${newPrice}</span>
           </div>
 
-          <div class="rating">⭐⭐⭐⭐⭐</div>
+          <div class="rating">
+            ${renderStars(p.id)}
+          </div>
+
+          <div class="stock">${p.stock || "In Stock"}</div>
 
           <div class="card-buttons">
 
             <button class="view-btn"
-              onclick="openModal('${product.id}','${product.name}','${finalPrice}','${product.image}')">
+              onclick="openModal('${p.id}','${p.name}','${newPrice}','${p.image}')">
               View
             </button>
 
             <button class="add-cart-btn"
-              onclick="addToCart('${product.id}','${product.name}','${finalPrice}','${product.image}')">
+              onclick="addToCart('${p.id}','${p.name}','${newPrice}','${p.image}')">
               Add
             </button>
 
           </div>
 
         </div>
-
       </div>
     `;
   });
 }
 
 /* =========================
-   TOAST
+   LOAD FIREBASE
 ========================= */
 
-function showToast(text) {
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.innerText = text;
+onSnapshot(collection(db,"products"),(snap)=>{
 
-  document.body.appendChild(toast);
-
-  setTimeout(() => toast.classList.add("show"), 100);
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 300);
-  }, 2000);
-}
-
-/* =========================
-   LOAD PRODUCTS
-========================= */
-
-onSnapshot(collection(db, "products"), (snap) => {
   allProducts = [];
 
-  snap.forEach(doc => {
-    allProducts.push({ id: doc.id, ...doc.data() });
+  snap.forEach(d=>{
+    allProducts.push({id:d.id,...d.data()});
   });
 
   renderProducts(allProducts);
@@ -397,7 +295,7 @@ onSnapshot(collection(db, "products"), (snap) => {
    INIT
 ========================= */
 
-window.addEventListener("load", () => {
+window.addEventListener("load",()=>{
   updateCartCount();
   renderCart();
 });
