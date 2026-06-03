@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Freshora Orders</title>
+
+  <link rel="stylesheet"
+        href="style.css">
+
+</head>
+
+<body>
+
+  <!-- =========================
+       HEADER
+  ========================= -->
+  <header class="admin-header">
+
+    <h2>
+      Orders Dashboard
+    </h2>
+
+    <div class="admin-actions">
+
+      <a href="admin.html">
+        ← Back Admin
+      </a>
+
+      <button onclick="clearOrders()">
+        Clear Orders
+      </button>
+
+    </div>
+
+  </header>
+
+  <!-- =========================
+       ORDERS LIST
+  ========================= -->
+  <section id="ordersList"
+           class="orders-list">
+
+    <p class="empty">
+      Loading orders...
+    </p>
+
+  </section>
+
+  <!-- =========================
+       SCRIPT
+  ========================= -->
+  <script type="module"
+          src="orders.js"></script>
+
+</body>
+</html>
