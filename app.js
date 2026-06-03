@@ -2,8 +2,12 @@ import { db, collection, onSnapshot } from "./firebase.js";
 
 const productsDiv = document.getElementById("products");
 
+/* =========================
+   STATE
+========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+let allProducts = [];
 
 /* =========================
    SAVE CART
@@ -29,14 +33,19 @@ function updateCartCount() {
     0
   );
 
-  const el = document.getElementById("cartCount");
+  const el =
+    document.getElementById("cartCount");
 
-  if (el) el.innerText = totalQty;
+  if (el) {
+    el.innerText = totalQty;
+  }
 
   const floating =
     document.getElementById("floatingCartCount");
 
-  if (floating) floating.innerText = totalQty;
+  if (floating) {
+    floating.innerText = totalQty;
+  }
 }
 
 /* =========================
@@ -51,6 +60,34 @@ window.toggleCart = function () {
 
   renderCart();
 };
+
+/* =========================
+   TOAST
+========================= */
+function showToast(text) {
+
+  const toast =
+    document.createElement("div");
+
+  toast.className = "toast";
+  toast.innerText = text;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("show");
+  }, 100);
+
+  setTimeout(() => {
+
+    toast.classList.remove("show");
+
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+
+  }, 2000);
+}
 
 /* =========================
    ADD TO CART
@@ -82,7 +119,7 @@ window.addToCart = function (
 
   saveCart();
 
-  alert("Added to cart 🛒");
+  showToast("Added to cart 🛒");
 };
 
 /* =========================
@@ -93,6 +130,8 @@ window.removeItem = function (index) {
   cart.splice(index, 1);
 
   saveCart();
+
+  showToast("Removed item ❌");
 };
 
 /* =========================
@@ -127,6 +166,8 @@ window.clearCart = function () {
   cart = [];
 
   saveCart();
+
+  showToast("Cart cleared");
 };
 
 /* =========================
@@ -146,33 +187,54 @@ function renderCart() {
 
   let total = 0;
 
+  if (cart.length === 0) {
+
+    cartItems.innerHTML = `
+      <p class="empty">
+        Cart is empty
+      </p>
+    `;
+
+    cartTotal.innerText = "Total: Rs 0";
+
+    return;
+  }
+
   cart.forEach((item, index) => {
 
     total += item.price * item.qty;
 
     cartItems.innerHTML += `
-      <div class="card">
+      <div class="cart-item">
 
         <img src="${item.image}">
 
-        <h4>${item.name}</h4>
+        <div class="cart-info">
 
-        <p>Rs ${item.price}</p>
+          <h4>${item.name}</h4>
 
-        <p>Qty: ${item.qty}</p>
+          <p>Rs ${item.price}</p>
 
-        <div style="display:flex; gap:8px;">
+          <div class="qty-box">
 
-          <button onclick="increaseQty(${index})">
-            +
-          </button>
+            <button onclick="decreaseQty(${index})">
+              -
+            </button>
 
-          <button onclick="decreaseQty(${index})">
-            -
-          </button>
+            <span>${item.qty}</span>
 
-          <button onclick="removeItem(${index})">
+            <button onclick="increaseQty(${index})">
+              +
+            </button>
+
+          </div>
+
+          <button
+            class="remove-btn"
+            onclick="removeItem(${index})">
+
             Remove
+
           </button>
 
         </div>
@@ -190,7 +252,15 @@ function renderCart() {
 ========================= */
 window.checkout = function () {
 
-  let msg = "🛒 Order Details:%0A%0A";
+  if (cart.length === 0) {
+
+    showToast("Cart is empty");
+
+    return;
+  }
+
+  let msg =
+    "🛒 Freshora Order Details:%0A%0A";
 
   let total = 0;
 
@@ -239,7 +309,12 @@ window.openModal = function (
     "modalAddBtn"
   ).onclick = () => {
 
-    addToCart(id, name, price, image);
+    addToCart(
+      id,
+      name,
+      price,
+      image
+    );
   };
 };
 
@@ -267,32 +342,9 @@ if (
   localStorage.getItem("darkMode")
   === "true"
 ) {
+
   document.body.classList.add("dark");
 }
-
-/* =========================
-   HERO SLIDER
-========================= */
-let slides =
-  document.querySelectorAll(".hero-slide");
-
-let currentSlide = 0;
-
-setInterval(() => {
-
-  slides[currentSlide]
-    .classList.remove("active");
-
-  currentSlide++;
-
-  if (currentSlide >= slides.length) {
-    currentSlide = 0;
-  }
-
-  slides[currentSlide]
-    .classList.add("active");
-
-}, 3000);
 
 /* =========================
    WISHLIST
@@ -304,9 +356,13 @@ window.toggleWishlist = function (id) {
     wishlist =
       wishlist.filter(item => item !== id);
 
+    showToast("Removed from wishlist");
+
   } else {
 
     wishlist.push(id);
+
+    showToast("Added to wishlist ❤️");
   }
 
   localStorage.setItem(
@@ -314,7 +370,7 @@ window.toggleWishlist = function (id) {
     JSON.stringify(wishlist)
   );
 
-  alert("Wishlist updated ❤️");
+  renderProducts(allProducts);
 };
 
 /* =========================
@@ -324,22 +380,107 @@ document.addEventListener("input", (e) => {
 
   if (e.target.id === "searchInput") {
 
-    let value =
+    const value =
       e.target.value.toLowerCase();
 
-    document.querySelectorAll(".card")
-      .forEach(card => {
+    const filtered =
+      allProducts.filter(item => {
 
-        card.style.display =
-          card.innerText
-            .toLowerCase()
-            .includes(value)
-
-            ? "flex"
-            : "none";
+        return item.name
+          .toLowerCase()
+          .includes(value);
       });
+
+    renderProducts(filtered);
   }
 });
+
+/* =========================
+   RENDER PRODUCTS
+========================= */
+function renderProducts(products) {
+
+  productsDiv.innerHTML = "";
+
+  if (products.length === 0) {
+
+    productsDiv.innerHTML = `
+      <p class="empty">
+        No products found
+      </p>
+    `;
+
+    return;
+  }
+
+  products.forEach((product) => {
+
+    const heart =
+      wishlist.includes(product.id)
+      ? "❤️"
+      : "🤍";
+
+    productsDiv.innerHTML += `
+
+      <div class="card fade-in">
+
+        <img
+          src="${product.image}"
+          loading="lazy"
+        >
+
+        <div class="card-content">
+
+          <h3>${product.name}</h3>
+
+          <p>Rs ${product.price}</p>
+
+          <div class="rating">
+            ⭐⭐⭐⭐⭐
+          </div>
+
+          <div class="card-buttons">
+
+            <button
+              class="wishlist-btn"
+              onclick="toggleWishlist('${product.id}')">
+
+              ${heart}
+
+            </button>
+
+            <button onclick="openModal(
+              '${product.id}',
+              '${product.name}',
+              '${product.price}',
+              '${product.image}'
+            )">
+
+              View
+
+            </button>
+
+          </div>
+
+          <button
+            class="add-cart-btn"
+            onclick="addToCart(
+              '${product.id}',
+              '${product.name}',
+              '${product.price}',
+              '${product.image}'
+            )">
+
+            Add to Cart
+
+          </button>
+
+        </div>
+
+      </div>
+    `;
+  });
+}
 
 /* =========================
    LOAD PRODUCTS
@@ -348,96 +489,37 @@ onSnapshot(
   collection(db, "products"),
   (snap) => {
 
-    productsDiv.innerHTML = "";
-
-    if (snap.empty) {
-
-      productsDiv.innerHTML = `
-        <p class="empty">
-          No products found
-        </p>
-      `;
-
-      return;
-    }
+    allProducts = [];
 
     snap.forEach((docItem) => {
 
       const p = docItem.data();
 
-      const filter =
-        document.getElementById(
-          "categoryFilter"
-        );
-
-      if (
-        filter &&
-        filter.value !== "all" &&
-        p.category !== filter.value
-      ) {
-        return;
-      }
-
-      productsDiv.innerHTML += `
-        <div class="card">
-
-          <img src="${p.image}">
-
-          <h3>${p.name}</h3>
-
-          <p>Rs ${p.price}</p>
-
-          <div class="rating">
-            ⭐⭐⭐⭐⭐
-          </div>
-
-          <button
-            class="wishlist-btn"
-            onclick="toggleWishlist('${docItem.id}')">
-
-            ❤️ Wishlist
-
-          </button>
-
-          <button onclick="openModal(
-            '${docItem.id}',
-            '${p.name}',
-            '${p.price}',
-            '${p.image}'
-          )">
-
-            View Product
-
-          </button>
-
-          <button onclick="addToCart(
-            '${docItem.id}',
-            '${p.name}',
-            '${p.price}',
-            '${p.image}'
-          )">
-
-            Add to Cart
-
-          </button>
-
-        </div>
-      `;
+      allProducts.push({
+        id: docItem.id,
+        ...p
+      });
     });
+
+    renderProducts(allProducts);
 
     updateCartCount();
   }
 );
 
 /* =========================
-   CATEGORY FILTER
+   CLOSE MODAL OUTSIDE CLICK
 ========================= */
-document
-  .getElementById("categoryFilter")
-  ?.addEventListener("change", () => {
+window.onclick = function (e) {
 
-    location.reload();
-  });
+  const modal =
+    document.getElementById("productModal");
+
+  if (e.target === modal) {
+
+    modal.style.display = "none";
+  }
+};
 
 /* =========================
    INIT
