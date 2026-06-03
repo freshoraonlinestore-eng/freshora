@@ -12,12 +12,22 @@ import {
 const productsDiv =
 document.getElementById("products");
 
+const cartDrawer =
+document.getElementById("cartDrawer");
+
+/* =========================
+   STATE
+========================= */
+
 let cart =
 JSON.parse(localStorage.getItem("cart")) || [];
 
 let allProducts = [];
 
 let currentCategory = "all";
+
+let wishlist =
+JSON.parse(localStorage.getItem("wishlist")) || [];
 
 /* =========================
    SAVE CART
@@ -36,6 +46,18 @@ function saveCart(){
 }
 
 /* =========================
+   SAVE WISHLIST
+========================= */
+
+function saveWishlist(){
+
+  localStorage.setItem(
+    "wishlist",
+    JSON.stringify(wishlist)
+  );
+}
+
+/* =========================
    CART COUNT
 ========================= */
 
@@ -43,7 +65,7 @@ function updateCartCount(){
 
   const total =
   cart.reduce(
-    (sum,item)=>sum + item.qty,
+    (sum, item) => sum + item.qty,
     0
   );
 
@@ -51,9 +73,7 @@ function updateCartCount(){
   document.getElementById("cartCount");
 
   const floatingCartCount =
-  document.getElementById(
-    "floatingCartCount"
-  );
+  document.getElementById("floatingCartCount");
 
   if(cartCount){
     cartCount.innerText = total;
@@ -70,9 +90,7 @@ function updateCartCount(){
 
 window.toggleCart = function(){
 
-  document
-  .getElementById("cartDrawer")
-  .classList.toggle("open");
+  cartDrawer.classList.toggle("open");
 
   renderCart();
 };
@@ -89,13 +107,13 @@ window.addToCart = function(
 ){
 
   const existing =
-  cart.find(item => item.id === id);
+  cart.find(i => i.id === id);
 
   if(existing){
 
     existing.qty++;
 
-  }else{
+  } else {
 
     cart.push({
       id,
@@ -153,11 +171,43 @@ window.decreaseQty = function(index){
 
 window.clearCart = function(){
 
-  cart = [];
+  if(cart.length === 0){
+    return;
+  }
 
-  saveCart();
+  if(confirm("Clear cart?")){
 
-  showToast("Cart cleared");
+    cart = [];
+
+    saveCart();
+
+    showToast("Cart cleared");
+  }
+};
+
+/* =========================
+   WISHLIST
+========================= */
+
+window.toggleWishlist = function(id){
+
+  if(wishlist.includes(id)){
+
+    wishlist =
+    wishlist.filter(item => item !== id);
+
+    showToast("Removed from wishlist");
+
+  } else {
+
+    wishlist.push(id);
+
+    showToast("Added to wishlist ❤️");
+  }
+
+  saveWishlist();
+
+  renderProducts(allProducts);
 };
 
 /* =========================
@@ -179,9 +229,21 @@ function renderCart(){
   if(cart.length === 0){
 
     cartItems.innerHTML = `
-      <div class="empty">
-        <h3>Cart is Empty</h3>
+
+      <div class="empty-cart">
+
+        <div class="empty-cart-icon">
+          🛒
+        </div>
+
+        <h3>Your cart is empty</h3>
+
+        <p>
+          Add products to continue shopping
+        </p>
+
       </div>
+
     `;
 
     cartTotal.innerText =
@@ -198,44 +260,56 @@ function renderCart(){
 
       <div class="cart-item">
 
-        <img src="${item.image}">
+        <img
+          src="${item.image}"
+          alt="${item.name}"
+        >
 
         <div class="cart-info">
 
           <h4>${item.name}</h4>
 
-          <p>Rs ${item.price}</p>
+          <p class="cart-price">
+            Rs ${item.price}
+          </p>
 
           <div class="qty-box">
 
-            <button onclick="decreaseQty(${index})">
-              -
+            <button
+              onclick="decreaseQty(${index})">
+
+              −
+
             </button>
 
             <span>${item.qty}</span>
 
-            <button onclick="increaseQty(${index})">
+            <button
+              onclick="increaseQty(${index})">
+
               +
+
             </button>
 
           </div>
 
-          <button
-            class="remove-btn"
-            onclick="removeItem(${index})">
-
-            Remove
-
-          </button>
-
         </div>
 
+        <button
+          class="remove-btn"
+          onclick="removeItem(${index})">
+
+          ✕
+
+        </button>
+
       </div>
+
     `;
   });
 
   cartTotal.innerText =
-  "Total: Rs " + total;
+  "Total: Rs " + total.toLocaleString();
 }
 
 /* =========================
@@ -257,8 +331,6 @@ window.checkout = async function(){
 
     total += item.price * item.qty;
   });
-
-  /* SAVE ORDER */
 
   await addDoc(
     collection(db,"orders"),
@@ -364,6 +436,14 @@ window.filterCategory = function(category){
   currentCategory = category;
 
   renderProducts(allProducts);
+
+  document
+  .querySelectorAll(".cat-btn")
+  .forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  event.target.classList.add("active");
 };
 
 /* =========================
@@ -387,10 +467,9 @@ function renderProducts(products){
   productsDiv.innerHTML = "";
 
   const search =
-  document
-  .getElementById("searchInput")
-  .value
-  .toLowerCase();
+  document.getElementById(
+    "searchInput"
+  ).value.toLowerCase();
 
   const filtered =
   products.filter(product => {
@@ -411,13 +490,9 @@ function renderProducts(products){
   if(filtered.length === 0){
 
     productsDiv.innerHTML = `
-      <div class="empty">
-
-        <h3>
-          No products found
-        </h3>
-
-      </div>
+      <p class="empty">
+        No products found
+      </p>
     `;
 
     return;
@@ -425,28 +500,24 @@ function renderProducts(products){
 
   filtered.forEach((product) => {
 
+    const heart =
+      wishlist.includes(product.id)
+      ? "❤️"
+      : "🤍";
+
     const discount =
-    Number(product.discount || 0);
+      Number(product.discount || 0);
 
     const originalPrice =
-    Number(product.price);
+      Number(product.price);
 
     const discountedPrice =
-    discount > 0
-    ? Math.round(
-        originalPrice -
-        (originalPrice * discount / 100)
-      )
-    : originalPrice;
-
-    const stockText =
-    product.stock || "In Stock";
-
-    const stockClass =
-    stockText.toLowerCase()
-    .includes("out")
-    ? "out-stock"
-    : "in-stock";
+      discount > 0
+      ? Math.round(
+          originalPrice -
+          (originalPrice * discount / 100)
+        )
+      : originalPrice;
 
     productsDiv.innerHTML += `
 
@@ -462,41 +533,25 @@ function renderProducts(products){
           : ""
         }
 
-        <div class="image-wrap">
+        <button
+          class="wishlist-btn"
+          onclick="toggleWishlist('${product.id}')">
 
-          <img
-            src="${product.image}"
-            loading="lazy"
-            alt="${product.name}"
-          >
+          ${heart}
 
-        </div>
+        </button>
+
+        <img
+          src="${product.image}"
+          loading="lazy"
+          alt="${product.name}"
+        >
 
         <div class="card-content">
 
-          <div class="product-category">
-
-            ${product.category || "General"}
-
-          </div>
-
-          <h3 class="product-title">
-
+          <h3>
             ${product.name}
-
           </h3>
-
-          <div class="rating-row">
-
-            <div class="stars">
-              ⭐⭐⭐⭐⭐
-            </div>
-
-            <span class="rating-count">
-              (4.9)
-            </span>
-
-          </div>
 
           <div class="price-box">
 
@@ -516,9 +571,17 @@ function renderProducts(products){
 
           </div>
 
-          <div class="stock ${stockClass}">
+          <div class="rating">
+            ⭐⭐⭐⭐⭐
+          </div>
 
-            ${stockText}
+          <div class="stock">
+
+            ${
+              product.stock
+              ? product.stock
+              : "In Stock"
+            }
 
           </div>
 
@@ -533,7 +596,7 @@ function renderProducts(products){
                 '${product.image}'
               )">
 
-              View
+              👁 View
 
             </button>
 
@@ -555,6 +618,7 @@ function renderProducts(products){
         </div>
 
       </div>
+
     `;
   });
 }
