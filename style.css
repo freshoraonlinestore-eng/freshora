@@ -866,3 +866,46 @@ body.dark .clear-btn{
     margin-top:18%;
   }
 }
+
+/* =========================
+   SMOOTH IMAGE FIX
+========================= */
+
+img{
+  display:block;
+}
+
+/* =========================
+   BUTTON TAP FIX MOBILE
+========================= */
+
+button,
+select,
+input{
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar{
+  width:6px;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#cfcfcf;
+  border-radius:999px;
+}
+
+body.dark ::-webkit-scrollbar-thumb{
+  background:#444;
+}
+
+/* =========================
+   SAFE AREA MOBILE
+========================= */
+
+body{
+  overflow-x:hidden;
+}
