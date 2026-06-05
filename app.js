@@ -39,21 +39,19 @@ function hideLoading() {
   if (!loadingScreen) return;
 
   loadingScreen.style.opacity = "0";
-
   setTimeout(() => {
     loadingScreen.style.display = "none";
   }, 300);
 }
 
 /* =========================
-   DARK MODE
+   DARK MODE (FIXED ICON)
 ========================= */
 
 window.toggleDarkMode = function () {
   document.body.classList.toggle("dark");
 
   const dark = document.body.classList.contains("dark");
-
   localStorage.setItem("darkMode", dark);
 
   updateDarkIcon();
@@ -81,7 +79,6 @@ function updateCartCount() {
   );
 
   const el = document.getElementById("floatingCartCount");
-
   if (el) el.innerText = total;
 }
 
@@ -139,7 +136,7 @@ window.clearCart = function () {
 };
 
 /* =========================
-   RENDER CART
+   RENDER CART (SAFE + STABLE)
 ========================= */
 
 function renderCart() {
@@ -152,7 +149,7 @@ function renderCart() {
 
   if (cart.length === 0) {
     cartItems.innerHTML = `<p class="empty">Cart empty</p>`;
-    cartTotal.innerText = "Total: Rs 0";
+    if (cartTotal) cartTotal.innerText = "Total: Rs 0";
     return;
   }
 
@@ -186,11 +183,13 @@ function renderCart() {
     `;
   });
 
-  cartTotal.innerText = "Total: Rs " + total.toLocaleString();
+  if (cartTotal) {
+    cartTotal.innerText = "Total: Rs " + total.toLocaleString();
+  }
 }
 
 /* =========================
-   CART TOGGLE
+   CART TOGGLE (SMOOTH SAFE)
 ========================= */
 
 window.toggleCart = function () {
@@ -204,7 +203,7 @@ window.toggleCart = function () {
 };
 
 /* =========================
-   WHATSAPP CHECKOUT (FULL FIXED)
+   WHATSAPP CHECKOUT (FULL IMPROVED FORMAT)
 ========================= */
 
 window.checkout = function () {
@@ -213,9 +212,9 @@ window.checkout = function () {
     return;
   }
 
-  const name = document.getElementById("cusName")?.value || "N/A";
-  const phone = document.getElementById("cusPhone")?.value || "N/A";
-  const address = document.getElementById("cusAddress")?.value || "N/A";
+  const name = document.getElementById("cusName")?.value?.trim() || "N/A";
+  const phone = document.getElementById("cusPhone")?.value?.trim() || "N/A";
+  const address = document.getElementById("cusAddress")?.value?.trim() || "N/A";
 
   const orderId = "FR-" + Date.now();
   const date = new Date().toLocaleString();
@@ -247,17 +246,16 @@ window.checkout = function () {
   message += `TOTAL: LKR ${total.toLocaleString()}\n\n`;
 
   message += `🚚 Payment: Cash on Delivery\n`;
-  message += `📍 Freshora Online Store\n`;
+  message += `📍 Freshora Online Store\n\n`;
+  message += `🙏 Thank you for your order!`;
 
-  const url =
-    "https://wa.me/94752425790?text=" +
-    encodeURIComponent(message);
+  const url = "https://wa.me/94752425790?text=" + encodeURIComponent(message);
 
   window.open(url, "_blank");
 };
 
 /* =========================
-   PRODUCTS
+   PRODUCTS RENDER
 ========================= */
 
 function renderProducts(products) {
