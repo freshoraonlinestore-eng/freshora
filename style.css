@@ -1043,3 +1043,85 @@ button:active{
   }
 
 }
+
+/* =========================
+   CHECKOUT FIX (CART FOOTER)
+========================= */
+
+.sticky-checkout{
+  position: sticky;
+  bottom: 0;
+  background: var(--card);
+  padding: 16px;
+  border-top: 1px solid var(--border);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  z-index: 10;
+}
+
+/* TOTAL TEXT */
+#cartTotal{
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0;
+}
+
+/* BUTTON BASE FIX */
+.checkout-btn,
+.clear-btn{
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s ease;
+}
+
+/* CHECKOUT BUTTON */
+.checkout-btn{
+  background: var(--green);
+  color: #fff;
+}
+
+.checkout-btn:hover{
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+/* CLEAR BUTTON */
+.clear-btn{
+  background: #f1f1f1;
+  color: #111;
+}
+
+body.dark .clear-btn{
+  background: #2a2a2d;
+  color: #fff;
+}
+
+.clear-btn:hover{
+  transform: translateY(-2px);
+}
+
+/* MOBILE FIX */
+@media(max-width:768px){
+  .sticky-checkout{
+    padding: 14px;
+  }
+
+  .checkout-btn,
+  .clear-btn{
+    padding: 13px;
+    font-size: 14px;
+  }
+}
