@@ -1,229 +1,281 @@
 import {
   db,
   collection,
-  onSnapshot,
-  addDoc
+  onSnapshot
 } from "./firebase.js";
 
-/* ========================= */
+const productsDiv =
+document.getElementById("products");
 
-const productsDiv = document.getElementById("products");
+let cart =
+JSON.parse(localStorage.getItem("cart")) || [];
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let allProducts = [];
 
-/* =========================
-   DARK MODE ICON FIX
-========================= */
+/* DARK MODE */
 
-function updateDarkIcon(){
-  const btn = document.getElementById("darkModeBtn");
-  if(!btn) return;
+window.toggleDarkMode = function(){
 
-  if(document.body.classList.contains("dark")){
-    btn.innerText = "☀️";
-  } else {
-    btn.innerText = "🌙";
-  }
-}
+  document.body.classList.toggle("dark");
 
-/* =========================
-   TOAST
-========================= */
+  const dark =
+  document.body.classList.contains("dark");
 
-function showToast(text){
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.innerText = text;
-  document.body.appendChild(toast);
+  localStorage.setItem("darkMode", dark);
 
-  setTimeout(()=> toast.classList.add("show"),100);
-  setTimeout(()=>{
-    toast.classList.remove("show");
-    setTimeout(()=>toast.remove(),300);
-  },2000);
-}
-
-/* =========================
-   CART SAVE
-========================= */
-
-function saveCart(){
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartCount();
-  renderCart();
-}
-
-/* ========================= */
-
-function updateCartCount(){
-  const total = cart.reduce((s,i)=>s+i.qty,0);
-  const count = document.getElementById("floatingCartCount");
-  if(count) count.innerText = total;
-}
-
-/* =========================
-   WISHLIST
-========================= */
-
-window.toggleWishlist = function(id){
-
-  if(wishlist.includes(id)){
-    wishlist = wishlist.filter(i=>i!==id);
-    showToast("Removed ❤️");
-  } else {
-    wishlist.push(id);
-    showToast("Added ❤️");
-  }
-
-  localStorage.setItem("wishlist", JSON.stringify(wishlist));
-  renderProducts(allProducts);
+  document.getElementById("darkModeBtn").innerHTML =
+  dark ? "☀️" : "🌙";
 };
 
-/* ========================= */
+window.addEventListener("DOMContentLoaded",()=>{
+
+  const dark =
+  localStorage.getItem("darkMode") === "true";
+
+  if(dark){
+    document.body.classList.add("dark");
+  }
+
+  document.getElementById("darkModeBtn").innerHTML =
+  dark ? "☀️" : "🌙";
+});
+
+/* CART */
+
+function saveCart(){
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
+
+  updateCartCount();
+}
+
+function updateCartCount(){
+
+  const total =
+  cart.reduce((sum,item)=>sum+item.qty,0);
+
+  document.getElementById(
+    "floatingCartCount"
+  ).innerText = total;
+}
 
 window.addToCart = function(id,name,price,image){
 
-  const item = cart.find(i=>i.id===id);
+  const existing =
+  cart.find(i=>i.id===id);
 
-  if(item) item.qty++;
-  else cart.push({id,name,price:Number(price),image,qty:1});
+  if(existing){
+    existing.qty++;
+  }else{
+    cart.push({
+      id,
+      name,
+      price,
+      image,
+      qty:1
+    });
+  }
 
   saveCart();
-  showToast("Added to cart 🛒");
 };
 
-/* ========================= */
-
-window.toggleCart = function(){
-
-  document.getElementById("cartDrawer")?.classList.toggle("open");
-  document.getElementById("overlay")?.classList.toggle("show");
-
-  renderCart();
-};
-
-/* ========================= */
-
-function renderCart(){
-
-  const box = document.getElementById("cartItems");
-  const totalBox = document.getElementById("cartTotal");
-
-  if(!box || !totalBox) return;
-
-  box.innerHTML = "";
-
-  let total = 0;
-
-  cart.forEach((item,i)=>{
-
-    total += item.price * item.qty;
-
-    box.innerHTML += `
-      <div class="cart-item">
-        <img src="${item.image}">
-        <div class="cart-details">
-          <h4>${item.name}</h4>
-          <p>Rs ${item.price}</p>
-
-          <div class="qty-box">
-            <button onclick="decreaseQty(${i})">-</button>
-            <span>${item.qty}</span>
-            <button onclick="increaseQty(${i})">+</button>
-          </div>
-        </div>
-
-        <button class="remove-btn" onclick="removeItem(${i})">✕</button>
-      </div>
-    `;
-  });
-
-  totalBox.innerText = "Total: Rs " + total;
-}
-
-/* ========================= */
-
-window.removeItem = i => { cart.splice(i,1); saveCart(); };
-window.increaseQty = i => { cart[i].qty++; saveCart(); };
-window.decreaseQty = i => { cart[i].qty--; if(cart[i].qty<=0) cart.splice(i,1); saveCart(); };
-window.clearCart = () => { cart=[]; saveCart(); showToast("Cleared"); };
-
-/* ========================= */
-
-window.checkout = async function(){
-
-  if(cart.length===0) return showToast("Cart Empty");
-
-  const name = cusName.value;
-  const phone = cusPhone.value;
-  const address = cusAddress.value;
-
-  if(!name||!phone||!address) return showToast("Fill all fields");
-
-  let total = cart.reduce((s,i)=>s+i.price*i.qty,0);
-
-  await addDoc(collection(db,"orders"),{
-    customer:{name,phone,address},
-    items:cart,
-    total,
-    createdAt:Date.now()
-  });
-
-  cart=[];
-  saveCart();
-
-  showToast("Order Sent ✅");
-};
-
-/* ========================= */
+/* PRODUCTS */
 
 function renderProducts(products){
 
-  productsDiv.innerHTML="";
+  productsDiv.innerHTML = "";
+
+  if(products.length === 0){
+
+    productsDiv.innerHTML =
+    `<p>No Products Found</p>`;
+
+    return;
+  }
 
   products.forEach(p=>{
 
+    const image =
+    p.image || "placeholder.png";
+
+    const name =
+    p.name || "Unnamed Product";
+
+    const price =
+    Number(p.price) || 0;
+
+    const discount =
+    Number(p.discount) || 0;
+
+    const finalPrice =
+    discount
+    ? Math.round(
+      price - (price * discount / 100)
+    )
+    : price;
+
     productsDiv.innerHTML += `
-      <div class="card">
+    
+    <div class="card">
 
-        <img src="${p.image}">
-        <div class="card-content">
+      ${
+        discount
+        ? `<div class="discount-badge">
+            ${discount}% OFF
+          </div>`
+        : ""
+      }
 
-          <h3>${p.name}</h3>
-          <span>Rs ${p.price}</span>
+      <img
+        src="${image}"
+        alt="${name}"
+        onerror="this.src='placeholder.png'"
+      >
 
-          <button onclick="addToCart('${p.id}','${p.name}','${p.price}','${p.image}')">
+      <div class="card-content">
+
+        <h3>${name}</h3>
+
+        <div class="price-box">
+
+          ${
+            discount
+            ? `<span class="old-price">
+                Rs ${price}
+              </span>`
+            : ""
+          }
+
+          <span class="new-price">
+            Rs ${finalPrice.toLocaleString()}
+          </span>
+
+        </div>
+
+        <div class="card-buttons">
+
+          <button
+            class="view-btn"
+            onclick="openModal(
+              '${p.id}',
+              '${name}',
+              '${finalPrice}',
+              '${image}'
+            )"
+          >
+            View
+          </button>
+
+          <button
+            class="add-cart-btn"
+            onclick="addToCart(
+              '${p.id}',
+              '${name}',
+              '${finalPrice}',
+              '${image}'
+            )"
+          >
             Add
           </button>
 
         </div>
 
       </div>
+
+    </div>
     `;
   });
 }
 
-/* ========================= */
+/* MODAL */
 
-window.toggleDarkMode = function(){
-  document.body.classList.toggle("dark");
-  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+window.openModal = function(
+  id,
+  name,
+  price,
+  image
+){
 
-  updateDarkIcon();
+  document.getElementById(
+    "productModal"
+  ).style.display = "block";
+
+  document.getElementById(
+    "modalImage"
+  ).src = image;
+
+  document.getElementById(
+    "modalName"
+  ).innerText = name;
+
+  document.getElementById(
+    "modalPrice"
+  ).innerText = "Rs " + price;
+
+  document.getElementById(
+    "modalAddBtn"
+  ).onclick = ()=>{
+
+    addToCart(
+      id,
+      name,
+      price,
+      image
+    );
+  };
 };
 
-if(localStorage.getItem("darkMode")==="true"){
-  document.body.classList.add("dark");
-}
+window.closeModal = function(){
 
-window.addEventListener("load",updateDarkIcon);
+  document.getElementById(
+    "productModal"
+  ).style.display = "none";
+};
 
-/* ========================= */
+/* CART DRAWER */
 
-onSnapshot(collection(db,"products"),snap=>{
-  allProducts=[];
-  snap.forEach(d=>allProducts.push({id:d.id,...d.data()}));
-  renderProducts(allProducts);
+window.toggleCart = function(){
+
+  document
+  .getElementById("cartDrawer")
+  .classList.toggle("open");
+
+  document
+  .getElementById("overlay")
+  .classList.toggle("show");
+};
+
+/* LOAD */
+
+window.addEventListener("load",()=>{
+
+  document.getElementById(
+    "loadingScreen"
+  ).style.display = "none";
+
+  updateCartCount();
 });
+
+/* FIREBASE */
+
+onSnapshot(
+  collection(db,"products"),
+  (snap)=>{
+
+    allProducts = [];
+
+    snap.forEach((doc)=>{
+
+      allProducts.push({
+        id:doc.id,
+        ...doc.data()
+      });
+
+    });
+
+    renderProducts(allProducts);
+  }
+);
