@@ -24,7 +24,7 @@ const firebaseConfig = {
   projectId: "freshora-store-38cef",
   storageBucket: "freshora-store-38cef.appspot.com",
   messagingSenderId: "836130122991",
-  appId: "1:836130122991:web:31a2ea12dce7c5a44aff1a"
+  appId: "1:836130122991:web:31a2ea12dce7c5a44aff1a",
 };
 
 const app = initializeApp(firebaseConfig);
