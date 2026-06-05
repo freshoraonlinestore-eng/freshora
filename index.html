@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freshora Store</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Freshora Store</title>
 
-  <link rel="stylesheet" href="style.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 
 <body>
@@ -20,55 +19,52 @@
 <!-- OVERLAY -->
 <div id="overlay" class="overlay" onclick="toggleCart()"></div>
 
-<!-- TOP BAR -->
-<div class="top-social-bar">
-  <div class="social-links">
-    <a href="#"><i class="fab fa-facebook"></i></a>
-    <a href="#"><i class="fab fa-instagram"></i></a>
-    <a href="#"><i class="fab fa-tiktok"></i></a>
-    <a href="https://wa.me/94752425790"><i class="fab fa-whatsapp"></i></a>
-  </div>
-</div>
-
 <!-- HEADER -->
 <header class="header">
+
   <div class="logo">Freshora</div>
 
-  <div class="header-center">
-    <input type="text" id="searchInput" placeholder="Search products..."/>
+  <div class="search-box">
+    <i class="fa fa-search"></i>
+    <input id="searchInput" placeholder="Search products..."/>
   </div>
 
-  <div class="header-right">
-    <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
-      <i class="fa-solid fa-moon"></i>
-    </button>
-  </div>
+  <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">🌙</button>
+
 </header>
 
 <!-- FILTERS -->
-<section class="filters">
-  <select id="categoryFilter">
-    <option value="all">All</option>
-    <option value="Grocery">Grocery</option>
-    <option value="Drinks">Drinks</option>
-    <option value="Snacks">Snacks</option>
-    <option value="Beauty">Beauty</option>
-  </select>
+<section class="advanced-search">
+  <div class="filter-grid">
 
-  <select id="priceFilter">
-    <option value="all">Price</option>
-    <option value="500">Under 500</option>
-    <option value="1000">Under 1000</option>
-    <option value="2000">Under 2000</option>
-  </select>
+    <select id="categoryFilter">
+      <option value="all">All</option>
+      <option value="Grocery">Grocery</option>
+      <option value="Drinks">Drinks</option>
+      <option value="Snacks">Snacks</option>
+    </select>
+
+    <select id="priceFilter">
+      <option value="all">Price</option>
+      <option value="500">Under 500</option>
+      <option value="1000">Under 1000</option>
+    </select>
+
+    <select id="discountFilter">
+      <option value="all">Discount</option>
+      <option value="10">10%+</option>
+      <option value="20">20%+</option>
+    </select>
+
+  </div>
 </section>
 
 <!-- PRODUCTS -->
 <section id="products" class="products-grid"></section>
 
-<!-- CART FLOAT -->
+<!-- CART BUTTON -->
 <div class="floating-cart" onclick="toggleCart()">
-  <i class="fa-solid fa-cart-shopping"></i>
+  <i class="fa fa-cart-shopping"></i>
   <span id="floatingCartCount">0</span>
 </div>
 
@@ -76,27 +72,57 @@
 <div id="cartDrawer" class="cart-drawer">
 
   <div class="cart-header">
-    <h2>Your Cart</h2>
+    <h2>Cart</h2>
     <button onclick="toggleCart()">✕</button>
   </div>
 
   <div id="cartItems"></div>
 
+  <!-- CHECKOUT FORM -->
   <div class="checkout-form">
     <input id="cusName" placeholder="Name"/>
     <input id="cusPhone" placeholder="Phone"/>
     <textarea id="cusAddress" placeholder="Address"></textarea>
   </div>
 
-  <div class="cart-actions">
-    <button class="clear-btn" onclick="clearCart()">Clear Cart</button>
-    <button class="checkout-btn" onclick="checkout()">Order via WhatsApp</button>
+  <!-- ACTIONS -->
+  <div class="sticky-checkout">
+
+    <h3 id="cartTotal">Total: Rs 0</h3>
+
+    <div class="checkout-actions">
+
+      <button class="checkout-btn" onclick="checkoutWhatsApp()">
+        <i class="fab fa-whatsapp"></i> Order via WhatsApp
+      </button>
+
+      <button class="clear-btn" onclick="clearCart()">
+        Clear Cart
+      </button>
+
+    </div>
   </div>
 
-  <h3 id="cartTotal">Total: Rs 0</h3>
+</div>
+
+<!-- MODAL -->
+<div id="productModal" class="modal">
+  <div class="modal-content">
+
+    <span class="close" onclick="closeModal()">×</span>
+
+    <img id="modalImage"/>
+    <div class="modal-details">
+
+      <h2 id="modalName"></h2>
+      <p id="modalPrice"></p>
+
+      <button id="modalAddBtn">Add to Cart</button>
+
+    </div>
+  </div>
 </div>
 
 <script type="module" src="app.js"></script>
-
 </body>
 </html>
