@@ -1,98 +1,238 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Cart - Freshora</title>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>Freshora Cart</title>
+
   <link rel="stylesheet" href="style.css">
+
+  <link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
 
-<header>
-  <h1>Your Cart</h1>
-  <a href="index.html">Back</a>
+<!-- HEADER -->
+
+<header class="header">
+
+  <div class="logo">
+    Freshora
+  </div>
+
+  <div></div>
+
+  <button
+    class="icon-btn"
+    onclick="window.location.href='index.html'"
+  >
+    <i class="fa fa-arrow-left"></i>
+  </button>
+
 </header>
 
-<div id="cart"></div>
+<!-- CART -->
 
-<h2 id="total" style="padding:15px"></h2>
+<div
+  id="cartItems"
+  style="padding:16px"
+></div>
+
+<!-- TOTAL -->
+
+<div class="sticky-checkout">
+
+  <h3 id="cartTotal">
+    Total: Rs 0
+  </h3>
+
+  <button class="checkout-btn">
+    Checkout
+  </button>
+
+  <button
+    class="clear-btn"
+    onclick="clearCart()"
+  >
+    Clear Cart
+  </button>
+
+</div>
 
 <script>
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-const cartDiv = document.getElementById("cart");
-const totalDiv = document.getElementById("total");
+let cart =
+JSON.parse(localStorage.getItem("cart")) || [];
 
-// RENDER CART
-function renderCart() {
+const cartItems =
+document.getElementById("cartItems");
 
-  cartDiv.innerHTML = "";
+const cartTotal =
+document.getElementById("cartTotal");
 
-  let total = 0;
+/* =========================
+   RENDER CART
+========================= */
 
-  if (cart.length === 0) {
-    cartDiv.innerHTML = "<p style='padding:15px'>Cart is empty</p>";
-    totalDiv.innerHTML = "";
+function renderCart(){
+
+  cartItems.innerHTML = "";
+
+  if(cart.length === 0){
+
+    cartItems.innerHTML = `
+      <p class="empty">
+        Cart Empty
+      </p>
+    `;
+
+    cartTotal.innerText =
+    "Total: Rs 0";
+
     return;
   }
 
-  cart.forEach((item, index) => {
+  let total = 0;
 
-    let price = Number(item.price);
-    total += price * item.qty;
+  cart.forEach((item,index)=>{
 
-    cartDiv.innerHTML += `
-      <div class="card">
+    total +=
+    Number(item.price) * item.qty;
 
-        <img src="${item.image}">
+    cartItems.innerHTML += `
 
-        <h3>${item.name}</h3>
+      <div class="cart-item">
 
-        <p>Rs ${price}</p>
+        <img
+          src="${item.image}"
+          alt="${item.name}"
+          onerror="this.src='placeholder.png'"
+        >
 
-        <p>Qty: ${item.qty}</p>
+        <div class="cart-details">
 
-        <button onclick="increaseQty(${index})">+</button>
-        <button onclick="decreaseQty(${index})">-</button>
+          <h4>
+            ${item.name}
+          </h4>
 
-        <button onclick="removeItem(${index})">
-          Remove
+          <p>
+            Rs ${Number(item.price).toLocaleString()}
+          </p>
+
+          <div class="qty-box">
+
+            <button
+              onclick="decreaseQty(${index})"
+            >
+              -
+            </button>
+
+            <span>
+              ${item.qty}
+            </span>
+
+            <button
+              onclick="increaseQty(${index})"
+            >
+              +
+            </button>
+
+          </div>
+
+        </div>
+
+        <button
+          class="remove-btn"
+          onclick="removeItem(${index})"
+        >
+          ✕
         </button>
 
       </div>
+
     `;
   });
 
-  totalDiv.innerHTML = "Total: Rs " + total;
+  cartTotal.innerText =
+  "Total: Rs " +
+  total.toLocaleString();
 }
 
-// REMOVE ITEM
-function removeItem(index) {
-  cart.splice(index, 1);
-  saveCart();
-}
+/* =========================
+   SAVE CART
+========================= */
 
-// INCREASE QTY
-function increaseQty(index) {
-  cart[index].qty += 1;
-  saveCart();
-}
+function saveCart(){
 
-// DECREASE QTY
-function decreaseQty(index) {
-  if (cart[index].qty > 1) {
-    cart[index].qty -= 1;
-  } else {
-    cart.splice(index, 1);
-  }
-  saveCart();
-}
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
 
-// SAVE CART
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
   renderCart();
 }
 
+/* =========================
+   REMOVE ITEM
+========================= */
+
+function removeItem(index){
+
+  cart.splice(index,1);
+
+  saveCart();
+}
+
+/* =========================
+   INCREASE
+========================= */
+
+function increaseQty(index){
+
+  cart[index].qty++;
+
+  saveCart();
+}
+
+/* =========================
+   DECREASE
+========================= */
+
+function decreaseQty(index){
+
+  if(cart[index].qty > 1){
+
+    cart[index].qty--;
+
+  } else {
+
+    cart.splice(index,1);
+  }
+
+  saveCart();
+}
+
+/* =========================
+   CLEAR CART
+========================= */
+
+function clearCart(){
+
+  cart = [];
+
+  saveCart();
+}
+
+/* =========================
+   INIT
+========================= */
+
 renderCart();
+
 </script>
 
 </body>
