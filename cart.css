@@ -1,5 +1,5 @@
 /* =========================
-   CART DESIGN SYSTEM
+   CART DESIGN SYSTEM (FINAL PRO)
 ========================= */
 
 :root{
@@ -12,6 +12,7 @@
   --danger:#ff3b30;
   --border:#ececec;
   --shadow:0 10px 25px rgba(0,0,0,.08);
+  --radius:16px;
 }
 
 /* DARK MODE */
@@ -35,6 +36,7 @@ body.dark{
 body{
   background:var(--bg);
   color:var(--text);
+  transition:background .3s ease, color .3s ease;
 }
 
 /* =========================
@@ -48,13 +50,13 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:14px 16px;
-  background:rgba(255,255,255,.9);
+  background:rgba(255,255,255,.85);
   backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
 }
 
 body.dark .header{
-  background:rgba(18,18,18,.9);
+  background:rgba(18,18,18,.85);
 }
 
 /* BACK BUTTON */
@@ -70,24 +72,48 @@ body.dark .header{
 }
 
 /* =========================
-   CART ITEMS
+   CART ITEMS (SMOOTH UI)
 ========================= */
 #cartItems{
   padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
 .cart-item{
   display:flex;
   gap:12px;
   padding:12px;
-  margin-bottom:10px;
-  border-radius:16px;
+  border-radius:14px;
   background:var(--card);
   border:1px solid var(--border);
   box-shadow:var(--shadow);
+
   position:relative;
+
+  /* SMOOTH ANIMATION */
+  animation:fadeUp .25s ease;
+  transition:transform .2s ease, box-shadow .2s ease;
 }
 
+.cart-item:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 30px rgba(0,0,0,.12);
+}
+
+@keyframes fadeUp{
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+/* IMAGE */
 .cart-item img{
   width:70px;
   height:70px;
@@ -120,6 +146,12 @@ body.dark .header{
   border-radius:8px;
   background:var(--primary);
   color:#fff;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.qty-box button:hover{
+  transform:scale(1.05);
 }
 
 /* REMOVE */
@@ -133,6 +165,12 @@ body.dark .header{
   background:#ffecec;
   color:var(--danger);
   border:none;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.remove-btn:hover{
+  transform:scale(1.1);
 }
 
 /* EMPTY */
@@ -143,20 +181,21 @@ body.dark .header{
 }
 
 /* =========================
-   CHECKOUT FORM
+   CHECKOUT FORM (FIXED INPUT ISSUE)
 ========================= */
 .checkout-form{
   margin:16px;
   padding:14px;
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:16px;
+  border-radius:14px;
   display:flex;
   flex-direction:column;
   gap:10px;
   box-shadow:var(--shadow);
 }
 
+/* IMPORTANT FIX (input click issue) */
 .checkout-form input,
 .checkout-form textarea{
   padding:12px;
@@ -165,21 +204,27 @@ body.dark .header{
   background:#fff;
   color:var(--text);
   font-size:15px;
+
+  position:relative;
+  z-index:5;
+  pointer-events:auto;
+  transition:.2s;
+}
+
+.checkout-form input:focus,
+.checkout-form textarea:focus{
+  border:1px solid var(--primary);
+  outline:none;
 }
 
 body.dark .checkout-form input,
 body.dark .checkout-form textarea{
   background:#232326;
-}
-
-/* focus fix */
-.checkout-form input:focus,
-.checkout-form textarea:focus{
-  border:1px solid var(--primary);
+  color:#fff;
 }
 
 /* =========================
-   STICKY FOOTER
+   STICKY CHECKOUT (SMOOTH)
 ========================= */
 .sticky-checkout{
   position:sticky;
@@ -190,7 +235,10 @@ body.dark .checkout-form textarea{
   display:flex;
   flex-direction:column;
   gap:10px;
-  box-shadow:0 -5px 20px rgba(0,0,0,.08);
+
+  /* smooth shadow */
+  box-shadow:0 -6px 20px rgba(0,0,0,.08);
+  z-index:10;
 }
 
 #cartTotal{
@@ -207,6 +255,12 @@ body.dark .checkout-form textarea{
   border-radius:12px;
   font-weight:700;
   border:none;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.checkout-btn:hover{
+  transform:translateY(-2px);
 }
 
 .clear-btn{
@@ -215,6 +269,12 @@ body.dark .checkout-form textarea{
   border-radius:12px;
   font-weight:700;
   border:none;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.clear-btn:hover{
+  transform:translateY(-2px);
 }
 
 /* =========================
@@ -230,5 +290,9 @@ body.dark .checkout-form textarea{
   .checkout-form input,
   .checkout-form textarea{
     font-size:16px;
+  }
+
+  .sticky-checkout{
+    padding:12px;
   }
 }
