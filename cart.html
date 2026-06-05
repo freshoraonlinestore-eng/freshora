@@ -2,14 +2,14 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Freshora Cart</title>
+<title>Freshora Cart</title>
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
@@ -17,14 +17,12 @@
 <!-- HEADER -->
 <header class="header">
 
-  <div class="logo">
-    Freshora
-  </div>
+  <div class="logo">Freshora</div>
 
   <div></div>
 
   <button class="icon-btn"
-          onclick="window.location.href='index.html'">
+    onclick="window.location.href='index.html'">
     <i class="fa fa-arrow-left"></i>
   </button>
 
@@ -33,13 +31,31 @@
 <!-- CART ITEMS -->
 <div id="cartItems" style="padding:16px"></div>
 
-<!-- CHECKOUT FOOTER -->
+<!-- CHECKOUT AREA -->
 <div class="sticky-checkout">
 
+  <!-- DELIVERY FORM -->
+  <div class="checkout-form">
+
+    <input type="text"
+           id="name"
+           placeholder="Full Name">
+
+    <input type="text"
+           id="phone"
+           placeholder="Phone Number">
+
+    <textarea id="address"
+              placeholder="Delivery Address"></textarea>
+
+  </div>
+
+  <!-- TOTAL -->
   <h3 id="cartTotal">Total: Rs 0</h3>
 
+  <!-- BUTTONS -->
   <button class="checkout-btn">
-    Checkout
+    Checkout via WhatsApp
   </button>
 
   <button class="clear-btn" onclick="clearCart()">
@@ -48,7 +64,6 @@
 
 </div>
 
-<!-- SCRIPT -->
 <script>
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -67,7 +82,7 @@ function renderCart(){
   if(cart.length === 0){
 
     cartItems.innerHTML = `
-      <p class="empty">🛒 Your cart is empty</p>
+      <p class="empty">🛒 Cart is empty</p>
     `;
 
     cartTotal.innerText = "Total: Rs 0";
@@ -87,7 +102,6 @@ function renderCart(){
       <div class="cart-item">
 
         <img src="${item.image}"
-             alt="${item.name}"
              onerror="this.src='placeholder.png'">
 
         <div class="cart-details">
@@ -109,7 +123,7 @@ function renderCart(){
         </div>
 
         <button class="remove-btn"
-                onclick="removeItem(${index})">
+          onclick="removeItem(${index})">
           ✕
         </button>
 
@@ -130,48 +144,40 @@ function saveCart(){
 }
 
 /* =========================
-   REMOVE ITEM
+   CART ACTIONS
 ========================= */
 
-function removeItem(index){
-  cart.splice(index,1);
+function removeItem(i){
+  cart.splice(i,1);
   saveCart();
 }
 
-/* =========================
-   QTY CONTROL
-========================= */
-
-function increaseQty(index){
-  cart[index].qty = (cart[index].qty || 1) + 1;
+function increaseQty(i){
+  cart[i].qty = (cart[i].qty || 1) + 1;
   saveCart();
 }
 
-function decreaseQty(index){
-  if(cart[index].qty > 1){
-    cart[index].qty--;
+function decreaseQty(i){
+  if(cart[i].qty > 1){
+    cart[i].qty--;
   } else {
-    cart.splice(index,1);
+    cart.splice(i,1);
   }
   saveCart();
 }
 
 /* =========================
-   CLEAR CART (FIXED)
+   CLEAR CART
 ========================= */
 
 function clearCart(){
-
-  if(cart.length === 0) return;
-
-  if(!confirm("Clear all cart items?")) return;
-
+  if(!confirm("Clear cart?")) return;
   cart = [];
   saveCart();
 }
 
 /* =========================
-   CHECKOUT (WHATSAPP)
+   CHECKOUT (WITH ADDRESS)
 ========================= */
 
 document.querySelector(".checkout-btn").onclick = function(){
@@ -181,7 +187,20 @@ document.querySelector(".checkout-btn").onclick = function(){
     return;
   }
 
-  let message = "🛒 Freshora Order:%0A%0A";
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+
+  if(!name || !phone || !address){
+    alert("Please fill delivery details");
+    return;
+  }
+
+  let message = `🛒 Freshora Order:%0A%0A`;
+  message += `👤 Name: ${name}%0A`;
+  message += `📞 Phone: ${phone}%0A`;
+  message += `📍 Address: ${address}%0A%0A`;
+
   let total = 0;
 
   cart.forEach(item=>{
@@ -195,10 +214,10 @@ document.querySelector(".checkout-btn").onclick = function(){
 
   message += `%0A💰 Total: Rs ${total}`;
 
-  const phone = "94752425790";
+  const shopNumber = "94752425790";
 
   window.open(
-    `https://wa.me/${phone}?text=${message}`,
+    `https://wa.me/${shopNumber}?text=${message}`,
     "_blank"
   );
 };
