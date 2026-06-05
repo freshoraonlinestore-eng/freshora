@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8" />
 
   <meta
@@ -12,18 +11,20 @@
 
   <title>Freshora Online Store</title>
 
-  <link rel="stylesheet" href="style.css" />
+  <link
+    rel="stylesheet"
+    href="style.css?v=3"
+  />
 
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
   />
-
 </head>
 
 <body>
 
-<!-- LOADING SCREEN -->
+<!-- LOADING -->
 
 <div id="loadingScreen" class="loading-screen">
   <div class="loader"></div>
@@ -37,49 +38,9 @@
   onclick="toggleCart()"
 ></div>
 
-<!-- TOP SOCIAL BAR -->
-
-<div class="top-social-bar">
-
-  <div class="social-links">
-
-    <a
-      href="https://facebook.com"
-      target="_blank"
-    >
-      <i class="fab fa-facebook-f"></i>
-    </a>
-
-    <a
-      href="https://instagram.com"
-      target="_blank"
-    >
-      <i class="fab fa-instagram"></i>
-    </a>
-
-    <a
-      href="https://tiktok.com"
-      target="_blank"
-    >
-      <i class="fab fa-tiktok"></i>
-    </a>
-
-    <a
-      href="https://wa.me/94752425790"
-      target="_blank"
-    >
-      <i class="fab fa-whatsapp"></i>
-    </a>
-
-  </div>
-
-</div>
-
 <!-- HEADER -->
 
 <header class="header">
-
-  <!-- LOGO -->
 
   <div
     class="logo"
@@ -88,101 +49,28 @@
     Freshora
   </div>
 
-  <!-- SEARCH -->
+  <div class="search-box">
 
-  <div class="header-center">
+    <i class="fa-solid fa-magnifying-glass"></i>
 
-    <div class="search-box">
-
-      <i class="fa-solid fa-magnifying-glass"></i>
-
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Search products..."
-        autocomplete="off"
-      />
-
-    </div>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search products..."
+      autocomplete="off"
+    />
 
   </div>
 
-  <!-- RIGHT -->
-
-  <div class="header-right">
-
-    <button
-      type="button"
-      id="darkModeBtn"
-      class="icon-btn"
-      onclick="toggleDarkMode()"
-      aria-label="Toggle Dark Mode"
-    >
-      🌙
-    </button>
-
-  </div>
+  <button
+    id="darkModeBtn"
+    class="icon-btn"
+    onclick="toggleDarkMode()"
+  >
+    <i class="fa-solid fa-moon"></i>
+  </button>
 
 </header>
-
-<!-- HERO SECTION -->
-
-<section class="hero-section">
-
-  <div class="hero-content">
-
-    <span class="hero-badge">
-      Freshora Premium Store
-    </span>
-
-    <h1>
-      Fresh Products <br>
-      Delivered Fast
-    </h1>
-
-    <p>
-      Grocery, Drinks, Snacks &
-      Beauty products at the best prices.
-    </p>
-
-    <button
-      onclick="window.scrollTo({
-        top:700,
-        behavior:'smooth'
-      })"
-    >
-      Shop Now
-    </button>
-
-  </div>
-
-</section>
-
-<!-- CATEGORY CHIPS -->
-
-<section class="category-chips">
-
-  <button onclick="setCategory('all')">
-    All
-  </button>
-
-  <button onclick="setCategory('Grocery')">
-    Grocery
-  </button>
-
-  <button onclick="setCategory('Drinks')">
-    Drinks
-  </button>
-
-  <button onclick="setCategory('Snacks')">
-    Snacks
-  </button>
-
-  <button onclick="setCategory('Beauty')">
-    Beauty
-  </button>
-
-</section>
 
 <!-- FILTERS -->
 
@@ -267,7 +155,7 @@
 
 <!-- FLOATING CART -->
 
-<div
+<button
   class="floating-cart"
   onclick="toggleCart()"
 >
@@ -278,7 +166,7 @@
     0
   </span>
 
-</div>
+</button>
 
 <!-- CART DRAWER -->
 
@@ -286,8 +174,6 @@
   id="cartDrawer"
   class="cart-drawer"
 >
-
-  <!-- CART HEADER -->
 
   <div class="cart-header">
 
@@ -297,7 +183,7 @@
       class="close-cart"
       onclick="toggleCart()"
     >
-      ✕
+      <i class="fa-solid fa-xmark"></i>
     </button>
 
   </div>
@@ -306,7 +192,7 @@
 
   <div id="cartItems"></div>
 
-  <!-- CHECKOUT FORM -->
+  <!-- FORM -->
 
   <div class="checkout-form">
 
@@ -325,45 +211,38 @@
     <textarea
       id="cusAddress"
       placeholder="Delivery Address"
-      rows="3"
     ></textarea>
 
   </div>
 
-  <!-- STICKY FOOTER -->
+  <!-- FOOTER -->
 
   <div class="sticky-checkout">
 
-    <h3 id="cartTotal">
-      Total: Rs 0
-    </h3>
+<div class="sticky-checkout">
 
-    <div class="checkout-actions">
+  <h3 id="cartTotal">Total: Rs 0</h3>
 
-      <button
-        class="checkout-btn"
-        onclick="checkout()"
-      >
+  <div class="checkout-actions">
 
-        <i class="fab fa-whatsapp"></i>
+    <button
+      class="checkout-btn"
+      onclick="checkout()"
+    >
+      <i class="fab fa-whatsapp"></i>
+      Order via WhatsApp
+    </button>
 
-        Order via WhatsApp
-
-      </button>
-
-      <button
-        class="clear-btn"
-        onclick="clearCart()"
-      >
-        Clear Cart
-      </button>
-
-    </div>
+    <button
+      class="clear-btn"
+      onclick="clearCart()"
+    >
+      Clear Cart
+    </button>
 
   </div>
 
 </div>
-
 <!-- PRODUCT MODAL -->
 
 <div
@@ -373,12 +252,12 @@
 
   <div class="modal-content">
 
-    <span
+    <button
       class="close"
       onclick="closeModal()"
     >
-      &times;
-    </span>
+      <i class="fa-solid fa-xmark"></i>
+    </button>
 
     <img
       id="modalImage"
@@ -407,17 +286,9 @@
 
 </div>
 
-<!-- TOAST -->
-
-<div id="toast" class="toast">
-  Added To Cart
-</div>
-
-<!-- APP -->
-
 <script
   type="module"
-  src="app.js"
+  src="app.js?v=3"
 ></script>
 
 </body>
