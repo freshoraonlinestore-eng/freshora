@@ -1,0 +1,234 @@
+/* =========================
+   CART DESIGN SYSTEM
+========================= */
+
+:root{
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#666;
+  --primary:#111;
+  --green:#00c853;
+  --danger:#ff3b30;
+  --border:#ececec;
+  --shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+/* DARK MODE */
+body.dark{
+  --bg:#0f0f10;
+  --card:#1a1a1c;
+  --text:#fff;
+  --muted:#9d9d9d;
+  --border:#2a2a2d;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:system-ui,-apple-system,sans-serif;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* =========================
+   HEADER
+========================= */
+.header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+
+body.dark .header{
+  background:rgba(18,18,18,.9);
+}
+
+/* BACK BUTTON */
+.icon-btn{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  background:var(--primary);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* =========================
+   CART ITEMS
+========================= */
+#cartItems{
+  padding:14px;
+}
+
+.cart-item{
+  display:flex;
+  gap:12px;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:16px;
+  background:var(--card);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  position:relative;
+}
+
+.cart-item img{
+  width:70px;
+  height:70px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+/* DETAILS */
+.cart-details h4{
+  font-size:14px;
+  margin-bottom:4px;
+}
+
+.cart-details p{
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* QTY */
+.qty-box{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-top:6px;
+}
+
+.qty-box button{
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  background:var(--primary);
+  color:#fff;
+}
+
+/* REMOVE */
+.remove-btn{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:#ffecec;
+  color:var(--danger);
+  border:none;
+}
+
+/* EMPTY */
+.empty{
+  text-align:center;
+  padding:40px;
+  color:var(--muted);
+}
+
+/* =========================
+   CHECKOUT FORM
+========================= */
+.checkout-form{
+  margin:16px;
+  padding:14px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow:var(--shadow);
+}
+
+.checkout-form input,
+.checkout-form textarea{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  color:var(--text);
+  font-size:15px;
+}
+
+body.dark .checkout-form input,
+body.dark .checkout-form textarea{
+  background:#232326;
+}
+
+/* focus fix */
+.checkout-form input:focus,
+.checkout-form textarea:focus{
+  border:1px solid var(--primary);
+}
+
+/* =========================
+   STICKY FOOTER
+========================= */
+.sticky-checkout{
+  position:sticky;
+  bottom:0;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow:0 -5px 20px rgba(0,0,0,.08);
+}
+
+#cartTotal{
+  text-align:center;
+  font-size:18px;
+  font-weight:800;
+}
+
+/* BUTTONS */
+.checkout-btn{
+  background:var(--green);
+  color:#fff;
+  padding:14px;
+  border-radius:12px;
+  font-weight:700;
+  border:none;
+}
+
+.clear-btn{
+  background:#f1f1f1;
+  padding:14px;
+  border-radius:12px;
+  font-weight:700;
+  border:none;
+}
+
+/* =========================
+   MOBILE FIX
+========================= */
+@media(max-width:768px){
+
+  .cart-item img{
+    width:60px;
+    height:60px;
+  }
+
+  .checkout-form input,
+  .checkout-form textarea{
+    font-size:16px;
+  }
+}
