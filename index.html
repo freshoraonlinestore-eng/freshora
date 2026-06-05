@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>Freshora Store</title>
+  <title>Freshora Online Store</title>
 
   <link rel="stylesheet" href="style.css" />
 
@@ -21,223 +21,366 @@
 
 <body>
 
-<!-- LOADING -->
+  <!-- LOADING -->
 
-<div id="loadingScreen" class="loading-screen">
-  <div class="loader"></div>
-</div>
+  <div id="loadingScreen" class="loading-screen">
 
-<!-- OVERLAY -->
-
-<div id="overlay" class="overlay" onclick="toggleCart()"></div>
-
-<!-- TOP BAR -->
-
-<div class="top-social-bar">
-
-  <div class="social-links">
-
-    <a href="https://facebook.com" target="_blank">
-      <i class="fab fa-facebook-f"></i>
-    </a>
-
-    <a href="https://instagram.com" target="_blank">
-      <i class="fab fa-instagram"></i>
-    </a>
-
-    <a href="https://tiktok.com" target="_blank">
-      <i class="fab fa-tiktok"></i>
-    </a>
-
-    <a href="https://wa.me/94752425790" target="_blank">
-      <i class="fab fa-whatsapp"></i>
-    </a>
+    <div class="loader"></div>
 
   </div>
 
-</div>
+  <!-- OVERLAY -->
 
-<!-- HEADER -->
+  <div
+    id="overlay"
+    class="overlay"
+    onclick="toggleCart()"
+  ></div>
 
-<header class="header">
+  <!-- TOP BAR -->
 
-  <div class="logo" ondblclick="window.location='login.html'">
-    Freshora
-  </div>
+  <div class="top-social-bar">
 
-  <div class="header-center">
+    <div class="social-links">
 
-    <div class="search-box">
+      <a
+        href="https://facebook.com"
+        target="_blank"
+        aria-label="Facebook"
+      >
+        <i class="fab fa-facebook-f"></i>
+      </a>
 
-      <i class="fa-solid fa-magnifying-glass"></i>
+      <a
+        href="https://instagram.com"
+        target="_blank"
+        aria-label="Instagram"
+      >
+        <i class="fab fa-instagram"></i>
+      </a>
 
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Search products..."
-        autocomplete="off"
-      />
+      <a
+        href="https://tiktok.com"
+        target="_blank"
+        aria-label="TikTok"
+      >
+        <i class="fab fa-tiktok"></i>
+      </a>
+
+      <a
+        href="https://wa.me/94752425790"
+        target="_blank"
+        aria-label="WhatsApp"
+      >
+        <i class="fab fa-whatsapp"></i>
+      </a>
 
     </div>
 
   </div>
 
-  <div class="header-right">
+  <!-- HEADER -->
 
-<button
-  type="button"
-  id="darkModeBtn"
-  class="icon-btn"
-  onclick="toggleDarkMode()"
-  aria-label="Toggle Dark Mode">
-  🌙
-</button>
+  <header class="header">
 
-  </div>
-
-</header>
-
-<!-- FILTERS -->
-
-<section class="advanced-search">
-
-  <div class="filter-grid">
-
-    <select id="categoryFilter">
-      <option value="all">All Categories</option>
-      <option value="Grocery">Grocery</option>
-      <option value="Drinks">Drinks</option>
-      <option value="Snacks">Snacks</option>
-      <option value="Beauty">Beauty</option>
-    </select>
-
-    <select id="priceFilter">
-      <option value="all">All Prices</option>
-      <option value="500">Under Rs 500</option>
-      <option value="1000">Under Rs 1000</option>
-      <option value="2000">Under Rs 2000</option>
-    </select>
-
-    <select id="discountFilter">
-      <option value="all">All Discounts</option>
-      <option value="10">10%+ Discount</option>
-      <option value="20">20%+ Discount</option>
-      <option value="30">30%+ Discount</option>
-    </select>
-
-  </div>
-
-</section>
-
-<!-- PRODUCTS -->
-
-<section id="products" class="products-grid"></section>
-
-<!-- FLOATING CART -->
-
-<div class="floating-cart" onclick="toggleCart()">
-
-  <i class="fa-solid fa-cart-shopping"></i>
-
-  <span id="floatingCartCount">0</span>
-
-</div>
-
-<!-- CART -->
-
-<div id="cartDrawer" class="cart-drawer">
-
-  <div class="cart-header">
-
-    <h2>Your Cart</h2>
-
-    <button onclick="toggleCart()">✕</button>
-
-  </div>
-
-  <div id="cartItems"></div>
-
-  <div class="checkout-form">
-
-    <input
-      type="text"
-      id="cusName"
-      placeholder="Your Name"
-    />
-
-    <input
-      type="tel"
-      id="cusPhone"
-      placeholder="Phone Number"
-    />
-
-    <textarea
-      id="cusAddress"
-      placeholder="Delivery Address"
-    ></textarea>
-
-  </div>
-
-  <div class="sticky-checkout">
-
-    <h3 id="cartTotal">Total: Rs 0</h3>
-
-    <button
-      class="checkout-btn"
-      onclick="checkout()"
+    <div
+      class="logo"
+      ondblclick="window.location='login.html'"
     >
-      Checkout
-    </button>
+      Freshora
+    </div>
 
-    <button
-      class="clear-btn"
-      onclick="clearCart()"
-    >
-      Clear Cart
-    </button>
+    <div class="header-center">
 
-  </div>
+      <div class="search-box">
 
-</div>
+        <i class="fa-solid fa-magnifying-glass"></i>
 
-<!-- PRODUCT MODAL -->
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search products..."
+          autocomplete="off"
+        />
 
-<div id="productModal" class="modal">
-
-  <div class="modal-content">
-
-    <span class="close" onclick="closeModal()">
-      &times;
-    </span>
-
-    <img
-      id="modalImage"
-      src="placeholder.png"
-      alt="Product"
-      onerror="this.src='placeholder.png'"
-    />
-
-    <div class="modal-details">
-
-      <h2 id="modalName"></h2>
-
-      <p id="modalPrice"></p>
-
-      <div class="rating-box">
-        ⭐⭐⭐⭐⭐
       </div>
 
-      <button id="modalAddBtn">
-        Add to Cart
+    </div>
+
+    <div class="header-right">
+
+      <button
+        type="button"
+        id="darkModeBtn"
+        class="icon-btn"
+        onclick="toggleDarkMode()"
+        aria-label="Toggle Dark Mode"
+      >
+        🌙
       </button>
 
     </div>
 
+  </header>
+
+  <!-- FILTERS -->
+
+  <section class="advanced-search">
+
+    <div class="filter-grid">
+
+      <select id="categoryFilter">
+
+        <option value="all">
+          All Categories
+        </option>
+
+        <option value="Grocery">
+          Grocery
+        </option>
+
+        <option value="Drinks">
+          Drinks
+        </option>
+
+        <option value="Snacks">
+          Snacks
+        </option>
+
+        <option value="Beauty">
+          Beauty
+        </option>
+
+      </select>
+
+      <select id="priceFilter">
+
+        <option value="all">
+          All Prices
+        </option>
+
+        <option value="500">
+          Under Rs 500
+        </option>
+
+        <option value="1000">
+          Under Rs 1000
+        </option>
+
+        <option value="2000">
+          Under Rs 2000
+        </option>
+
+      </select>
+
+      <select id="discountFilter">
+
+        <option value="all">
+          All Discounts
+        </option>
+
+        <option value="10">
+          10%+ Discount
+        </option>
+
+        <option value="20">
+          20%+ Discount
+        </option>
+
+        <option value="30">
+          30%+ Discount
+        </option>
+
+      </select>
+
+    </div>
+
+  </section>
+
+  <!-- PRODUCTS -->
+
+  <main>
+
+    <section
+      id="products"
+      class="products-grid"
+    ></section>
+
+  </main>
+
+  <!-- FLOATING CART -->
+
+  <button
+    class="floating-cart"
+    onclick="toggleCart()"
+    aria-label="Open Cart"
+  >
+
+    <i class="fa-solid fa-cart-shopping"></i>
+
+    <span id="floatingCartCount">
+      0
+    </span>
+
+  </button>
+
+  <!-- CART DRAWER -->
+
+  <aside
+    id="cartDrawer"
+    class="cart-drawer"
+  >
+
+    <!-- CART HEADER -->
+
+    <div class="cart-header">
+
+      <div>
+
+        <h2>Your Cart</h2>
+
+        <p class="cart-subtitle">
+          Review your order
+        </p>
+
+      </div>
+
+      <button
+        class="close-cart-btn"
+        onclick="toggleCart()"
+        aria-label="Close Cart"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+    </div>
+
+    <!-- CART ITEMS -->
+
+    <div id="cartItems"></div>
+
+    <!-- CHECKOUT FORM -->
+
+    <div class="checkout-form">
+
+      <input
+        type="text"
+        id="cusName"
+        placeholder="Your Name"
+        autocomplete="name"
+      />
+
+      <input
+        type="tel"
+        id="cusPhone"
+        placeholder="Phone Number"
+        autocomplete="tel"
+      />
+
+      <textarea
+        id="cusAddress"
+        placeholder="Delivery Address"
+      ></textarea>
+
+    </div>
+
+    <!-- STICKY CHECKOUT -->
+
+    <div class="sticky-checkout">
+
+      <h3 id="cartTotal">
+        Total: Rs 0
+      </h3>
+
+      <button
+        class="checkout-btn"
+        onclick="checkout()"
+      >
+
+        <i class="fab fa-whatsapp"></i>
+
+        Order via WhatsApp
+
+      </button>
+
+      <button
+        class="clear-btn"
+        onclick="clearCart()"
+      >
+
+        <i class="fa-solid fa-trash"></i>
+
+        Clear Cart
+
+      </button>
+
+    </div>
+
+  </aside>
+
+  <!-- PRODUCT MODAL -->
+
+  <div
+    id="productModal"
+    class="modal"
+  >
+
+    <div class="modal-content">
+
+      <button
+        class="close"
+        onclick="closeModal()"
+        aria-label="Close"
+      >
+        &times;
+      </button>
+
+      <div class="modal-image-wrap">
+
+        <img
+          id="modalImage"
+          src="placeholder.png"
+          alt="Product"
+          onerror="this.src='placeholder.png'"
+        />
+
+      </div>
+
+      <div class="modal-details">
+
+        <h2 id="modalName"></h2>
+
+        <p id="modalPrice"></p>
+
+        <div class="rating-box">
+
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+
+        </div>
+
+        <button id="modalAddBtn">
+
+          <i class="fa-solid fa-cart-shopping"></i>
+
+          Add to Cart
+
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
 
-</div>
-
-<script type="module" src="app.js"></script>
+  <script
+    type="module"
+    src="app.js"
+  ></script>
 
 </body>
+
 </html>
