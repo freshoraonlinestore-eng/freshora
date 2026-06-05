@@ -82,7 +82,6 @@
 
 <body>
 
-<!-- HEADER -->
 <header class="header">
 
   <div class="logo">Freshora</div>
@@ -95,10 +94,8 @@
 
 </header>
 
-<!-- CART ITEMS -->
 <div id="cartItems" style="padding:16px"></div>
 
-<!-- DELIVERY FORM -->
 <div class="checkout-form">
 
   <input id="name" type="text" placeholder="Your Name">
@@ -108,7 +105,6 @@
 
 </div>
 
-<!-- TOTAL + BUTTONS -->
 <div class="sticky-checkout">
 
   <div id="cartTotal">Total: Rs 0</div>
@@ -130,12 +126,14 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 const cartItems = document.getElementById("cartItems");
 const cartTotal = document.getElementById("cartTotal");
 
-/* ================= CART RENDER ================= */
-function renderCart() {
+/* ================= SAFE RENDER ================= */
+function renderCart(){
+
+  if(!cartItems) return;
 
   cartItems.innerHTML = "";
 
-  if (cart.length === 0) {
+  if(cart.length === 0){
     cartItems.innerHTML = `<p class="empty">Your cart is empty</p>`;
     cartTotal.innerText = "Total: Rs 0";
     return;
@@ -143,7 +141,7 @@ function renderCart() {
 
   let total = 0;
 
-  cart.forEach((item, index) => {
+  cart.forEach((item,index)=>{
 
     let itemTotal = Number(item.price) * item.qty;
     total += itemTotal;
@@ -156,7 +154,6 @@ function renderCart() {
         <div class="cart-details">
 
           <h4>${item.name}</h4>
-
           <p>Rs ${Number(item.price).toLocaleString()}</p>
 
           <div class="qty-box">
@@ -178,7 +175,7 @@ function renderCart() {
   cartTotal.innerText = "Total: Rs " + total.toLocaleString();
 }
 
-/* ================= CART FUNCTIONS ================= */
+/* ================= CART OPS ================= */
 function saveCart(){
   localStorage.setItem("cart", JSON.stringify(cart));
   renderCart();
@@ -208,7 +205,7 @@ function clearCart(){
   saveCart();
 }
 
-/* ================= CHECKOUT ================= */
+/* ================= CHECKOUT FIXED ================= */
 function checkout(){
 
   if(cart.length === 0){
@@ -216,10 +213,10 @@ function checkout(){
     return;
   }
 
-  let name = document.getElementById("name").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let district = document.getElementById("district").value.trim();
-  let address = document.getElementById("address").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const district = document.getElementById("district").value.trim();
+  const address = document.getElementById("address").value.trim();
 
   if(!name || !phone || !district || !address){
     alert("Please fill delivery details!");
@@ -237,43 +234,32 @@ function checkout(){
   let itemsText = "";
 
   cart.forEach((item,i)=>{
-    let total = item.price * item.qty;
-    subtotal += total;
+    let itemTotal = item.price * item.qty;
+    subtotal += itemTotal;
 
-    itemsText += `${i+1}) ${item.name} x${item.qty} = LKR ${total}\n`;
+    itemsText += `${i+1}) ${item.name} x${item.qty} = LKR ${itemTotal}\n`;
   });
 
   let delivery = 375;
   let total = subtotal + delivery;
 
-  let message = `🟢 FRESHORA NEW ORDER 🟢
+  let message = `🟢 FRESHORA ORDER 🟢
 
-📦 Order ID: ${orderID}
-📅 Date: ${new Date().toLocaleString()}
+Order ID: ${orderID}
 
-👤 CUSTOMER DETAILS
-----------------------
 Name: ${name}
 Phone: ${phone}
 District: ${district}
 Address: ${address}
 
-🛒 ITEMS
-----------------------
+ITEMS:
 ${itemsText}
 
-💰 BILL SUMMARY
-----------------------
 Subtotal: LKR ${subtotal}
 Delivery: LKR ${delivery}
-TOTAL: LKR ${total}
+TOTAL: LKR ${total}`;
 
-🚚 COD Order
-📍 Freshora Online Store
-
-Thank You!`;
-
-  let whatsapp = "94752425790";
+  const whatsapp = "94752425790";
 
   window.open(
     `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`,
