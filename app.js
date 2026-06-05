@@ -16,7 +16,7 @@ let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let allProducts = [];
 
 /* =========================
-   SAFE TEXT (XSS FIX)
+   SAFE TEXT
 ========================= */
 
 function escapeHTML(str = ""){
@@ -39,7 +39,7 @@ function showToast(text){
 
   document.body.appendChild(toast);
 
-  setTimeout(()=> toast.classList.add("show"),100);
+  setTimeout(()=>toast.classList.add("show"),100);
 
   setTimeout(()=>{
     toast.classList.remove("show");
@@ -48,13 +48,28 @@ function showToast(text){
 }
 
 /* =========================
-   CART SAVE
+   CART STATE FIX (IMPORTANT)
+========================= */
+
+let renderLock = false;
+
+/* =========================
+   CART SAVE (FIXED)
 ========================= */
 
 function saveCart(){
+
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartCount();
-  renderCart();
+
+  // FIX: prevent double render conflict
+  if(renderLock) return;
+
+  renderLock = true;
+  requestAnimationFrame(()=>{
+    renderCart();
+    renderLock = false;
+  });
 }
 
 /* =========================
@@ -62,9 +77,10 @@ function saveCart(){
 ========================= */
 
 function updateCartCount(){
-  const total = cart.reduce((s,i)=>s+i.qty,0);
   const el = document.getElementById("floatingCartCount");
-  if(el) el.innerText = total;
+  if(el){
+    el.innerText = cart.reduce((s,i)=>s+i.qty,0);
+  }
 }
 
 /* =========================
@@ -76,6 +92,7 @@ function saveWishlist(){
 }
 
 window.toggleWishlist = function(id){
+
   if(!id) return;
 
   if(wishlist.includes(id)){
@@ -145,17 +162,25 @@ window.clearCart = function(){
 };
 
 /* =========================
-   CART DRAWER
+   CART DRAWER (FIXED SYNC)
 ========================= */
 
 window.toggleCart = function(){
-  document.getElementById("cartDrawer")?.classList.toggle("open");
-  document.getElementById("overlay")?.classList.toggle("show");
-  renderCart();
+
+  const drawer = document.getElementById("cartDrawer");
+  const overlay = document.getElementById("overlay");
+
+  if(!drawer || !overlay) return;
+
+  drawer.classList.toggle("open");
+  overlay.classList.toggle("show");
+
+  // FIX: no duplicate render conflict
+  requestAnimationFrame(renderCart);
 };
 
 /* =========================
-   RENDER CART
+   RENDER CART (STABLE)
 ========================= */
 
 function renderCart(){
@@ -167,7 +192,7 @@ function renderCart(){
 
   box.innerHTML = "";
 
-  if(cart.length===0){
+  if(cart.length === 0){
     box.innerHTML = `<p class="empty">Cart empty</p>`;
     totalBox.innerText = "Total: Rs 0";
     return;
@@ -204,68 +229,89 @@ function renderCart(){
 }
 
 /* =========================
-   CHECKOUT (SAFE)
+   PRODUCTS RENDER (SAFE)
 ========================= */
 
-window.checkout = async function(){
+function renderProducts(products){
 
-  if(cart.length===0){
-    showToast("Cart Empty");
+  if(!productsDiv) return;
+
+  productsDiv.innerHTML = "";
+
+  if(!products || products.length===0){
+    productsDiv.innerHTML = `<p class="empty">No products found</p>`;
     return;
   }
 
-  const name = document.getElementById("cusName")?.value.trim();
-  const phone = document.getElementById("cusPhone")?.value.trim();
-  const address = document.getElementById("cusAddress")?.value.trim();
+  products.forEach(p=>{
 
-  if(!name || !phone || !address){
-    showToast("Fill all fields");
-    return;
-  }
+    const html = `
+      <div class="card">
 
-  const total = cart.reduce((s,i)=>s+(i.price*i.qty),0);
+        <img src="${p.image}" alt="${escapeHTML(p.name)}">
 
-  try{
+        <div class="card-content">
 
-    await addDoc(collection(db,"orders"),{
-      customer:{name,phone,address},
-      items:cart,
-      total,
-      createdAt:Date.now()
-    });
+          <h3>${escapeHTML(p.name)}</h3>
 
-    let msg = `🛒 Freshora Order:%0A%0A`;
-    msg += `👤 Name: ${name}%0A`;
-    msg += `📞 Phone: ${phone}%0A`;
-    msg += `📍 Address: ${address}%0A%0A`;
+          <div class="price-box">
+            <span class="new-price">Rs ${p.price}</span>
+          </div>
 
-    cart.forEach(i=>{
-      msg += `${i.name} x${i.qty}%0A`;
-    });
+          <div class="card-buttons">
 
-    msg += `%0ATotal: Rs ${total}`;
+            <button class="view-btn"
+              onclick="openModal('${p.id}','${escapeHTML(p.name)}','${p.price}','${p.image}')">
+              View
+            </button>
 
-    window.open(
-      "https://wa.me/94752425790?text="+msg,
-      "_blank"
-    );
+            <button class="add-cart-btn"
+              onclick="addToCart('${p.id}','${escapeHTML(p.name)}','${p.price}','${p.image}')">
+              Add
+            </button>
 
-    cart = [];
-    saveCart();
+          </div>
 
-    document.getElementById("cartDrawer")?.classList.remove("open");
-    document.getElementById("overlay")?.classList.remove("show");
+        </div>
 
-    showToast("Order Sent ✅");
+      </div>
+    `;
 
-  } catch(err){
-    console.log(err);
-    showToast("Checkout Failed");
-  }
-};
+    productsDiv.insertAdjacentHTML("beforeend", html);
+  });
+}
 
 /* =========================
-   MODAL (FIXED SAFE)
+   FIREBASE FIX (DATA LOAD STABLE)
+========================= */
+
+onSnapshot(
+  collection(db,"products"),
+  (snapshot)=>{
+
+    try{
+
+      allProducts = snapshot.docs.map(d=>({
+        id:d.id,
+        ...d.data()
+      }));
+
+      renderProducts(allProducts);
+      updateCartCount();
+
+    } catch(err){
+      console.log("Firebase Error:",err);
+      showToast("Data load error");
+    }
+  },
+  (error)=>{
+    console.log("Snapshot Error:",error);
+    showToast("Connection failed");
+  }
+);
+
+/* =========================
+   MODAL
 ========================= */
 
 window.openModal = function(id,name,price,image){
@@ -288,15 +334,6 @@ window.closeModal = function(){
   document.getElementById("productModal").style.display = "none";
 };
 
-/* SAFE EVENT (FIXED - no override) */
-document.addEventListener("click",(e)=>{
-  const modal = document.getElementById("productModal");
-
-  if(e.target === modal){
-    closeModal();
-  }
-});
-
 /* =========================
    DARK MODE
 ========================= */
@@ -311,7 +348,7 @@ if(localStorage.getItem("darkMode")==="true"){
 }
 
 /* =========================
-   FILTER EVENTS
+   EVENTS
 ========================= */
 
 document.addEventListener("input",(e)=>{
@@ -337,32 +374,10 @@ document.addEventListener("keydown",(e)=>{
 });
 
 /* =========================
-   LOADING
+   INIT
 ========================= */
 
 window.addEventListener("load",()=>{
-  const loading = document.getElementById("loadingScreen");
-
-  if(loading){
-    loading.classList.add("hide");
-    setTimeout(()=>loading.remove(),400);
-  }
-
   updateCartCount();
   renderCart();
-});
-
-/* =========================
-   FIREBASE PRODUCTS
-========================= */
-
-onSnapshot(collection(db,"products"),(snap)=>{
-
-  allProducts = snap.docs.map(d=>({
-    id:d.id,
-    ...d.data()
-  }));
-
-  renderProducts(allProducts);
-  updateCartCount();
 });
