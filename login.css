@@ -1,0 +1,88 @@
+body.login-body {
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+  background: linear-gradient(135deg, #111, #333);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* LOGIN BOX */
+.login-container {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* LOGO */
+.login-logo {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+/* TITLE */
+.login-container h2 {
+  margin-bottom: 5px;
+}
+
+/* SUBTITLE */
+.login-subtitle {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+/* INPUTS */
+.login-form input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+}
+
+.login-form input:focus {
+  border-color: #111;
+}
+
+/* BUTTON */
+.login-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 15px;
+  background: #111;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+}
+
+/* ERROR TEXT */
+.error-text {
+  color: red;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+/* BACK LINK */
+.back-home {
+  display: block;
+  margin-top: 15px;
+  font-size: 13px;
+  color: #111;
+  text-decoration: none;
+}

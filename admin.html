@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Freshora Admin Panel</title>
+
+  <link rel="stylesheet" href="admin-ui.css">
+
+</head>
+
+<body class="admin-body">
+
+<!-- =========================
+     TOP BAR
+========================= -->
+<header class="admin-header">
+
+  <h2>Admin Dashboard</h2>
+
+  <div class="admin-actions">
+
+    <button onclick="logout()" class="logout-btn">
+      Logout
+    </button>
+
+    <a href="index.html">Store</a>
+
+  </div>
+
+</header>
+
+<!-- =========================
+     ANALYTICS
+========================= -->
+<section class="analytics">
+
+  <div class="card stat-card">
+    <h3>Total Products</h3>
+    <p id="totalProducts">0</p>
+  </div>
+
+  <div class="card stat-card">
+    <h3>Total Orders</h3>
+    <p id="totalOrders">0</p>
+  </div>
+
+  <div class="card stat-card">
+    <h3>Total Revenue</h3>
+    <p id="totalRevenue">Rs 0</p>
+  </div>
+
+</section>
+
+<!-- =========================
+     PRODUCT FORM
+========================= -->
+<section class="admin-form">
+
+  <h3>Add / Edit Product</h3>
+
+  <input id="name" placeholder="Product Name">
+  <input id="price" placeholder="Price">
+
+  <!-- 🔥 CLOUDINARY IMAGE UPLOAD -->
+  <input type="file" id="imageFile" accept="image/*">
+  <p id="uploadStatus"></p>
+
+  <button type="button"
+          onclick="document.getElementById('imageFile').value=''"
+          class="clear-btn">
+    Clear Image
+  </button>
+
+  <input id="category" placeholder="Category (Drinks, Snacks...)">
+  <input id="discount" placeholder="Discount %">
+  <input id="stock" placeholder="Stock (In Stock / Out of Stock)">
+
+  <textarea id="description" placeholder="Product Description"></textarea>
+
+  <button onclick="addOrUpdateProduct()" id="submitBtn">
+    Add Product
+  </button>
+
+  <!-- CLEAR ALL -->
+  <button type="button" onclick="clearForm()" class="clear-btn">
+    Clear All Fields
+  </button>
+
+</section>
+
+<!-- =========================
+     PRODUCT LIST
+========================= -->
+<section id="list" class="product-list"></section>
+
+<!-- =========================
+     SCRIPT
+========================= -->
+<script type="module" src="admin.js"></script>
+
+</body>
+</html>
