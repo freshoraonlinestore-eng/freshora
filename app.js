@@ -24,7 +24,7 @@ JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 
 /* =========================
-   SAFE HELPERS
+   HELPERS
 ========================= */
 
 function safeNumber(val){
@@ -36,6 +36,7 @@ function safeNumber(val){
 ========================= */
 
 function hideLoading(){
+
   if(!loadingScreen) return;
 
   loadingScreen.style.opacity = "0";
@@ -84,22 +85,29 @@ window.addEventListener("DOMContentLoaded",()=>{
 });
 
 /* =========================
-   CART CORE (SAFE FIXED)
+   CART CORE
 ========================= */
 
 function saveCart(){
 
-  localStorage.setItem("cart", JSON.stringify(cart));
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
 
   updateCartCount();
   renderCart();
 }
 
-/* FIXED COUNT */
+/* CART COUNT */
+
 function updateCartCount(){
 
   const total =
-  cart.reduce((sum,item)=>sum + safeNumber(item.qty),0);
+  cart.reduce(
+    (sum,item)=>sum + safeNumber(item.qty),
+    0
+  );
 
   const count =
   document.getElementById("floatingCartCount");
@@ -109,64 +117,163 @@ function updateCartCount(){
   }
 }
 
-/* ADD TO CART (SAFE) */
-window.addToCart = function(id, name, price, image){
+/* ADD CART */
+
+window.addToCart = function(
+  id,
+  name,
+  price,
+  image
+){
 
   const existing =
   cart.find(i => i.id === id);
 
   if(existing){
-    existing.qty = safeNumber(existing.qty) + 1;
+
+    existing.qty =
+    safeNumber(existing.qty) + 1;
+
   } else {
+
     cart.push({
       id,
       name,
-      price: safeNumber(price),
+      price:safeNumber(price),
       image,
-      qty: 1
+      qty:1
     });
   }
 
   saveCart();
-
-  // NO UI CHANGE - only safe feedback
-  console.log("Added to cart:", name);
 };
 
-/* REMOVE */
+/* REMOVE ITEM */
+
 window.removeItem = function(index){
 
   if(index < 0 || index >= cart.length) return;
 
   cart.splice(index,1);
+
   saveCart();
 };
 
 /* INCREASE */
+
 window.increaseQty = function(index){
 
   if(cart[index]){
-    cart[index].qty = safeNumber(cart[index].qty) + 1;
+
+    cart[index].qty =
+    safeNumber(cart[index].qty) + 1;
+
     saveCart();
   }
 };
 
 /* DECREASE */
+
 window.decreaseQty = function(index){
 
   if(!cart[index]) return;
 
-  cart[index].qty = safeNumber(cart[index].qty) - 1;
+  cart[index].qty =
+  safeNumber(cart[index].qty) - 1;
 
   if(cart[index].qty <= 0){
+
     cart.splice(index,1);
   }
 
   saveCart();
 };
 
+/* CLEAR CART */
+
+window.clearCart = function(){
+
+  if(confirm("Clear all cart items?")){
+
+    cart = [];
+
+    saveCart();
+  }
+};
+
 /* =========================
-   RENDER CART (SAFE)
+   WHATSAPP ORDER
+========================= */
+
+window.sendWhatsAppOrder = function(){
+
+  if(cart.length === 0){
+
+    alert("Your cart is empty");
+
+    return;
+  }
+
+  const name =
+  document.getElementById("cusName")
+  ?.value
+  ?.trim() || "";
+
+  const phone =
+  document.getElementById("cusPhone")
+  ?.value
+  ?.trim() || "";
+
+  const address =
+  document.getElementById("cusAddress")
+  ?.value
+  ?.trim() || "";
+
+  let message =
+  "🛒 *Freshora Order* %0A%0A";
+
+  let total = 0;
+
+  cart.forEach((item,index)=>{
+
+    const price =
+    safeNumber(item.price);
+
+    const qty =
+    safeNumber(item.qty);
+
+    const subtotal =
+    price * qty;
+
+    total += subtotal;
+
+    message +=
+    `${index+1}. ${item.name} x${qty} - Rs ${subtotal.toLocaleString()}%0A`;
+  });
+
+  message +=
+  `%0A💰 Total: Rs ${total.toLocaleString()}%0A`;
+
+  if(name){
+    message += `%0A👤 Name: ${name}`;
+  }
+
+  if(phone){
+    message += `%0A📞 Phone: ${phone}`;
+  }
+
+  if(address){
+    message += `%0A📍 Address: ${address}`;
+  }
+
+  const url =
+  `https://wa.me/94752425790?text=${message}`;
+
+  window.open(url,"_blank");
+};
+
+/* =========================
+   RENDER CART
 ========================= */
 
 function renderCart(){
@@ -184,11 +291,14 @@ function renderCart(){
   if(cart.length === 0){
 
     cartItems.innerHTML = `
-      <p class="empty">Cart Empty</p>
+      <p class="empty">
+        Cart Empty
+      </p>
     `;
 
     if(cartTotal){
-      cartTotal.innerText = "Total: Rs 0";
+      cartTotal.innerText =
+      "Total: Rs 0";
     }
 
     return;
@@ -198,12 +308,16 @@ function renderCart(){
 
   cart.forEach((item,index)=>{
 
-    const price = safeNumber(item.price);
-    const qty = safeNumber(item.qty);
+    const price =
+    safeNumber(item.price);
+
+    const qty =
+    safeNumber(item.qty);
 
     total += price * qty;
 
     cartItems.innerHTML += `
+
       <div class="cart-item">
 
         <img
@@ -216,15 +330,21 @@ function renderCart(){
 
           <h4>${item.name}</h4>
 
-          <p>Rs ${price.toLocaleString()}</p>
+          <p>
+            Rs ${price.toLocaleString()}
+          </p>
 
           <div class="qty-box">
 
-            <button onclick="decreaseQty(${index})">-</button>
+            <button onclick="decreaseQty(${index})">
+              -
+            </button>
 
             <span>${qty}</span>
 
-            <button onclick="increaseQty(${index})">+</button>
+            <button onclick="increaseQty(${index})">
+              +
+            </button>
 
           </div>
 
@@ -233,20 +353,24 @@ function renderCart(){
         <button
           class="remove-btn"
           onclick="removeItem(${index})"
-        >✕</button>
+        >
+          ✕
+        </button>
 
       </div>
     `;
   });
 
   if(cartTotal){
+
     cartTotal.innerText =
-    "Total: Rs " + total.toLocaleString();
+    "Total: Rs " +
+    total.toLocaleString();
   }
 }
 
 /* =========================
-   FILTERS (UNCHANGED LOGIC + SAFE)
+   FILTER PRODUCTS
 ========================= */
 
 function filterProducts(){
@@ -273,7 +397,8 @@ function filterProducts(){
   allProducts.filter(product=>{
 
     const name =
-    (product.name || "").toLowerCase();
+    (product.name || "")
+    .toLowerCase();
 
     const matchSearch =
     name.includes(search);
@@ -284,11 +409,13 @@ function filterProducts(){
 
     const matchPrice =
     price === "all" ||
-    safeNumber(product.price) <= safeNumber(price);
+    safeNumber(product.price)
+    <= safeNumber(price);
 
     const matchDiscount =
     discount === "all" ||
-    safeNumber(product.discount) >= safeNumber(discount);
+    safeNumber(product.discount)
+    >= safeNumber(discount);
 
     return (
       matchSearch &&
@@ -301,21 +428,26 @@ function filterProducts(){
   renderProducts(filtered);
 }
 
-/* EVENTS */
-document.getElementById("searchInput")
+/* FILTER EVENTS */
+
+document
+.getElementById("searchInput")
 ?.addEventListener("input",filterProducts);
 
-document.getElementById("categoryFilter")
+document
+.getElementById("categoryFilter")
 ?.addEventListener("change",filterProducts);
 
-document.getElementById("priceFilter")
+document
+.getElementById("priceFilter")
 ?.addEventListener("change",filterProducts);
 
-document.getElementById("discountFilter")
+document
+.getElementById("discountFilter")
 ?.addEventListener("change",filterProducts);
 
 /* =========================
-   PRODUCTS RENDER (SAFE)
+   RENDER PRODUCTS
 ========================= */
 
 function renderProducts(products){
@@ -325,36 +457,62 @@ function renderProducts(products){
   productsDiv.innerHTML = "";
 
   if(products.length === 0){
-    productsDiv.innerHTML =
-    `<p style="text-align:center;width:100%;padding:40px;">
-      No Products Found
-    </p>`;
+
+    productsDiv.innerHTML = `
+      <p style="
+        text-align:center;
+        width:100%;
+        padding:40px;
+      ">
+        No Products Found
+      </p>
+    `;
+
     return;
   }
 
   products.forEach(p=>{
 
     const id = p.id;
-    const name = p.name || "Unnamed";
-    const image = p.image || "placeholder.png";
-    const price = safeNumber(p.price);
-    const discount = safeNumber(p.discount);
+
+    const image =
+    p.image || "placeholder.png";
+
+    const name =
+    p.name || "Unnamed Product";
+
+    const price =
+    safeNumber(p.price);
+
+    const discount =
+    safeNumber(p.discount);
 
     const finalPrice =
     discount > 0
-      ? Math.round(price - (price * discount / 100))
-      : price;
+    ? Math.round(
+        price - (price * discount / 100)
+      )
+    : price;
 
     productsDiv.innerHTML += `
+
       <div class="card">
 
         ${
           discount > 0
-          ? `<div class="discount-badge">${discount}% OFF</div>`
+          ? `
+            <div class="discount-badge">
+              ${discount}% OFF
+            </div>
+          `
           : ""
         }
 
-        <img src="${image}" onerror="this.src='placeholder.png'">
+        <img
+          src="${image}"
+          alt="${name}"
+          onerror="this.src='placeholder.png'"
+        >
 
         <div class="card-content">
 
@@ -364,7 +522,11 @@ function renderProducts(products){
 
             ${
               discount > 0
-              ? `<span class="old-price">Rs ${price.toLocaleString()}</span>`
+              ? `
+                <span class="old-price">
+                  Rs ${price.toLocaleString()}
+                </span>
+              `
               : ""
             }
 
@@ -376,14 +538,28 @@ function renderProducts(products){
 
           <div class="card-buttons">
 
-            <button class="view-btn"
-              onclick="openModal('${id}','${name}','${finalPrice}','${image}')">
+            <button
+              class="view-btn"
+              onclick="openModal(
+                '${id}',
+                '${name}',
+                '${finalPrice}',
+                '${image}'
+              )"
+            >
               View
             </button>
 
-            <button class="add-cart-btn"
-              onclick="addToCart('${id}','${name}','${finalPrice}','${image}')">
-              Add
+            <button
+              class="add-cart-btn"
+              onclick="addToCart(
+                '${id}',
+                '${name}',
+                '${finalPrice}',
+                '${image}'
+              )"
+            >
+              Add Cart
             </button>
 
           </div>
@@ -396,10 +572,15 @@ function renderProducts(products){
 }
 
 /* =========================
-   MODAL (SAFE)
+   MODAL
 ========================= */
 
-window.openModal = function(id,name,price,image){
+window.openModal = function(
+  id,
+  name,
+  price,
+  image
+){
 
   const modal =
   document.getElementById("productModal");
@@ -408,15 +589,33 @@ window.openModal = function(id,name,price,image){
 
   modal.style.display = "block";
 
-  document.getElementById("modalImage").src = image;
-  document.getElementById("modalName").innerText = name;
-  document.getElementById("modalPrice").innerText = "Rs " + price;
+  document.getElementById(
+    "modalImage"
+  ).src = image;
 
-  document.getElementById("modalAddBtn").onclick =
-  () => addToCart(id,name,price,image);
+  document.getElementById(
+    "modalName"
+  ).innerText = name;
+
+  document.getElementById(
+    "modalPrice"
+  ).innerText = "Rs " + price;
+
+  document.getElementById(
+    "modalAddBtn"
+  ).onclick = ()=>{
+
+    addToCart(
+      id,
+      name,
+      price,
+      image
+    );
+  };
 };
 
 window.closeModal = function(){
+
   const modal =
   document.getElementById("productModal");
 
@@ -426,6 +625,7 @@ window.closeModal = function(){
 };
 
 window.onclick = function(e){
+
   const modal =
   document.getElementById("productModal");
 
@@ -440,28 +640,34 @@ window.onclick = function(e){
 
 window.toggleCart = function(){
 
-  document.getElementById("cartDrawer")
-  ?.classList.toggle("open");
+  const drawer =
+  document.getElementById("cartDrawer");
 
-  document.getElementById("overlay")
-  ?.classList.toggle("show");
+  const overlay =
+  document.getElementById("overlay");
+
+  drawer?.classList.toggle("open");
+
+  overlay?.classList.toggle("show");
 
   renderCart();
 };
 
 /* =========================
-   FIREBASE
+   FIREBASE PRODUCTS
 ========================= */
 
 try{
 
   onSnapshot(
     collection(db,"products"),
+
     (snapshot)=>{
 
       allProducts = [];
 
-      snapshot.forEach(doc=>{
+      snapshot.forEach((doc)=>{
+
         allProducts.push({
           id:doc.id,
           ...doc.data()
@@ -469,16 +675,22 @@ try{
       });
 
       renderProducts(allProducts);
+
       hideLoading();
     },
+
     (error)=>{
+
       console.log(error);
+
       hideLoading();
     }
   );
 
-}catch(e){
-  console.log(e);
+}catch(error){
+
+  console.log(error);
+
   hideLoading();
 }
 
@@ -489,7 +701,10 @@ try{
 window.addEventListener("load",()=>{
 
   updateCartCount();
+
   renderCart();
 
-  setTimeout(hideLoading,2000);
+  setTimeout(()=>{
+    hideLoading();
+  },2000);
 });
