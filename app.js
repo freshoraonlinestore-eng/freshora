@@ -25,7 +25,8 @@ let allProducts = [];
 ========================= */
 
 function safeNumber(value) {
-  return isNaN(Number(value)) ? 0 : Number(value);
+  const num = Number(value);
+  return isNaN(num) ? 0 : num;
 }
 
 function saveCart() {
@@ -36,20 +37,23 @@ function saveCart() {
 
 function hideLoading() {
   if (!loadingScreen) return;
+
   loadingScreen.style.opacity = "0";
+
   setTimeout(() => {
     loadingScreen.style.display = "none";
   }, 300);
 }
 
 /* =========================
-   DARK MODE FIX
+   DARK MODE
 ========================= */
 
 window.toggleDarkMode = function () {
   document.body.classList.toggle("dark");
 
   const dark = document.body.classList.contains("dark");
+
   localStorage.setItem("darkMode", dark);
 
   updateDarkIcon();
@@ -76,8 +80,9 @@ function updateCartCount() {
     0
   );
 
-  const count = document.getElementById("floatingCartCount");
-  if (count) count.innerText = total;
+  const el = document.getElementById("floatingCartCount");
+
+  if (el) el.innerText = total;
 }
 
 /* =========================
@@ -88,7 +93,7 @@ window.addToCart = function (id, name, price, image) {
   const existing = cart.find(i => i.id === id);
 
   if (existing) {
-    existing.qty++;
+    existing.qty += 1;
   } else {
     cart.push({
       id,
@@ -134,7 +139,7 @@ window.clearCart = function () {
 };
 
 /* =========================
-   CART RENDER
+   RENDER CART
 ========================= */
 
 function renderCart() {
@@ -146,7 +151,7 @@ function renderCart() {
   cartItems.innerHTML = "";
 
   if (cart.length === 0) {
-    cartItems.innerHTML = `<p class="empty">Your cart is empty</p>`;
+    cartItems.innerHTML = `<p class="empty">Cart empty</p>`;
     cartTotal.innerText = "Total: Rs 0";
     return;
   }
@@ -162,7 +167,7 @@ function renderCart() {
     cartItems.innerHTML += `
       <div class="cart-item">
 
-        <img src="${item.image}" onerror="this.src='placeholder.png'">
+        <img src="${item.image}" />
 
         <div class="cart-details">
           <h4>${item.name}</h4>
@@ -176,6 +181,7 @@ function renderCart() {
         </div>
 
         <button class="remove-btn" onclick="removeItem(${index})">✕</button>
+
       </div>
     `;
   });
@@ -184,7 +190,7 @@ function renderCart() {
 }
 
 /* =========================
-   TOGGLE CART
+   CART TOGGLE
 ========================= */
 
 window.toggleCart = function () {
@@ -198,11 +204,10 @@ window.toggleCart = function () {
 };
 
 /* =========================
-   🔥 WHATSAPP CHECKOUT FIX
+   WHATSAPP CHECKOUT (FULL FIXED)
 ========================= */
 
 window.checkout = function () {
-
   if (cart.length === 0) {
     alert("Cart is empty");
     return;
@@ -238,10 +243,11 @@ window.checkout = function () {
 
   message += `\n💰 BILL SUMMARY\n`;
   message += `Subtotal: LKR ${subtotal.toLocaleString()}\n`;
-  message += `Delivery: LKR ${delivery.toLocaleString()}\n`;
+  message += `Delivery: LKR ${delivery}\n`;
   message += `TOTAL: LKR ${total.toLocaleString()}\n\n`;
 
-  message += `🙏 Thank you for your order!`;
+  message += `🚚 Payment: Cash on Delivery\n`;
+  message += `📍 Freshora Online Store\n`;
 
   const url =
     "https://wa.me/94752425790?text=" +
@@ -249,38 +255,6 @@ window.checkout = function () {
 
   window.open(url, "_blank");
 };
-
-/* =========================
-   FILTER (UNCHANGED)
-========================= */
-
-function filterProducts() {
-
-  const search = document.getElementById("searchInput")?.value?.toLowerCase() || "";
-  const category = document.getElementById("categoryFilter")?.value || "all";
-  const price = document.getElementById("priceFilter")?.value || "all";
-  const discount = document.getElementById("discountFilter")?.value || "all";
-
-  const filtered = allProducts.filter(p => {
-
-    const name = (p.name || "").toLowerCase();
-
-    return (
-      name.includes(search) &&
-      (category === "all" || p.category === category) &&
-      (price === "all" || safeNumber(p.price) <= safeNumber(price)) &&
-      (discount === "all" || safeNumber(p.discount) >= safeNumber(discount))
-    );
-  });
-
-  renderProducts(filtered);
-}
-
-/* EVENTS */
-document.getElementById("searchInput")?.addEventListener("input", filterProducts);
-document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
-document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
-document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
 
 /* =========================
    PRODUCTS
@@ -292,40 +266,33 @@ function renderProducts(products) {
   productsDiv.innerHTML = "";
 
   products.forEach(p => {
-
     const price = safeNumber(p.price);
     const discount = safeNumber(p.discount);
 
     const finalPrice =
       discount > 0
-        ? Math.round(price - (price * discount / 100))
+        ? Math.round(price - (price * discount) / 100)
         : price;
 
     productsDiv.innerHTML += `
       <div class="card">
 
-        <img src="${p.image}" onerror="this.src='placeholder.png'">
+        <img src="${p.image}" />
 
         <div class="card-content">
-
           <h3>${p.name}</h3>
 
           <div class="price-box">
-            <span class="new-price">Rs ${finalPrice.toLocaleString()}</span>
+            <span class="new-price">
+              Rs ${finalPrice.toLocaleString()}
+            </span>
           </div>
 
           <div class="card-buttons">
-
-            <button class="view-btn"
-              onclick="openModal('${p.id}','${p.name}','${finalPrice}','${p.image}')">
-              View
-            </button>
-
             <button class="add-cart-btn"
-              onclick="addToCart('${p.id}','${p.name}','${finalPrice}','${p.image}')">
-              Add
+              onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">
+              Add to Cart
             </button>
-
           </div>
 
         </div>
@@ -334,6 +301,21 @@ function renderProducts(products) {
     `;
   });
 }
+
+/* =========================
+   FIREBASE
+========================= */
+
+onSnapshot(collection(db, "products"), snapshot => {
+  allProducts = [];
+
+  snapshot.forEach(doc => {
+    allProducts.push({ id: doc.id, ...doc.data() });
+  });
+
+  renderProducts(allProducts);
+  hideLoading();
+});
 
 /* =========================
    INIT
