@@ -18,9 +18,7 @@
   font-family:system-ui,-apple-system,sans-serif;
 }
 
-html{
-  scroll-behavior:smooth;
-}
+html{ scroll-behavior:smooth; }
 
 body{
   background:var(--bg);
@@ -44,26 +42,41 @@ img{
   display:block;
 }
 
-/* ================= RESET ================= */
-
-button,
-input,
-select,
-textarea{
+/* RESET */
+button,input,select,textarea{
   border:none;
   outline:none;
   font-family:inherit;
   -webkit-tap-highlight-color:transparent;
 }
 
-input,
-textarea,
-select{
+input,textarea,select{
   font-size:16px;
 }
 
-/* ================= HEADER ================= */
+/* TOP BAR */
+.top-social-bar{
+  padding:12px;
+  display:flex;
+  justify-content:center;
+}
 
+.social-links{
+  display:flex;
+  gap:16px;
+}
+
+.social-links a{
+  color:var(--text);
+  opacity:.8;
+}
+
+.social-links a:hover{
+  opacity:1;
+  transform:translateY(-2px);
+}
+
+/* HEADER */
 .header{
   position:sticky;
   top:0;
@@ -83,8 +96,7 @@ body.dark .header{
   border-bottom:1px solid rgba(255,255,255,.05);
 }
 
-/* ================= SEARCH ================= */
-
+/* SEARCH */
 .search-box{
   background:#f1f1f1;
   border-radius:999px;
@@ -94,9 +106,7 @@ body.dark .header{
   padding:12px 18px;
 }
 
-body.dark .search-box{
-  background:#262629;
-}
+body.dark .search-box{ background:#262629; }
 
 .search-box input{
   background:transparent;
@@ -104,8 +114,7 @@ body.dark .search-box{
   color:var(--text);
 }
 
-/* ================= PRODUCTS ================= */
-
+/* PRODUCTS GRID */
 .products-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -113,7 +122,7 @@ body.dark .search-box{
   padding:20px;
 }
 
-/* 🔥 FIX 1: CARD LAYER ISSUE */
+/* CARD */
 .card{
   position:relative;
   z-index:1;
@@ -128,24 +137,22 @@ body.dark .search-box{
   transform:translateY(-6px);
 }
 
-/* 🔥 FIX 2: BADGE OVERLAP */
+/* FIX: DISCOUNT TAG OVERLAP */
 .discount-badge{
   position:absolute;
   top:12px;
   left:12px;
-  z-index:5;
+  z-index:10;
 }
 
-/* ================= IMAGE ================= */
-
+/* IMAGE */
 .card img{
   height:190px;
   object-fit:cover;
   background:#f1f1f1;
 }
 
-/* ================= CONTENT ================= */
-
+/* CONTENT */
 .card-content{
   padding:14px;
 }
@@ -153,18 +160,17 @@ body.dark .search-box{
 .price-box{
   display:flex;
   gap:8px;
+  align-items:center;
 }
 
-/* ================= BUTTONS ================= */
-
+/* BUTTONS */
 .card-buttons{
   display:flex;
   gap:8px;
   margin-top:14px;
 }
 
-/* ================= FLOAT CART ================= */
-
+/* FLOAT CART */
 .floating-cart{
   position:fixed;
   right:18px;
@@ -195,8 +201,7 @@ body.dark .search-box{
   font-size:11px;
 }
 
-/* ================= CART DRAWER ================= */
-
+/* CART */
 .overlay{
   position:fixed;
   inset:0;
@@ -227,9 +232,7 @@ body.dark .search-box{
   box-shadow:-10px 0 35px rgba(0,0,0,.14);
 }
 
-.cart-drawer.open{
-  right:0;
-}
+.cart-drawer.open{ right:0; }
 
 .cart-header{
   padding:18px;
@@ -238,15 +241,12 @@ body.dark .search-box{
   border-bottom:1px solid var(--border);
 }
 
-/* ================= CART ITEMS ================= */
-
+/* CART ITEMS */
 #cartItems{
   flex:1;
   overflow-y:auto;
   padding:16px;
 }
-
-/* ================= ITEM ================= */
 
 .cart-item{
   display:flex;
@@ -265,16 +265,14 @@ body.dark .search-box{
   border-radius:16px;
 }
 
-/* ================= QTY ================= */
-
+/* QTY */
 .qty-box{
   display:flex;
   gap:8px;
   align-items:center;
 }
 
-/* ================= REMOVE ================= */
-
+/* REMOVE */
 .remove-btn{
   position:absolute;
   top:10px;
@@ -286,8 +284,7 @@ body.dark .search-box{
   color:#ff3b30;
 }
 
-/* ================= 🔥 FIX 3: CHECKOUT INPUT ISSUE ================= */
-
+/* FIX: CART INPUT ISSUE */
 .checkout-form{
   padding:16px;
   display:flex;
@@ -295,18 +292,18 @@ body.dark .search-box{
   gap:12px;
   border-top:1px solid var(--border);
   position:relative;
-  z-index:2000;
+  z-index:5000;
 }
 
 .checkout-form input,
 .checkout-form textarea{
   padding:14px;
   border-radius:14px;
-  background:#ffffff;   /* IMPORTANT FIX */
-  color:var(--text);
+  background:#fff;
   border:1px solid var(--border);
+  color:var(--text);
   position:relative;
-  z-index:2001;
+  z-index:5001;
   pointer-events:auto;
 }
 
@@ -324,8 +321,7 @@ body.dark .checkout-form textarea{
   outline:none;
 }
 
-/* ================= STICKY CHECKOUT ================= */
-
+/* STICKY CHECKOUT */
 .sticky-checkout{
   position:sticky;
   bottom:0;
@@ -344,8 +340,7 @@ body.dark .checkout-form textarea{
   text-align:center;
 }
 
-/* ================= BUTTONS ================= */
-
+/* BUTTONS */
 .checkout-btn{
   background:var(--green);
   color:#fff;
@@ -355,8 +350,7 @@ body.dark .checkout-form textarea{
   background:#f1f1f1;
 }
 
-/* ================= MOBILE ================= */
-
+/* MOBILE */
 @media(max-width:768px){
 
   .products-grid{
@@ -364,9 +358,7 @@ body.dark .checkout-form textarea{
     gap:12px;
   }
 
-  .card img{
-    height:150px;
-  }
+  .card img{ height:150px; }
 
   .cart-item img{
     width:74px;
