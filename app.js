@@ -34,7 +34,6 @@ function showToast(text){
   document.createElement("div");
 
   toast.className = "toast";
-
   toast.innerText = text;
 
   document.body.appendChild(toast);
@@ -55,7 +54,7 @@ function showToast(text){
 }
 
 /* =========================
-   CART SYSTEM
+   CART SAVE
 ========================= */
 
 function saveCart(){
@@ -70,18 +69,24 @@ function saveCart(){
   renderCart();
 }
 
+/* =========================
+   CART COUNT
+========================= */
+
 function updateCartCount(){
 
   const total =
-  cart.reduce((s,i)=>s+i.qty,0);
+  cart.reduce((sum,item)=>
+    sum + item.qty
+  ,0);
 
-  const el =
+  const count =
   document.getElementById(
     "floatingCartCount"
   );
 
-  if(el){
-    el.innerText = total;
+  if(count){
+    count.innerText = total;
   }
 }
 
@@ -102,11 +107,11 @@ window.toggleWishlist = function(id){
   if(wishlist.includes(id)){
 
     wishlist =
-    wishlist.filter(i=>i!==id);
+    wishlist.filter(i => i !== id);
 
     showToast("Removed ❤️");
 
-  }else{
+  } else {
 
     wishlist.push(id);
 
@@ -119,7 +124,7 @@ window.toggleWishlist = function(id){
 };
 
 /* =========================
-   CART ACTIONS
+   ADD TO CART
 ========================= */
 
 window.addToCart = function(
@@ -129,14 +134,14 @@ window.addToCart = function(
   image
 ){
 
-  const ex =
-  cart.find(i=>i.id===id);
+  const existing =
+  cart.find(i => i.id === id);
 
-  if(ex){
+  if(existing){
 
-    ex.qty++;
+    existing.qty++;
 
-  }else{
+  } else {
 
     cart.push({
       id,
@@ -149,8 +154,12 @@ window.addToCart = function(
 
   saveCart();
 
-  showToast("Added 🛒");
+  showToast("Added to cart 🛒");
 };
+
+/* =========================
+   REMOVE ITEM
+========================= */
 
 window.removeItem = function(index){
 
@@ -159,24 +168,32 @@ window.removeItem = function(index){
   saveCart();
 };
 
-window.increaseQty = function(i){
+/* =========================
+   QTY
+========================= */
 
-  cart[i].qty++;
+window.increaseQty = function(index){
+
+  cart[index].qty++;
 
   saveCart();
 };
 
-window.decreaseQty = function(i){
+window.decreaseQty = function(index){
 
-  cart[i].qty--;
+  cart[index].qty--;
 
-  if(cart[i].qty<=0){
+  if(cart[index].qty <= 0){
 
-    cart.splice(i,1);
+    cart.splice(index,1);
   }
 
   saveCart();
 };
+
+/* =========================
+   CLEAR CART
+========================= */
 
 window.clearCart = function(){
 
@@ -188,7 +205,7 @@ window.clearCart = function(){
 };
 
 /* =========================
-   CART DRAWER + OVERLAY
+   CART DRAWER
 ========================= */
 
 window.toggleCart = function(){
@@ -205,7 +222,9 @@ window.toggleCart = function(){
 
   drawer.classList.toggle("open");
 
-  overlay.classList.toggle("show");
+  if(overlay){
+    overlay.classList.toggle("show");
+  }
 
   renderCart();
 };
@@ -217,10 +236,14 @@ window.toggleCart = function(){
 function renderCart(){
 
   const box =
-  document.getElementById("cartItems");
+  document.getElementById(
+    "cartItems"
+  );
 
   const totalBox =
-  document.getElementById("cartTotal");
+  document.getElementById(
+    "cartTotal"
+  );
 
   if(!box || !totalBox) return;
 
@@ -242,21 +265,24 @@ function renderCart(){
 
   let total = 0;
 
-  cart.forEach((i,index)=>{
+  cart.forEach((item,index)=>{
 
-    total += i.price * i.qty;
+    total += item.price * item.qty;
 
     box.innerHTML += `
 
       <div class="cart-item">
 
-        <img src="${i.image}">
+        <img
+          src="${item.image}"
+          alt="${item.name}"
+        >
 
         <div class="cart-details">
 
-          <h4>${i.name}</h4>
+          <h4>${item.name}</h4>
 
-          <p>Rs ${i.price}</p>
+          <p>Rs ${item.price}</p>
 
           <div class="qty-box">
 
@@ -267,7 +293,7 @@ function renderCart(){
 
             </button>
 
-            <span>${i.qty}</span>
+            <span>${item.qty}</span>
 
             <button
               onclick="increaseQty(${index})">
@@ -312,13 +338,19 @@ window.checkout = async function(){
   }
 
   const name =
-  document.getElementById("cusName")?.value;
+  document.getElementById(
+    "cusName"
+  )?.value.trim();
 
   const phone =
-  document.getElementById("cusPhone")?.value;
+  document.getElementById(
+    "cusPhone"
+  )?.value.trim();
 
   const address =
-  document.getElementById("cusAddress")?.value;
+  document.getElementById(
+    "cusAddress"
+  )?.value.trim();
 
   if(!name || !phone || !address){
 
@@ -330,7 +362,6 @@ window.checkout = async function(){
   let total = 0;
 
   cart.forEach(item=>{
-
     total += item.price * item.qty;
   });
 
@@ -382,14 +413,24 @@ window.checkout = async function(){
 
     saveCart();
 
-  }catch(err){
+    document
+    .getElementById("cartDrawer")
+    ?.classList.remove("open");
+
+    document
+    .getElementById("overlay")
+    ?.classList.remove("show");
+
+  } catch(err){
+
+    console.log(err);
 
     showToast("Checkout Failed");
   }
 };
 
 /* =========================
-   RATING SYSTEM
+   RATING
 ========================= */
 
 window.setRating = async function(
@@ -410,14 +451,14 @@ window.setRating = async function(
 
     showToast("Thanks for rating ⭐");
 
-  }catch(err){
+  } catch(err){
 
     showToast("Rating failed");
   }
 };
 
 /* =========================
-   STARS UI
+   STARS
 ========================= */
 
 function renderStars(id){
@@ -441,7 +482,7 @@ function renderStars(id){
 }
 
 /* =========================
-   FILTER SYSTEM
+   FILTERS
 ========================= */
 
 function applyFilters(products){
@@ -461,26 +502,32 @@ function applyFilters(products){
     "categoryFilter"
   )?.value || "all";
 
-  return products.filter(p=>{
+  return products.filter(product=>{
 
-    const okCat =
-    category==="all"
-    || p.category===category;
+    const okCategory =
+    category === "all" ||
+    product.category === category;
 
     const okPrice =
-    price==="all"
-    || Number(p.price)<=Number(price);
+    price === "all" ||
+    Number(product.price)
+    <= Number(price);
 
-    const okDis =
-    discount==="all"
-    || (p.discount||0)>=Number(discount);
+    const okDiscount =
+    discount === "all" ||
+    (product.discount || 0)
+    >= Number(discount);
 
-    return okCat && okPrice && okDis;
+    return (
+      okCategory &&
+      okPrice &&
+      okDiscount
+    );
   });
 }
 
 /* =========================
-   PRODUCTS RENDER
+   RENDER PRODUCTS
 ========================= */
 
 function renderProducts(products){
@@ -493,14 +540,17 @@ function renderProducts(products){
   )?.value.toLowerCase() || "";
 
   let filtered =
-  products.filter(p =>
-    p.name.toLowerCase().includes(search)
+  products.filter(product =>
+
+    product.name
+    .toLowerCase()
+    .includes(search)
   );
 
   filtered =
   applyFilters(filtered);
 
-  if(filtered.length===0){
+  if(filtered.length === 0){
 
     productsDiv.innerHTML = `
       <p class="empty">
@@ -511,21 +561,21 @@ function renderProducts(products){
     return;
   }
 
-  filtered.forEach(p=>{
+  filtered.forEach(product=>{
 
     const discount =
-    p.discount || 0;
+    product.discount || 0;
 
     const newPrice =
     discount
     ? Math.round(
-        p.price -
-        (p.price*discount/100)
+        product.price -
+        (product.price * discount / 100)
       )
-    : p.price;
+    : product.price;
 
     const heart =
-    wishlist.includes(p.id)
+    wishlist.includes(product.id)
     ? "❤️"
     : "🤍";
 
@@ -545,17 +595,20 @@ function renderProducts(products){
 
         <button
           class="wishlist-btn"
-          onclick="toggleWishlist('${p.id}')">
+          onclick="toggleWishlist('${product.id}')">
 
           ${heart}
 
         </button>
 
-        <img src="${p.image}">
+        <img
+          src="${product.image}"
+          alt="${product.name}"
+        >
 
         <div class="card-content">
 
-          <h3>${p.name}</h3>
+          <h3>${product.name}</h3>
 
           <div class="price-box">
 
@@ -563,7 +616,7 @@ function renderProducts(products){
               discount
               ? `
                 <span class="old-price">
-                  Rs ${p.price}
+                  Rs ${product.price}
                 </span>
               `
               : ""
@@ -576,11 +629,11 @@ function renderProducts(products){
           </div>
 
           <div class="rating">
-            ${renderStars(p.id)}
+            ${renderStars(product.id)}
           </div>
 
           <div class="stock">
-            ${p.stock || "In Stock"}
+            ${product.stock || "In Stock"}
           </div>
 
           <div class="card-buttons">
@@ -588,10 +641,10 @@ function renderProducts(products){
             <button
               class="view-btn"
               onclick="openModal(
-                '${p.id}',
-                '${p.name}',
+                '${product.id}',
+                '${product.name}',
                 '${newPrice}',
-                '${p.image}'
+                '${product.image}'
               )">
 
               View
@@ -601,10 +654,10 @@ function renderProducts(products){
             <button
               class="add-cart-btn"
               onclick="addToCart(
-                '${p.id}',
-                '${p.name}',
+                '${product.id}',
+                '${product.name}',
                 '${newPrice}',
-                '${p.image}'
+                '${product.image}'
               )">
 
               Add
@@ -668,6 +721,19 @@ window.closeModal = function(){
   ).style.display = "none";
 };
 
+window.onclick = function(e){
+
+  const modal =
+  document.getElementById(
+    "productModal"
+  );
+
+  if(e.target === modal){
+
+    closeModal();
+  }
+};
+
 /* =========================
    DARK MODE
 ========================= */
@@ -695,9 +761,8 @@ if(
 
 document.addEventListener("input",(e)=>{
 
-  if(
-    e.target.id === "searchInput"
-  ){
+  if(e.target.id === "searchInput"){
+
     renderProducts(allProducts);
   }
 });
@@ -728,7 +793,27 @@ document
 });
 
 /* =========================
-   LOADING SCREEN
+   ESC CLOSE
+========================= */
+
+document.addEventListener("keydown",(e)=>{
+
+  if(e.key === "Escape"){
+
+    document
+    .getElementById("cartDrawer")
+    ?.classList.remove("open");
+
+    document
+    .getElementById("overlay")
+    ?.classList.remove("show");
+
+    closeModal();
+  }
+});
+
+/* =========================
+   LOADING
 ========================= */
 
 window.addEventListener("load",()=>{
@@ -740,9 +825,11 @@ window.addEventListener("load",()=>{
 
   if(loading){
 
+    loading.style.opacity = "0";
+
     setTimeout(()=>{
       loading.style.display = "none";
-    },700);
+    },300);
   }
 
   updateCartCount();
@@ -751,7 +838,7 @@ window.addEventListener("load",()=>{
 });
 
 /* =========================
-   LOAD FIREBASE
+   FIREBASE PRODUCTS
 ========================= */
 
 onSnapshot(
@@ -760,11 +847,11 @@ onSnapshot(
 
     allProducts = [];
 
-    snap.forEach(d=>{
+    snap.forEach(docItem=>{
 
       allProducts.push({
-        id:d.id,
-        ...d.data()
+        id:docItem.id,
+        ...docItem.data()
       });
     });
 
