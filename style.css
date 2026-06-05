@@ -9,7 +9,7 @@
   --muted:#777777;
 
   --primary:#111111;
-  --green:#00c853;
+  --green:#25D366;
   --danger:#ff3b30;
 
   --border:#ececec;
@@ -262,6 +262,8 @@ body.dark .search-box{
 ========================= */
 
 .card{
+  position:relative;
+
   background:var(--card);
 
   border-radius:22px;
@@ -647,6 +649,8 @@ body.dark .search-box{
 
   border-top:
   1px solid var(--border);
+
+  background:var(--card);
 }
 
 .checkout-form input,
@@ -663,6 +667,11 @@ body.dark .search-box{
   color:var(--text);
 }
 
+.checkout-form textarea{
+  min-height:90px;
+  resize:none;
+}
+
 body.dark
 .checkout-form input,
 
@@ -671,35 +680,35 @@ body.dark
   background:#232326;
 }
 
-
 /* =========================
    STICKY FOOTER
 ========================= */
 
 .sticky-checkout{
-  position:sticky;
-  bottom:0;
-  left:0;
-  width:100%;
-  background:var(--card);
-  border-top:1px solid var(--border);
   padding:16px;
+
   display:flex;
   flex-direction:column;
   gap:12px;
-  box-shadow:0 -8px 25px rgba(0,0,0,.08);
-  z-index:50;
+
+  background:var(--card);
+
+  border-top:1px solid var(--border);
+
+  margin-top:auto;
 }
 
 #cartTotal{
   text-align:center;
   font-size:18px;
   font-weight:800;
-  margin-bottom:4px;
   color:var(--text);
 }
 
-/* BUTTON WRAPPER */
+/* =========================
+   BUTTON WRAPPER
+========================= */
+
 .checkout-actions{
   display:flex;
   flex-direction:column;
@@ -707,40 +716,59 @@ body.dark
   width:100%;
 }
 
-/* WHATSAPP ORDER BUTTON */
+/* =========================
+   WHATSAPP BUTTON
+========================= */
+
 .checkout-btn{
   width:100%;
   height:52px;
+
   border:none;
   border-radius:14px;
-  background:#25D366;
+
+  background:var(--green);
   color:#fff;
+
   font-size:15px;
   font-weight:700;
+
   cursor:pointer;
+
   transition:.25s ease;
+
   display:flex;
   align-items:center;
   justify-content:center;
   gap:10px;
-  box-shadow:0 8px 20px rgba(37,211,102,.25);
+
+  box-shadow:
+  0 8px 20px rgba(37,211,102,.25);
 }
 
 .checkout-btn:hover{
   transform:translateY(-2px);
 }
 
-/* CLEAR BUTTON */
+/* =========================
+   CLEAR BUTTON
+========================= */
+
 .clear-btn{
   width:100%;
   height:50px;
+
   border:none;
   border-radius:14px;
+
   background:#f1f1f1;
   color:#111;
+
   font-size:14px;
   font-weight:700;
+
   cursor:pointer;
+
   transition:.25s ease;
 }
 
@@ -755,56 +783,6 @@ body.dark .clear-btn{
 
 body.dark .clear-btn:hover{
   background:#353538;
-}
-
-/* MOBILE FIX */
-@media(max-width:768px){
-
-  .sticky-checkout{
-    padding:14px;
-    padding-bottom:20px;
-  }
-
-  .checkout-btn,
-  .clear-btn{
-    height:50px;
-    font-size:14px;
-  }
-
-}
-
-/* =========================
-   CHECKOUT BUTTON
-========================= */
-
-.checkout-btn{
-  height:52px;
-
-  border-radius:14px;
-
-  background:var(--green);
-  color:#ffffff;
-
-  font-weight:700;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-
-  cursor:pointer;
-}
-
-.clear-btn{
-  height:48px;
-
-  border-radius:14px;
-
-  background:#f1f1f1;
-
-  font-weight:700;
-
-  cursor:pointer;
 }
 
 /* =========================
@@ -914,6 +892,14 @@ body.dark .clear-btn:hover{
     font-size:13px;
   }
 
-}
+  .sticky-checkout{
+    padding-bottom:20px;
+  }
 
-/* VERSION 3 */
+  .checkout-btn,
+  .clear-btn{
+    height:50px;
+    font-size:14px;
+  }
+
+}
