@@ -4,22 +4,22 @@
 :root{
   --bg:#f6f7fb;
   --card:#ffffff;
-  --text:#111111;
+  --text:#111;
   --muted:#6b6b6b;
 
-  --primary:#111111;
+  --primary:#111;
   --green:#00c853;
   --danger:#ff3b30;
 
   --border:#ececec;
   --radius:18px;
-  --shadow:0 10px 30px rgba(0,0,0,.08);
+  --shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
 body.dark{
   --bg:#0f0f10;
   --card:#1a1a1c;
-  --text:#ffffff;
+  --text:#fff;
   --muted:#9d9d9d;
   --border:#2a2a2d;
   --shadow:0 10px 30px rgba(0,0,0,.35);
@@ -91,7 +91,9 @@ body.dark .header{
   background:#f1f1f1;
 }
 
-body.dark .search-box{ background:#262629; }
+body.dark .search-box{
+  background:#262629;
+}
 
 .search-box input{
   width:100%;
@@ -130,7 +132,7 @@ body.dark .search-box{ background:#262629; }
   object-fit:cover;
 }
 
-/* DISCOUNT TAG FIX */
+/* DISCOUNT TAG */
 .discount-badge{
   position:absolute;
   top:10px;
@@ -179,7 +181,7 @@ body.dark .search-box{ background:#262629; }
 }
 
 /* =========================
-   BUTTONS FIX
+   BUTTONS
 ========================= */
 .card-buttons{
   display:flex;
@@ -246,7 +248,7 @@ body.dark .search-box{ background:#262629; }
 }
 
 /* =========================
-   CART OVERLAY FIX
+   CART OVERLAY
 ========================= */
 .overlay{
   position:fixed;
@@ -345,7 +347,7 @@ body.dark .search-box{ background:#262629; }
 }
 
 /* =========================
-   CHECKOUT FORM FIX
+   CHECKOUT FORM
 ========================= */
 .checkout-form{
   padding:14px;
@@ -407,13 +409,9 @@ body.dark .checkout-form textarea{
 }
 
 /* =========================
-   MOBILE FIX
+   MOBILE
 ========================= */
 @media(max-width:768px){
-
-  body{
-    padding-bottom:200px;
-  }
 
   .products-grid{
     grid-template-columns:repeat(2,1fr);
@@ -424,12 +422,7 @@ body.dark .checkout-form textarea{
     height:150px;
   }
 
-  .card-content h3{
-    font-size:13px;
-  }
-
-  .checkout-form input,
-  .checkout-form textarea{
-    font-size:16px;
+  body{
+    padding-bottom:200px;
   }
 }
