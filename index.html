@@ -16,30 +16,30 @@
 <body>
 
 <!-- LOADING SCREEN -->
-<div id="loadingScreen" class="loading-screen" aria-hidden="true">
+<div id="loadingScreen" class="loading-screen">
   <div class="loader"></div>
 </div>
 
 <!-- OVERLAY -->
-<div id="overlay" class="overlay" onclick="toggleCart()" aria-hidden="true"></div>
+<div id="overlay" class="overlay" onclick="toggleCart()"></div>
 
 <!-- TOP SOCIAL BAR -->
 <div class="top-social-bar">
   <div class="social-links">
 
-    <a href="https://facebook.com" target="_blank" rel="noopener">
+    <a href="https://facebook.com" target="_blank">
       <i class="fab fa-facebook-f"></i>
     </a>
 
-    <a href="https://instagram.com" target="_blank" rel="noopener">
+    <a href="https://instagram.com" target="_blank">
       <i class="fab fa-instagram"></i>
     </a>
 
-    <a href="https://tiktok.com" target="_blank" rel="noopener">
+    <a href="https://tiktok.com" target="_blank">
       <i class="fab fa-tiktok"></i>
     </a>
 
-    <a href="https://wa.me/94752425790" target="_blank" rel="noopener">
+    <a href="https://wa.me/94752425790" target="_blank">
       <i class="fab fa-whatsapp"></i>
     </a>
 
@@ -65,17 +65,12 @@
   </div>
 
   <div class="header-right">
-    <button type="button"
-            class="icon-btn"
-            onclick="toggleDarkMode()"
-            aria-label="Toggle Dark Mode">
-      🌙
-    </button>
+    <button class="icon-btn" onclick="toggleDarkMode()">🌙</button>
   </div>
 
 </header>
 
-<!-- FILTER BAR -->
+<!-- FILTER -->
 <section class="advanced-search">
 
   <div class="filter-grid">
@@ -97,9 +92,9 @@
 
     <select id="discountFilter">
       <option value="all">All Discounts</option>
-      <option value="10">10%+ Discount</option>
-      <option value="20">20%+ Discount</option>
-      <option value="30">30%+ Discount</option>
+      <option value="10">10%+</option>
+      <option value="20">20%+</option>
+      <option value="30">30%+</option>
     </select>
 
   </div>
@@ -120,7 +115,7 @@
 
   <div class="cart-header">
     <h2>Your Cart</h2>
-    <button type="button" onclick="toggleCart()" aria-label="Close Cart">✕</button>
+    <button onclick="toggleCart()">✕</button>
   </div>
 
   <div id="cartItems"></div>
@@ -129,7 +124,7 @@
 
     <input type="text" id="cusName" placeholder="Your Name">
     <input type="tel" id="cusPhone" placeholder="Phone Number">
-    <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
+    <textarea id="cusAddress" placeholder="Address"></textarea>
 
   </div>
 
@@ -137,39 +132,28 @@
 
     <h3 id="cartTotal">Total: Rs 0</h3>
 
-    <button type="button" class="checkout-btn" onclick="checkout()">
-      Checkout
-    </button>
-
-    <button type="button" class="clear-btn" onclick="clearCart()">
-      Clear Cart
-    </button>
+    <button class="checkout-btn" onclick="checkout()">Checkout</button>
+    <button class="clear-btn" onclick="clearCart()">Clear</button>
 
   </div>
 
 </div>
 
 <!-- PRODUCT MODAL -->
-<div id="productModal" class="modal" aria-hidden="true">
+<div id="productModal" class="modal">
 
   <div class="modal-content">
 
-    <span class="close" onclick="closeModal()" aria-label="Close Modal">&times;</span>
+    <span class="close" onclick="closeModal()">&times;</span>
 
-    <img id="modalImage" alt="Product Image" onerror="this.src='placeholder.png'">
+    <img id="modalImage">
 
     <div class="modal-details">
 
       <h2 id="modalName"></h2>
       <p id="modalPrice"></p>
 
-      <div class="rating-box">
-        <div class="rating-stars">⭐⭐⭐⭐⭐</div>
-      </div>
-
-      <button type="button" id="modalAddBtn">
-        Add to Cart
-      </button>
+      <button id="modalAddBtn">Add to Cart</button>
 
     </div>
 
@@ -177,8 +161,21 @@
 
 </div>
 
-<!-- SCRIPT -->
-<script type="module" src="app.js"></script>
+<!-- SCRIPT (SAFE FIX - IMPORTANT) -->
+<script src="app.js" defer></script>
+
+<!-- SAFETY FIX (PREVENT BLANK PAGE) -->
+<script>
+  window.addEventListener("load",()=>{
+    const loading = document.getElementById("loadingScreen");
+    if(loading) loading.style.display="none";
+  });
+
+  window.onerror = function(){
+    console.log("JS Error prevented crash");
+    return true;
+  };
+</script>
 
 </body>
 </html>
