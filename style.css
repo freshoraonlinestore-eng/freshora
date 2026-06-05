@@ -654,37 +654,87 @@ body.dark .remove-btn{
 .checkout-form{
   display:flex;
   flex-direction:column;
-  gap:10px;
-  margin-bottom:14px;
+  gap:12px;
+
+  padding:16px;
+
+  border-top:1px solid var(--border);
 }
 
-.checkout-form input{
+.checkout-form input,
+.checkout-form textarea{
   width:100%;
 
   border:none;
   outline:none;
 
-  padding:14px;
+  padding:14px 16px;
+
   border-radius:14px;
 
   background:var(--bg);
   color:var(--text);
+
+  font-size:14px;
+
+  resize:none;
+
+  transition:0.25s;
 }
 
-body.dark .checkout-form input{
-  background:#232326;
+/* TEXTAREA */
+
+.checkout-form textarea{
+  min-height:90px;
 }
+
+/* DARK MODE */
+
+body.dark .checkout-form input,
+body.dark .checkout-form textarea{
+  background:#232326;
+  color:#fff;
+}
+
+/* PLACEHOLDER */
+
+.checkout-form input::placeholder,
+.checkout-form textarea::placeholder{
+  color:var(--muted);
+}
+
+/* FOCUS */
+
+.checkout-form input:focus,
+.checkout-form textarea:focus{
+  box-shadow:0 0 0 2px rgba(0,0,0,0.06);
+}
+
+body.dark .checkout-form input:focus,
+body.dark .checkout-form textarea:focus{
+  box-shadow:0 0 0 2px rgba(255,255,255,0.05);
+}
+
+/* =========================
+   STICKY CHECKOUT
+========================= */
 
 .sticky-checkout{
   padding:18px;
+
   border-top:1px solid var(--border);
+
   background:var(--card);
 }
+
+/* TOTAL */
 
 #cartTotal{
   font-size:20px;
   margin-bottom:14px;
 }
+
+/* CHECKOUT BUTTON */
 
 .checkout-btn{
   width:100%;
@@ -703,7 +753,11 @@ body.dark .checkout-form input{
   cursor:pointer;
 
   margin-bottom:10px;
+
+  transition:.25s;
 }
+
+/* CLEAR BUTTON */
 
 .clear-btn{
   width:100%;
@@ -719,12 +773,25 @@ body.dark .checkout-form input{
   font-weight:600;
 
   cursor:pointer;
+
+  transition:.25s;
 }
+
+/* DARK MODE BUTTON */
 
 body.dark .clear-btn{
   background:#2a2a2d;
   color:#fff;
 }
+
+/* HOVER */
+
+.checkout-btn:hover,
+.clear-btn:hover{
+  transform:translateY(-2px);
+  opacity:.92;
+}
+
 
 /* =========================
    MODAL
