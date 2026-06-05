@@ -90,6 +90,7 @@ function saveCart(){
   );
 
   updateCartCount();
+  renderCart();
 }
 
 function updateCartCount(){
@@ -139,6 +140,169 @@ window.addToCart = function(
 
   alert("Added to Cart");
 };
+
+/* =========================
+   REMOVE ITEM
+========================= */
+
+window.removeItem = function(index){
+
+  cart.splice(index,1);
+
+  saveCart();
+};
+
+window.increaseQty = function(index){
+
+  if(cart[index]){
+
+    cart[index].qty++;
+
+    saveCart();
+  }
+};
+
+window.decreaseQty = function(index){
+
+  if(cart[index]){
+
+    cart[index].qty--;
+
+    if(cart[index].qty <= 0){
+      cart.splice(index,1);
+    }
+
+    saveCart();
+  }
+};
+
+/* =========================
+   RENDER CART
+========================= */
+
+function renderCart(){
+
+  const cartItems =
+  document.getElementById("cartItems");
+
+  const cartTotal =
+  document.getElementById("cartTotal");
+
+  if(!cartItems) return;
+
+  cartItems.innerHTML = "";
+
+  if(cart.length === 0){
+
+    cartItems.innerHTML = `
+      <p class="empty">
+        Cart Empty
+      </p>
+    `;
+
+    if(cartTotal){
+      cartTotal.innerText =
+      "Total: Rs 0";
+    }
+
+    return;
+  }
+
+  let total = 0;
+
+  cart.forEach((item,index)=>{
+
+    total += item.price * item.qty;
+
+    cartItems.innerHTML += `
+
+      <div class="cart-item">
+
+        <img
+          src="${item.image}"
+          alt="${item.name}"
+          onerror="this.src='placeholder.png'"
+        >
+
+        <div class="cart-details">
+
+          <h4>${item.name}</h4>
+
+          <p>
+            Rs ${Number(item.price).toLocaleString()}
+          </p>
+
+          <div class="qty-box">
+
+            <button
+              onclick="decreaseQty(${index})"
+            >
+              -
+            </button>
+
+            <span>${item.qty}</span>
+
+            <button
+              onclick="increaseQty(${index})"
+            >
+              +
+            </button>
+
+          </div>
+
+        </div>
+
+        <button
+          class="remove-btn"
+          onclick="removeItem(${index})"
+        >
+          ✕
+        </button>
+
+      </div>
+
+    `;
+  });
+
+  if(cartTotal){
+
+    cartTotal.innerText =
+    "Total: Rs " +
+    total.toLocaleString();
+  }
+}
+
+/* =========================
+   SEARCH
+========================= */
+
+function filterProducts(){
+
+  const search =
+  document.getElementById("searchInput")
+  ?.value
+  .toLowerCase()
+  .trim() || "";
+
+  const filtered =
+  allProducts.filter(product => {
+
+    const name =
+    (product.name || "")
+    .toLowerCase();
+
+    return name.includes(search);
+  });
+
+  renderProducts(filtered);
+}
+
+document
+.getElementById("searchInput")
+?.addEventListener(
+  "input",
+  filterProducts
+);
 
 /* =========================
    RENDER PRODUCTS
@@ -317,6 +481,16 @@ window.closeModal = function(){
   }
 };
 
+window.onclick = function(e){
+
+  const modal =
+  document.getElementById("productModal");
+
+  if(e.target === modal){
+    closeModal();
+  }
+};
+
 /* =========================
    CART DRAWER
 ========================= */
@@ -330,6 +504,8 @@ window.toggleCart = function(){
   document
     .getElementById("overlay")
     ?.classList.toggle("show");
+
+  renderCart();
 };
 
 /* =========================
@@ -407,6 +583,8 @@ try{
 window.addEventListener("load",()=>{
 
   updateCartCount();
+
+  renderCart();
 
   setTimeout(()=>{
     hideLoading();
