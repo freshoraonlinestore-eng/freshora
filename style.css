@@ -56,18 +56,15 @@ input,
 textarea,
 select{
   font-size:16px;
-}
-
-a{ text-decoration:none; }
-
-button{
-  border:none;
   outline:none;
 }
 
-input,
-textarea,
-select{
+a{
+  text-decoration:none;
+}
+
+button{
+  border:none;
   outline:none;
 }
 
@@ -88,7 +85,9 @@ body.dark{
    SCROLLBAR
 ========================= */
 
-::-webkit-scrollbar{ width:6px; }
+::-webkit-scrollbar{
+  width:6px;
+}
 
 ::-webkit-scrollbar-thumb{
   background:#cfcfcf;
@@ -107,19 +106,16 @@ body.dark ::-webkit-scrollbar-thumb{
   width:100%;
   display:flex;
   justify-content:center;
-  align-items:center;
   padding:12px 16px 6px;
 }
 
 .social-links{
   display:flex;
-  align-items:center;
   gap:16px;
 }
 
 .social-links a{
   color:var(--text);
-  font-size:16px;
   opacity:.75;
   transition:.25s;
 }
@@ -141,13 +137,12 @@ body.dark ::-webkit-scrollbar-thumb{
   display:grid;
   grid-template-columns:auto 1fr auto;
   align-items:center;
-  gap:14px;
 
+  gap:14px;
   padding:14px 18px;
 
   background:rgba(255,255,255,.88);
   backdrop-filter:blur(14px);
-
   border-bottom:1px solid rgba(0,0,0,.04);
 }
 
@@ -159,29 +154,27 @@ body.dark .header{
 .logo{
   font-size:22px;
   font-weight:800;
-  letter-spacing:.4px;
-  white-space:nowrap;
   cursor:pointer;
-  user-select:none;
 }
 
+/* =========================
+   SEARCH
+========================= */
+
 .header-center{
-  width:100%;
   display:flex;
   justify-content:center;
+  width:100%;
 }
 
 .search-box{
   width:100%;
   max-width:650px;
-
   display:flex;
   align-items:center;
   gap:10px;
-
   background:#f1f1f3;
   border-radius:999px;
-
   padding:12px 18px;
 }
 
@@ -189,7 +182,9 @@ body.dark .search-box{
   background:#262629;
 }
 
-.search-box i{ color:var(--muted); }
+.search-box i{
+  color:var(--muted);
+}
 
 .search-box input{
   width:100%;
@@ -199,17 +194,15 @@ body.dark .search-box{
 }
 
 /* =========================
-   🔥 DARK MODE BUTTON FIX (ADDED)
+   ICON BUTTON (FIXED DARK MODE)
 ========================= */
 
 .icon-btn{
   width:42px;
   height:42px;
-
   border-radius:12px;
   background:var(--primary);
   color:#fff;
-
   cursor:pointer;
 
   display:flex;
@@ -224,18 +217,16 @@ body.dark .search-box{
   transform:translateY(-2px);
 }
 
-/* dark mode icon fix */
 body.dark .icon-btn{
   background:#fff;
   color:#111;
 }
 
 /* =========================
-   FILTER BAR
+   FILTER
 ========================= */
 
 .advanced-search{
-  width:100%;
   display:flex;
   justify-content:center;
   padding:16px;
@@ -243,26 +234,22 @@ body.dark .icon-btn{
 
 .filter-grid{
   display:flex;
-  align-items:center;
-  justify-content:center;
   gap:12px;
   flex-wrap:wrap;
 }
 
 .filter-grid select{
   min-width:170px;
-
   padding:12px 16px;
   border-radius:999px;
-
   border:none;
-
   background:var(--card);
-  color:var(--text);
-
   box-shadow:var(--shadow);
+  cursor:pointer;
+}
 
-  font-size:13px;
+body.dark .filter-grid select{
+  background:#232326;
 }
 
 /* =========================
@@ -276,21 +263,14 @@ body.dark .icon-btn{
   padding:20px;
 }
 
-/* =========================
-   🔥 CARD FIX (SMOOTHER UX)
-========================= */
-
+/* FIXED SMOOTH ANIMATION */
 .card{
   position:relative;
-
   display:flex;
   flex-direction:column;
-
   background:var(--card);
   border-radius:var(--radius);
-
   overflow:hidden;
-
   box-shadow:var(--shadow);
 
   transition:transform .25s ease, box-shadow .25s ease;
@@ -301,10 +281,8 @@ body.dark .icon-btn{
 }
 
 .card img{
-  width:100%;
   height:190px;
   object-fit:cover;
-
   transition:transform .3s ease;
 }
 
@@ -312,9 +290,163 @@ body.dark .icon-btn{
   transform:scale(1.05);
 }
 
-/* باقي CSS unchanged (no UI change) */
+/* CONTENT */
+.card-content{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+}
+
+/* BUTTONS */
+.view-btn,
+.add-cart-btn{
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.add-cart-btn{
+  background:var(--primary);
+  color:#fff;
+}
+
+.view-btn{
+  background:#f1f1f1;
+}
+
+body.dark .view-btn{
+  background:#2a2a2d;
+  color:#fff;
+}
+
 /* =========================
-   (KEEP ALL YOUR ORIGINAL CSS BELOW)
+   FLOATING CART
 ========================= */
 
-/* ... (ඔයාගේ remaining CSS 그대로 keep කරන්න) */
+.floating-cart{
+  position:fixed;
+  right:18px;
+  bottom:90px;
+
+  width:60px;
+  height:60px;
+
+  border-radius:50%;
+  background:var(--primary);
+  color:#fff;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+  box-shadow:var(--shadow);
+}
+
+/* =========================
+   OVERLAY
+========================= */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  opacity:0;
+  visibility:hidden;
+  transition:.3s;
+}
+
+.overlay.show{
+  opacity:1;
+  visibility:visible;
+}
+
+/* =========================
+   CART
+========================= */
+
+.cart-drawer{
+  position:fixed;
+  top:0;
+  right:-100%;
+  width:100%;
+  max-width:420px;
+  height:100dvh;
+  background:var(--card);
+  transition:.35s ease;
+  display:flex;
+  flex-direction:column;
+}
+
+.cart-drawer.open{
+  right:0;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:30px;
+  transform:translateX(-50%) translateY(100px);
+  background:#111;
+  color:#fff;
+  padding:12px 18px;
+  border-radius:999px;
+  opacity:0;
+  transition:.3s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+/* =========================
+   LOADER
+========================= */
+
+.loading-screen{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--bg);
+  z-index:99999;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:768px){
+
+  .products-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+  }
+
+  .card img{
+    height:150px;
+  }
+
+  .cart-drawer{
+    max-width:100%;
+  }
+}
