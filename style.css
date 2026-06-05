@@ -567,19 +567,19 @@ body.dark .cart-header button{
 }
 
 /* =========================
-   CART ITEM
+   CART ITEM FIX
 ========================= */
 
 .cart-item{
   position:relative;
 
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   gap:14px;
 
   background:var(--bg);
 
-  padding:14px;
+  padding:14px 46px 14px 14px;
 
   border-radius:20px;
 
@@ -588,6 +588,8 @@ body.dark .cart-header button{
   border:1px solid var(--border);
 
   transition:.25s;
+
+  overflow:hidden;
 }
 
 .cart-item:hover{
@@ -614,6 +616,8 @@ body.dark .cart-item{
 .cart-details{
   flex:1;
   min-width:0;
+
+  padding-right:4px;
 }
 
 .cart-details h4{
@@ -629,6 +633,8 @@ body.dark .cart-item{
   -webkit-box-orient:vertical;
 
   overflow:hidden;
+
+  word-break:break-word;
 }
 
 .cart-details p{
@@ -645,6 +651,8 @@ body.dark .cart-item{
   display:flex;
   align-items:center;
   gap:8px;
+
+  flex-wrap:wrap;
 }
 
 .qty-box button{
@@ -662,6 +670,8 @@ body.dark .cart-item{
   font-weight:700;
 
   transition:.2s;
+
+  flex-shrink:0;
 }
 
 .qty-box button:hover{
@@ -671,6 +681,9 @@ body.dark .cart-item{
 .qty-box span{
   min-width:18px;
   text-align:center;
+
+  font-size:14px;
+  font-weight:700;
 }
 
 .remove-btn{
@@ -678,8 +691,8 @@ body.dark .cart-item{
   top:10px;
   right:10px;
 
-  width:30px;
-  height:30px;
+  width:28px;
+  height:28px;
 
   border-radius:50%;
 
@@ -692,6 +705,12 @@ body.dark .cart-item{
   font-weight:700;
 
   transition:.2s;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  z-index:10;
 }
 
 .remove-btn:hover{
@@ -702,6 +721,44 @@ body.dark .remove-btn{
   background:#3a1f1f;
 }
 
+/* =========================
+   MOBILE FIX
+========================= */
+
+@media(max-width:768px){
+
+  .cart-item{
+    gap:12px;
+    padding:12px 42px 12px 12px;
+  }
+
+  .cart-item img{
+    width:74px;
+    height:74px;
+  }
+
+  .cart-details h4{
+    font-size:13px;
+  }
+
+  .qty-box{
+    gap:6px;
+  }
+
+  .qty-box button{
+    width:28px;
+    height:28px;
+  }
+
+  .remove-btn{
+    width:26px;
+    height:26px;
+
+    top:8px;
+    right:8px;
+  }
+
+}
 /* =========================
    CHECKOUT
 ========================= */
