@@ -130,7 +130,7 @@ window.addToCart = function(
     cart.push({
       id,
       name,
-      price,
+      price:Number(price),
       image,
       qty:1
     });
@@ -273,7 +273,7 @@ function renderCart(){
 }
 
 /* =========================
-   SEARCH
+   FILTER PRODUCTS
 ========================= */
 
 function filterProducts(){
@@ -284,6 +284,18 @@ function filterProducts(){
   .toLowerCase()
   .trim() || "";
 
+  const category =
+  document.getElementById("categoryFilter")
+  ?.value || "all";
+
+  const price =
+  document.getElementById("priceFilter")
+  ?.value || "all";
+
+  const discount =
+  document.getElementById("discountFilter")
+  ?.value || "all";
+
   const filtered =
   allProducts.filter(product => {
 
@@ -291,16 +303,70 @@ function filterProducts(){
     (product.name || "")
     .toLowerCase();
 
-    return name.includes(search);
+    const productCategory =
+    product.category || "";
+
+    const productPrice =
+    Number(product.price) || 0;
+
+    const productDiscount =
+    Number(product.discount) || 0;
+
+    const matchSearch =
+    name.includes(search);
+
+    const matchCategory =
+    category === "all" ||
+    productCategory === category;
+
+    const matchPrice =
+    price === "all" ||
+    productPrice <= Number(price);
+
+    const matchDiscount =
+    discount === "all" ||
+    productDiscount >= Number(discount);
+
+    return (
+      matchSearch &&
+      matchCategory &&
+      matchPrice &&
+      matchDiscount
+    );
   });
 
   renderProducts(filtered);
 }
 
+/* =========================
+   FILTER EVENTS
+========================= */
+
 document
 .getElementById("searchInput")
 ?.addEventListener(
   "input",
+  filterProducts
+);
+
+document
+.getElementById("categoryFilter")
+?.addEventListener(
+  "change",
+  filterProducts
+);
+
+document
+.getElementById("priceFilter")
+?.addEventListener(
+  "change",
+  filterProducts
+);
+
+document
+.getElementById("discountFilter")
+?.addEventListener(
+  "change",
   filterProducts
 );
 
@@ -380,7 +446,7 @@ function renderProducts(products){
               discount > 0
               ? `
                 <span class="old-price">
-                  Rs ${price}
+                  Rs ${price.toLocaleString()}
                 </span>
               `
               : ""
