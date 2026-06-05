@@ -3,21 +3,18 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Freshora Cart</title>
 
   <link rel="stylesheet" href="style.css">
-
   <link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
 
 <!-- HEADER -->
-
 <header class="header">
 
   <div class="logo">
@@ -26,53 +23,38 @@
 
   <div></div>
 
-  <button
-    class="icon-btn"
-    onclick="window.location.href='index.html'"
-  >
+  <button class="icon-btn"
+          onclick="window.location.href='index.html'">
     <i class="fa fa-arrow-left"></i>
   </button>
 
 </header>
 
-<!-- CART -->
+<!-- CART ITEMS -->
+<div id="cartItems" style="padding:16px"></div>
 
-<div
-  id="cartItems"
-  style="padding:16px"
-></div>
-
-<!-- TOTAL -->
-
+<!-- CHECKOUT FOOTER -->
 <div class="sticky-checkout">
 
-  <h3 id="cartTotal">
-    Total: Rs 0
-  </h3>
+  <h3 id="cartTotal">Total: Rs 0</h3>
 
   <button class="checkout-btn">
     Checkout
   </button>
 
-  <button
-    class="clear-btn"
-    onclick="clearCart()"
-  >
+  <button class="clear-btn" onclick="clearCart()">
     Clear Cart
   </button>
 
 </div>
 
+<!-- SCRIPT -->
 <script>
 
-let cart =
-JSON.parse(localStorage.getItem("cart")) || [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-const cartItems =
-document.getElementById("cartItems");
-
-const cartTotal =
-document.getElementById("cartTotal");
+const cartItems = document.getElementById("cartItems");
+const cartTotal = document.getElementById("cartTotal");
 
 /* =========================
    RENDER CART
@@ -85,14 +67,10 @@ function renderCart(){
   if(cart.length === 0){
 
     cartItems.innerHTML = `
-      <p class="empty">
-        Cart Empty
-      </p>
+      <p class="empty">🛒 Your cart is empty</p>
     `;
 
-    cartTotal.innerText =
-    "Total: Rs 0";
-
+    cartTotal.innerText = "Total: Rs 0";
     return;
   }
 
@@ -100,66 +78,46 @@ function renderCart(){
 
   cart.forEach((item,index)=>{
 
-    total +=
-    Number(item.price) * item.qty;
+    const price = Number(item.price) || 0;
+    const qty = Number(item.qty) || 1;
+
+    total += price * qty;
 
     cartItems.innerHTML += `
-
       <div class="cart-item">
 
-        <img
-          src="${item.image}"
-          alt="${item.name}"
-          onerror="this.src='placeholder.png'"
-        >
+        <img src="${item.image}"
+             alt="${item.name}"
+             onerror="this.src='placeholder.png'">
 
         <div class="cart-details">
 
-          <h4>
-            ${item.name}
-          </h4>
+          <h4>${item.name}</h4>
 
-          <p>
-            Rs ${Number(item.price).toLocaleString()}
-          </p>
+          <p>Rs ${price.toLocaleString()}</p>
 
           <div class="qty-box">
 
-            <button
-              onclick="decreaseQty(${index})"
-            >
-              -
-            </button>
+            <button onclick="decreaseQty(${index})">-</button>
 
-            <span>
-              ${item.qty}
-            </span>
+            <span>${qty}</span>
 
-            <button
-              onclick="increaseQty(${index})"
-            >
-              +
-            </button>
+            <button onclick="increaseQty(${index})">+</button>
 
           </div>
 
         </div>
 
-        <button
-          class="remove-btn"
-          onclick="removeItem(${index})"
-        >
+        <button class="remove-btn"
+                onclick="removeItem(${index})">
           ✕
         </button>
 
       </div>
-
     `;
   });
 
-  cartTotal.innerText =
-  "Total: Rs " +
-  total.toLocaleString();
+  cartTotal.innerText = "Total: Rs " + total.toLocaleString();
 }
 
 /* =========================
@@ -167,12 +125,7 @@ function renderCart(){
 ========================= */
 
 function saveCart(){
-
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
-
+  localStorage.setItem("cart", JSON.stringify(cart));
   renderCart();
 }
 
@@ -181,51 +134,74 @@ function saveCart(){
 ========================= */
 
 function removeItem(index){
-
   cart.splice(index,1);
-
   saveCart();
 }
 
 /* =========================
-   INCREASE
+   QTY CONTROL
 ========================= */
 
 function increaseQty(index){
-
-  cart[index].qty++;
-
+  cart[index].qty = (cart[index].qty || 1) + 1;
   saveCart();
 }
-
-/* =========================
-   DECREASE
-========================= */
 
 function decreaseQty(index){
-
   if(cart[index].qty > 1){
-
     cart[index].qty--;
-
   } else {
-
     cart.splice(index,1);
   }
-
   saveCart();
 }
 
 /* =========================
-   CLEAR CART
+   CLEAR CART (FIXED)
 ========================= */
 
 function clearCart(){
 
-  cart = [];
+  if(cart.length === 0) return;
 
+  if(!confirm("Clear all cart items?")) return;
+
+  cart = [];
   saveCart();
 }
+
+/* =========================
+   CHECKOUT (WHATSAPP)
+========================= */
+
+document.querySelector(".checkout-btn").onclick = function(){
+
+  if(cart.length === 0){
+    alert("Cart is empty");
+    return;
+  }
+
+  let message = "🛒 Freshora Order:%0A%0A";
+  let total = 0;
+
+  cart.forEach(item=>{
+    const price = Number(item.price) || 0;
+    const qty = Number(item.qty) || 1;
+
+    total += price * qty;
+
+    message += `• ${item.name} x${qty} = Rs ${price * qty}%0A`;
+  });
+
+  message += `%0A💰 Total: Rs ${total}`;
+
+  const phone = "94752425790";
+
+  window.open(
+    `https://wa.me/${phone}?text=${message}`,
+    "_blank"
+  );
+};
 
 /* =========================
    INIT
