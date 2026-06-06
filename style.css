@@ -672,12 +672,10 @@ body.dark .search-box{
   resize:none;
 }
 
-body.dark
-.checkout-form input,
-
-body.dark
-.checkout-form textarea{
+body.dark .checkout-form input,
+body.dark .checkout-form textarea{
   background:#232326;
+  color:#fff;
 }
 
 /* =========================
