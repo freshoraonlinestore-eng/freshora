@@ -244,7 +244,7 @@
 
 </div>
 <!-- PRODUCT MODAL -->
-
+<!-- PRODUCT MODAL -->
 <div
   id="productModal"
   class="modal"
@@ -272,10 +272,57 @@
 
       <p id="modalPrice"></p>
 
+      <!-- RATING -->
       <div class="rating-box">
-        ⭐⭐⭐⭐⭐
+
+        <div class="modal-rating">
+          ⭐ <span id="modalRatingText">5.0</span>
+        </div>
+
       </div>
 
+      <!-- REVIEW INPUT -->
+      <div class="review-form">
+
+        <select id="reviewRating">
+
+          <option value="5">
+            ⭐⭐⭐⭐⭐
+          </option>
+
+          <option value="4">
+            ⭐⭐⭐⭐
+          </option>
+
+          <option value="3">
+            ⭐⭐⭐
+          </option>
+
+          <option value="2">
+            ⭐⭐
+          </option>
+
+          <option value="1">
+            ⭐
+          </option>
+
+        </select>
+
+        <textarea
+          id="reviewText"
+          placeholder="Write your review..."
+        ></textarea>
+
+        <button id="reviewSubmitBtn">
+          Submit Review
+        </button>
+
+      </div>
+
+      <!-- REVIEWS -->
+      <div id="reviewList"></div>
+
+      <!-- ADD CART -->
       <button id="modalAddBtn">
         Add to Cart
       </button>
