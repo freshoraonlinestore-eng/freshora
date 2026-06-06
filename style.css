@@ -796,17 +796,21 @@ body.dark .clear-btn:hover{
   z-index:6000;
   padding:20px;
 
-  display:none;
+  display:flex;
   align-items:center;
   justify-content:center;
 
   opacity:0;
-  transition:.25s ease;
+  visibility:hidden;
+  pointer-events:none;
+
+  transition:opacity .25s ease, visibility .25s ease;
 }
 
 .modal.show{
-  display:flex;
   opacity:1;
+  visibility:visible;
+  pointer-events:auto;
 }
 
 /* modal box */
@@ -820,7 +824,7 @@ body.dark .clear-btn:hover{
   overflow:hidden;
 
   transform:scale(.9);
-  transition:.25s ease;
+  transition:transform .25s ease, box-shadow .25s ease;
 
   box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
@@ -839,7 +843,8 @@ body.dark .clear-btn:hover{
 
   border-radius:12px;
 
-  background:var(--bg);
+  background:var(--card);
+  border:1px solid var(--border);
   color:var(--text);
 
   display:flex;
@@ -848,7 +853,7 @@ body.dark .clear-btn:hover{
 
   cursor:pointer;
 
-  transition:.2s;
+  transition:.2s ease;
 }
 
 .close:hover{
@@ -897,7 +902,6 @@ body.dark .clear-btn:hover{
 #modalAddBtn:active{
   transform:scale(0.97);
 }
-
 /* =========================
    MOBILE TABLET (<=768px)
 ========================= */
