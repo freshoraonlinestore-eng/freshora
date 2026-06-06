@@ -784,50 +784,59 @@ body.dark .clear-btn:hover{
   background:#353538;
 }
 
+
 /* =========================
-   MODAL (FIXED + PREMIUM)
+   MODAL (FIXED + PREMIUM FINAL)
 ========================= */
+
 .modal{
-  display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.6);
   z-index:6000;
   padding:20px;
 
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
+
+  opacity:0;
+  transition:.25s ease;
 }
 
 .modal.show{
   display:flex;
+  opacity:1;
 }
 
+/* modal box */
 .modal-content{
   position:relative;
   width:100%;
   max-width:420px;
+
   background:var(--card);
   border-radius:22px;
   overflow:hidden;
 
-  transform:scale(.95);
+  transform:scale(.9);
   transition:.25s ease;
+
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
 
 .modal.show .modal-content{
   transform:scale(1);
 }
 
-
-/* close button FIX */
+/* close button */
 .close{
   position:absolute;
   top:14px;
   right:14px;
   width:40px;
   height:40px;
+
   border-radius:12px;
 
   background:var(--bg);
@@ -838,10 +847,12 @@ body.dark .clear-btn:hover{
   justify-content:center;
 
   cursor:pointer;
+
+  transition:.2s;
 }
 
 .close:hover{
-  transform:scale(1.05);
+  transform:scale(1.1);
 }
 
 /* content */
@@ -880,13 +891,12 @@ body.dark .clear-btn:hover{
 
   cursor:pointer;
 
-  transition:.2s;
+  transition:.2s ease;
 }
 
 #modalAddBtn:active{
   transform:scale(0.97);
 }
-
 
 /* =========================
    MOBILE TABLET (<=768px)
