@@ -274,11 +274,12 @@ body.dark .search-box{
 
   box-shadow:var(--shadow);
 
-  transition:.25s;
+  transition:transform .25s ease, box-shadow .25s ease;
 }
 
 .card:hover{
-  transform:translateY(-5px);
+  transform:translateY(-6px);
+  box-shadow:0 18px 40px rgba(0,0,0,.12);
 }
 
 .card img{
