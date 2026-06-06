@@ -889,7 +889,7 @@ body.dark .clear-btn:hover{
 
 
 /* =========================
-   MOBILE
+   MOBILE TABLET (<=768px)
 ========================= */
 
 @media(max-width:768px){
@@ -927,10 +927,15 @@ body.dark .clear-btn:hover{
   }
 }
 
+/* =========================
+   MOBILE SMALL (<=480px)
+========================= */
+
 @media(max-width:480px){
 
   .products-grid{
     grid-template-columns:1fr;
+    gap:10px;
   }
 
   .header{
@@ -946,5 +951,13 @@ body.dark .clear-btn:hover{
     height:56px;
     right:14px;
     bottom:14px;
+  }
+
+  .logo{
+    font-size:18px;
+  }
+
+  .card-content h3{
+    font-size:13px;
   }
 }
