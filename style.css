@@ -786,64 +786,47 @@ body.dark .clear-btn:hover{
 /* =========================
    MODAL (FIXED + PREMIUM)
 ========================= */
-
 .modal{
   display:none;
   position:fixed;
   inset:0;
-
-  background:rgba(0,0,0,.6);
-
+  background:rgba(0,0,0,.55);
   z-index:6000;
-
   padding:20px;
 
+  display:flex;
   align-items:center;
   justify-content:center;
-
-  opacity:0;
-  transition:.25s ease;
 }
 
-/* show state */
 .modal.show{
   display:flex;
-  opacity:1;
 }
 
 .modal-content{
   position:relative;
-
   width:100%;
   max-width:420px;
-
   background:var(--card);
-
   border-radius:22px;
-
   overflow:hidden;
 
-  transform:scale(0.95);
+  transform:scale(.95);
   transition:.25s ease;
-
-  box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
 
-/* animation */
 .modal.show .modal-content{
   transform:scale(1);
 }
 
+
 /* close button FIX */
 .close{
   position:absolute;
-
-  top:12px;
-  right:12px;
-
-  width:42px;
-  height:42px;
-
+  top:14px;
+  right:14px;
+  width:40px;
+  height:40px;
   border-radius:12px;
 
   background:var(--bg);
@@ -854,8 +837,6 @@ body.dark .clear-btn:hover{
   justify-content:center;
 
   cursor:pointer;
-
-  transition:.2s;
 }
 
 .close:hover{
