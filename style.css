@@ -887,6 +887,7 @@ body.dark .clear-btn:hover{
   transform:scale(0.97);
 }
 
+
 /* =========================
    MOBILE
 ========================= */
@@ -898,9 +899,7 @@ body.dark .clear-btn:hover{
   }
 
   .products-grid{
-    grid-template-columns:
-    repeat(2,1fr);
-
+    grid-template-columns:repeat(2,1fr);
     gap:12px;
   }
 
@@ -928,3 +927,24 @@ body.dark .clear-btn:hover{
   }
 }
 
+@media(max-width:480px){
+
+  .products-grid{
+    grid-template-columns:1fr;
+  }
+
+  .header{
+    grid-template-columns:1fr auto;
+  }
+
+  .search-box{
+    display:none;
+  }
+
+  .floating-cart{
+    width:56px;
+    height:56px;
+    right:14px;
+    bottom:14px;
+  }
+}
