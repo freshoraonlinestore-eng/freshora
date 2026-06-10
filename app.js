@@ -50,7 +50,7 @@ window.toggleDarkMode = function () {
 };
 
 /* =========================
-   CART LOGIC
+   CART LOGIC (Updated with Qty & Remove)
 ========================= */
 window.toggleCart = function () {
   cartDrawer.classList.toggle("open");
@@ -61,6 +61,17 @@ window.addToCart = function (id, name, price, image) {
   const existing = cart.find(i => i.id === id);
   if (existing) { existing.qty += 1; }
   else { cart.push({ id, name, price: safeNumber(price), image, qty: 1 }); }
+  saveCart();
+};
+
+window.updateQty = function(index, delta) {
+  cart[index].qty += delta;
+  if (cart[index].qty <= 0) cart.splice(index, 1);
+  saveCart();
+};
+
+window.removeFromCart = function(index) {
+  cart.splice(index, 1);
   saveCart();
 };
 
@@ -80,7 +91,15 @@ function renderCart() {
         <div class="cart-details">
           <h4>${item.name}</h4>
           <p>Rs ${item.price.toLocaleString()}</p>
+          <div class="qty-box">
+            <button onclick="updateQty(${index}, -1)">-</button>
+            <span>${item.qty}</span>
+            <button onclick="updateQty(${index}, 1)">+</button>
+          </div>
         </div>
+        <button class="remove-btn" onclick="removeFromCart(${index})">
+          <i class="fa-solid fa-trash"></i>
+        </button>
       </div>`;
   }).join("");
   cartTotal.innerText = `Total: Rs ${total.toLocaleString()}`;
@@ -108,15 +127,17 @@ function filterProducts() {
 }
 
 /* =========================
-   RENDER & INIT
+   RENDER & INIT (Updated with Out of Stock)
 ========================= */
 function renderProducts(products) {
   if (!productsDiv) return;
   productsDiv.innerHTML = products.map(p => {
     const price = safeNumber(p.price);
     const finalPrice = p.discount > 0 ? Math.round(price - (price * p.discount / 100)) : price;
+    const isOutOfStock = p.stock === 0 || p.status === "out-of-stock";
+
     return `
-      <div class="card">
+      <div class="card ${isOutOfStock ? 'out-of-stock' : ''}">
         ${p.discount > 0 ? `<div class="discount-badge">-${p.discount}%</div>` : ""}
         <img src="${p.image}" />
         <div class="card-content">
@@ -124,7 +145,10 @@ function renderProducts(products) {
           <div class="price-box"><span class="new-price">Rs ${finalPrice.toLocaleString()}</span></div>
           <div class="card-buttons">
             <button class="view-btn" onclick="openModal('${p.id}')">View</button>
-            <button class="add-cart-btn" onclick="addToCart('${p.id}', '${p.name}', ${finalPrice}, '${p.image}')">Add</button>
+            ${isOutOfStock 
+              ? `<button class="add-cart-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
+              : `<button class="add-cart-btn" onclick="addToCart('${p.id}', '${p.name}', ${finalPrice}, '${p.image}')">Add</button>`
+            }
           </div>
         </div>
       </div>`;
@@ -156,4 +180,5 @@ discountFilter?.addEventListener("change", filterProducts);
 window.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("darkMode") === "true") document.body.classList.add("dark");
   updateCartCount();
+  renderCart();
 });
