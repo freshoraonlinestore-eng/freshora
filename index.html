@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Freshora Online Store</title>
 
-  <link rel="stylesheet" href="style.css?v=6"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- FIXED PATH -->
+  <link rel="stylesheet" href="./style.css?v=10"/>
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 
 <body>
@@ -28,7 +31,7 @@
 <header class="header">
 
   <div class="logo-area" ondblclick="window.location='login.html'">
-    <img src="logo.png" class="logo-img" alt="Freshora Logo"/>
+    <img src="./logo.png" class="logo-img" alt="Freshora Logo"/>
     <div class="logo-text">Freshora</div>
   </div>
 
@@ -81,12 +84,11 @@
   <span id="floatingCartCount">0</span>
 </button>
 
-<!-- CART DRAWER -->
+<!-- CART -->
 <div id="cartDrawer" class="cart-drawer">
-
   <div class="cart-header">
     <h2>Your Cart</h2>
-    <button class="close-cart" onclick="toggleCart()">
+    <button onclick="toggleCart()" class="close-cart">
       <i class="fa-solid fa-xmark"></i>
     </button>
   </div>
@@ -94,9 +96,9 @@
   <div id="cartItems"></div>
 
   <div class="checkout-form">
-    <input type="text" id="cusName" placeholder="Your Name"/>
-    <input type="tel" id="cusPhone" placeholder="Phone Number"/>
-    <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
+    <input id="cusName" placeholder="Your Name"/>
+    <input id="cusPhone" placeholder="Phone Number"/>
+    <textarea id="cusAddress" placeholder="Address"></textarea>
   </div>
 
   <div class="sticky-checkout">
@@ -104,36 +106,31 @@
 
     <div class="checkout-actions">
       <button class="checkout-btn" onclick="checkout()">
-        <i class="fab fa-whatsapp"></i> Order via WhatsApp
+        <i class="fab fa-whatsapp"></i> Order
       </button>
 
       <button class="clear-btn" onclick="clearCart()">
-        Clear Cart
+        Clear
       </button>
     </div>
   </div>
-
 </div>
 
-<!-- PRODUCT MODAL -->
+<!-- MODAL -->
 <div id="productModal" class="modal">
-
   <div class="modal-content">
 
     <button class="close" onclick="closeModal()">
       <i class="fa-solid fa-xmark"></i>
     </button>
 
-    <img id="modalImage" src="placeholder.png"/>
+    <img id="modalImage"/>
 
     <div class="modal-details">
-
       <h2 id="modalName"></h2>
       <p id="modalPrice"></p>
 
-      <div class="rating-box">
-        ⭐ <span id="modalRatingText">5.0</span>
-      </div>
+      <div>⭐ <span id="modalRatingText">5.0</span></div>
 
       <div class="review-form">
         <select id="reviewRating">
@@ -144,7 +141,7 @@
           <option value="1">⭐</option>
         </select>
 
-        <textarea id="reviewText" placeholder="Write your review..."></textarea>
+        <textarea id="reviewText"></textarea>
 
         <button id="reviewSubmitBtn">Submit Review</button>
       </div>
@@ -152,13 +149,13 @@
       <div id="reviewList"></div>
 
       <button id="modalAddBtn">Add to Cart</button>
-
     </div>
 
   </div>
 </div>
 
-<script type="module" src="app.js?v=6"></script>
+<!-- FIXED MODULE PATH -->
+<script type="module" src="./app.js?v=10"></script>
 
 </body>
 </html>
