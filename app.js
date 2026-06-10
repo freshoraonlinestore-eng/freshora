@@ -82,6 +82,39 @@ function renderProducts(list) {
 }
 
 /* =========================
+   TOAST SYSTEM (SAFE ADD)
+========================= */
+
+function toast(msg){
+  const t = document.createElement("div");
+  t.innerText = msg;
+
+  t.style.cssText = `
+    position:fixed;
+    bottom:100px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(17,17,17,0.95);
+    color:#fff;
+    padding:10px 16px;
+    border-radius:10px;
+    z-index:9999;
+    font-size:13px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    animation:fadeInToast .2s ease;
+  `;
+
+  document.body.appendChild(t);
+
+  setTimeout(() => {
+    t.style.opacity = "0";
+    t.style.transition = "0.3s";
+  }, 900);
+
+  setTimeout(() => t.remove(), 1200);
+}
+
+/* =========================
    CART LOGIC
 ========================= */
 
@@ -104,6 +137,8 @@ function addToCart(id) {
   saveCart();
   renderCart();
   renderCartCount();
+
+  toast("Added to cart 🛒");
 }
 
 function increaseQty(id) {
@@ -239,7 +274,10 @@ function renderCart() {
 ========================= */
 
 function checkout() {
-  if (cart.length === 0) return alert("Cart is empty!");
+  if (cart.length === 0) {
+    toast("Cart is empty!");
+    return;
+  }
 
   let message = "🛒 *Order Details*%0A%0A";
   let total = 0;
@@ -255,6 +293,8 @@ function checkout() {
 
   const phone = "94752425790";
   window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+
+  toast("Redirecting to WhatsApp...");
 }
 
 /* =========================
