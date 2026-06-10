@@ -45,7 +45,6 @@ function loadProducts() {
 
   onSnapshot(ref, (snapshot) => {
     products = [];
-
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
@@ -55,7 +54,7 @@ function loadProducts() {
 }
 
 /* =========================
-   PRODUCTS (FIXED EVENT SYSTEM)
+   PRODUCTS (SAFE EVENT SYSTEM)
 ========================= */
 
 function renderProducts(list) {
@@ -76,8 +75,7 @@ function renderProducts(list) {
   });
 }
 
-/* 🔥 FIX: EVENT DELEGATION (NO MORE BROKEN BUTTONS) */
-
+/* EVENT DELEGATION (IMPORTANT FIX) */
 productsDiv.addEventListener("click", (e) => {
   if (e.target.classList.contains("add-btn")) {
     addToCart(e.target.dataset.id);
@@ -111,39 +109,27 @@ function addToCart(id) {
   toast("Added to cart 🛒");
 }
 
-function increaseQty(id) {
+function increaseQty(id){
   const item = cart.find(i => i.id === id);
   if (!item) return;
-
   item.qty++;
-  saveCart();
-  renderCart();
-  renderCartCount();
+  saveCart(); renderCart(); renderCartCount();
 }
 
-function decreaseQty(id) {
+function decreaseQty(id){
   const item = cart.find(i => i.id === id);
   if (!item) return;
-
   item.qty--;
-
-  if (item.qty <= 0) {
-    cart = cart.filter(i => i.id !== id);
-  }
-
-  saveCart();
-  renderCart();
-  renderCartCount();
+  if(item.qty<=0) cart = cart.filter(i=>i.id!==id);
+  saveCart(); renderCart(); renderCartCount();
 }
 
-function removeFromCart(id) {
-  cart = cart.filter(i => i.id !== id);
-  saveCart();
-  renderCart();
-  renderCartCount();
+function removeFromCart(id){
+  cart = cart.filter(i=>i.id!==id);
+  saveCart(); renderCart(); renderCartCount();
 }
 
-function saveCart() {
+function saveCart(){
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
@@ -151,33 +137,27 @@ function saveCart() {
    CART UI
 ========================= */
 
-function openCart() {
+function openCart(){
   cartDrawer.classList.add("open");
   overlay.classList.add("active");
   renderCart();
 }
 
-function closeCart() {
+function closeCart(){
   cartDrawer.classList.remove("open");
   overlay.classList.remove("active");
 }
 
-function toggleCart() {
-  if (cartDrawer.classList.contains("open")) {
-    closeCart();
-  } else {
-    openCart();
-  }
+function toggleCart(){
+  cartDrawer.classList.contains("open") ? closeCart() : openCart();
 }
 window.toggleCart = toggleCart;
 
 /* =========================
-   RENDER CART
+   CART RENDER
 ========================= */
 
-function renderCart() {
-  if (!cartDrawer) return;
-
+function renderCart(){
   let total = 0;
 
   cartDrawer.innerHTML = `
@@ -190,26 +170,25 @@ function renderCart() {
 
   const container = document.getElementById("cartItems");
 
-  if (cart.length === 0) {
+  if(cart.length===0){
     container.innerHTML = "<p style='padding:10px'>Cart is empty 😢</p>";
   }
 
-  cart.forEach(item => {
+  cart.forEach(item=>{
     const itemTotal = item.price * item.qty;
     total += itemTotal;
 
     const div = document.createElement("div");
-    div.style.display = "flex";
-    div.style.justifyContent = "space-between";
-    div.style.alignItems = "center";
-    div.style.padding = "10px 0";
+    div.style.display="flex";
+    div.style.justifyContent="space-between";
+    div.style.alignItems="center";
+    div.style.padding="10px 0";
 
-    div.innerHTML = `
+    div.innerHTML=`
       <div>
         <strong>${item.name}</strong><br>
-        <small>Rs.${item.price} x ${item.qty} = Rs.${itemTotal}</small>
+        <small>Rs.${item.price} x ${item.qty}</small>
       </div>
-
       <div>
         <button data-id="${item.id}" class="dec">-</button>
         <button data-id="${item.id}" class="inc">+</button>
@@ -220,123 +199,89 @@ function renderCart() {
     container.appendChild(div);
   });
 
-  const totalEl = cartDrawer.querySelector(".cart-total");
-  if (totalEl) totalEl.innerText = "Total: Rs. " + total;
+  cartDrawer.querySelector(".cart-total").innerText = "Total: Rs. " + total;
 
-  cartDrawer.querySelectorAll(".inc").forEach(b =>
-    b.onclick = () => increaseQty(b.dataset.id)
-  );
+  cartDrawer.querySelectorAll(".inc").forEach(b=>b.onclick=()=>increaseQty(b.dataset.id));
+  cartDrawer.querySelectorAll(".dec").forEach(b=>b.onclick=()=>decreaseQty(b.dataset.id));
+  cartDrawer.querySelectorAll(".remove").forEach(b=>b.onclick=()=>removeFromCart(b.dataset.id));
 
-  cartDrawer.querySelectorAll(".dec").forEach(b =>
-    b.onclick = () => decreaseQty(b.dataset.id)
-  );
-
-  cartDrawer.querySelectorAll(".remove").forEach(b =>
-    b.onclick = () => removeFromCart(b.dataset.id)
-  );
-
-  const btn = document.getElementById("checkoutBtn");
-  if (btn) btn.onclick = checkout;
+  document.getElementById("checkoutBtn").onclick = checkout;
 }
 
 /* =========================
    CHECKOUT
 ========================= */
 
-function checkout() {
-  if (cart.length === 0) {
+function checkout(){
+  if(cart.length===0){
     toast("Cart is empty!");
     return;
   }
 
-  let message = "🛒 *Order Details*%0A%0A";
-  let total = 0;
+  let msg="🛒 Order%0A";
+  let total=0;
 
-  cart.forEach(item => {
-    const itemTotal = item.price * item.qty;
-    total += itemTotal;
-
-    message += `• ${item.name} x${item.qty} = Rs.${itemTotal}%0A`;
+  cart.forEach(i=>{
+    total+=i.price*i.qty;
+    msg+=`${i.name} x${i.qty}%0A`;
   });
 
-  message += `%0A💰 *Total: Rs.${total}*`;
+  msg+=`Total: Rs.${total}`;
 
-  const phone = "94752425790";
-  window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
-
-  toast("Redirecting to WhatsApp...");
+  window.open(`https://wa.me/94752425790?text=${msg}`,"_blank");
+  toast("Opening WhatsApp...");
 }
 
 /* =========================
    EVENTS
 ========================= */
 
-function setupEvents() {
-  cartBtn?.addEventListener("click", toggleCart);
-  overlay?.addEventListener("click", closeCart);
+function setupEvents(){
+  cartBtn?.addEventListener("click",toggleCart);
+  overlay?.addEventListener("click",closeCart);
 
-  let timeout;
-
-  searchInput?.addEventListener("input", (e) => {
-    clearTimeout(timeout);
-
-    timeout = setTimeout(() => {
-      const value = e.target.value.toLowerCase();
-
-      const filtered = products.filter(p =>
-        (p.name || "").toLowerCase().includes(value)
-      );
-
-      renderProducts(filtered);
-    }, 300);
+  let t;
+  searchInput?.addEventListener("input",(e)=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{
+      const v=e.target.value.toLowerCase();
+      const f=products.filter(p=>(p.name||"").toLowerCase().includes(v));
+      renderProducts(f);
+    },300);
   });
 }
 
 /* =========================
-   CART COUNT
+   COUNT
 ========================= */
 
-function renderCartCount() {
-  const count = cart.reduce((sum, i) => sum + i.qty, 0);
-
-  const countEl = document.getElementById("floatingCartCount");
-  if (countEl) countEl.innerText = count;
+function renderCartCount(){
+  const c=cart.reduce((s,i)=>s+i.qty,0);
+  document.getElementById("floatingCartCount").innerText=c;
 }
 
 /* =========================
-   TOAST (GLOBAL SAFE)
+   TOAST
 ========================= */
 
 function toast(msg){
-  const t = document.createElement("div");
-  t.innerText = msg;
-
-  t.style.cssText = `
+  const t=document.createElement("div");
+  t.innerText=msg;
+  t.style.cssText=`
     position:fixed;
-    bottom:100px;
+    bottom:90px;
     left:50%;
     transform:translateX(-50%);
-    background:rgba(0,0,0,.9);
+    background:#111;
     color:#fff;
-    padding:10px 16px;
+    padding:10px 14px;
     border-radius:10px;
     z-index:9999;
-    font-size:13px;
   `;
-
   document.body.appendChild(t);
-
-  setTimeout(() => {
-    t.style.opacity = "0";
-    t.style.transition = "0.3s";
-  }, 900);
-
-  setTimeout(() => t.remove(), 1200);
+  setTimeout(()=>t.remove(),1200);
 }
 
-/* =========================
-   GLOBAL EXPORT
-========================= */
-
-window.openCart = openCart;
-window.closeCart = closeCart;
+/* GLOBAL */
+window.openCart=openCart;
+window.closeCart=closeCart;
