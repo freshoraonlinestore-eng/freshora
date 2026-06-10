@@ -669,3 +669,194 @@ window.addEventListener(
 window.addEventListener("load", () => {
   setTimeout(hideLoading, 1200);
 });
+
+/* =========================
+   LIVE SEARCH
+========================= */
+
+const searchInput =
+  document.getElementById("searchInput");
+
+const categoryFilter =
+  document.getElementById("categoryFilter");
+
+const priceFilter =
+  document.getElementById("priceFilter");
+
+const discountFilter =
+  document.getElementById("discountFilter");
+
+function filterProducts() {
+
+  let filtered = [...allProducts];
+
+  /* SEARCH */
+
+  const search =
+    searchInput?.value
+      .toLowerCase()
+      .trim();
+
+  if (search) {
+
+    filtered = filtered.filter(p =>
+      p.name
+        ?.toLowerCase()
+        .includes(search)
+    );
+
+  }
+
+  /* CATEGORY */
+
+  const category =
+    categoryFilter?.value;
+
+  if (
+    category &&
+    category !== "all"
+  ) {
+
+    filtered = filtered.filter(
+      p => p.category === category
+    );
+
+  }
+
+  /* PRICE */
+
+  const price =
+    priceFilter?.value;
+
+  if (
+    price &&
+    price !== "all"
+  ) {
+
+    filtered = filtered.filter(
+      p =>
+        safeNumber(p.price) <=
+        safeNumber(price)
+    );
+
+  }
+
+  /* DISCOUNT */
+
+  const discount =
+    discountFilter?.value;
+
+  if (
+    discount &&
+    discount !== "all"
+  ) {
+
+    filtered = filtered.filter(
+      p =>
+        safeNumber(p.discount) >=
+        safeNumber(discount)
+    );
+
+  }
+
+  renderProducts(filtered);
+
+}
+
+/* =========================
+   FILTER EVENTS
+========================= */
+
+searchInput?.addEventListener(
+  "input",
+  filterProducts
+);
+
+categoryFilter?.addEventListener(
+  "change",
+  filterProducts
+);
+
+priceFilter?.addEventListener(
+  "change",
+  filterProducts
+);
+
+discountFilter?.addEventListener(
+  "change",
+  filterProducts
+);
+
+/* =========================
+   MODAL OUTSIDE CLICK
+========================= */
+
+window.addEventListener(
+  "click",
+  e => {
+
+    const modal =
+      document.getElementById(
+        "productModal"
+      );
+
+    if (
+      e.target === modal
+    ) {
+
+      closeModal();
+
+    }
+
+  }
+);
+
+/* =========================
+   ESC CLOSE
+========================= */
+
+window.addEventListener(
+  "keydown",
+  e => {
+
+    if (
+      e.key === "Escape"
+    ) {
+
+      closeModal();
+
+      if (
+        cartDrawer.classList.contains(
+          "open"
+        )
+      ) {
+
+        toggleCart();
+
+      }
+
+    }
+
+  }
+);
+
+/* =========================
+   IMAGE FALLBACK
+========================= */
+
+document.addEventListener(
+  "error",
+  function (e) {
+
+    if (
+      e.target.tagName === "IMG"
+    ) {
+
+      e.target.src =
+        "placeholder.png";
+
+    }
+
+  },
+  true
+);
