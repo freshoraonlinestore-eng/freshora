@@ -9,62 +9,41 @@
 </head>
 <body>
 
-  <div class="top-banner">
-    <p>Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</p>
+<header class="header">
+  <div class="logo-area">
+    <img src="logo.png" class="logo-img" alt="logo">
+    <div class="logo-text">Freshora</div>
   </div>
-
-  <header class="header">
-    <div class="logo-area">
-      <img src="logo.png" class="logo-img" alt="logo">
-      <span>Freshora</span>
-    </div>
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input id="searchInput" placeholder="Search products...">
-    </div>
-    <button id="cartBtn" class="icon-btn">
-      <i class="fa-solid fa-cart-shopping"></i>
-      <span id="floatingCartCount">0</span>
-    </button>
-  </header>
-
-  <section class="category-slider">
-    <button class="category-chip active" data-cat="all">All</button>
-    <button class="category-chip" data-cat="Gifts">Gifts pack</button>
-    <button class="category-chip" data-cat="Grocery">Grocery</button>
-    <button class="category-chip" data-cat="Drinks">Drinks</button>
-  </section>
-
-  <section id="products" class="products-grid"></section>
-
-  <div id="loadingScreen" class="loading-screen">
-    <div class="loader"></div>
+  <div class="search-box">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input id="searchInput" placeholder="Search products...">
   </div>
+  <button id="cartBtn" class="floating-cart-icon"><i class="fa-solid fa-cart-shopping"></i></button>
+</header>
 
-  <div id="overlay" class="overlay"></div>
+<section id="products" class="products-grid"></section>
 
-  <div id="cartDrawer" class="cart-drawer">
-    <div class="cart-header">
-      <h3>Your Cart</h3>
-      <button id="closeCart">✕</button>
-    </div>
-    <div id="cartItems"></div>
-    <div class="sticky-checkout">
-      <div id="cartTotal">Total: Rs 0</div>
-      <button id="checkoutBtn" class="add-cart-btn">Checkout</button>
-    </div>
+<div id="cartDrawer" class="cart-drawer">
+  <div class="cart-header"><h3>Cart</h3><button id="closeCart">✕</button></div>
+  <div id="cartItems"></div>
+  <div class="sticky-checkout">
+    <div id="cartTotal">Total: Rs 0</div>
+    <button id="checkoutBtn" class="add-cart-btn">Checkout</button>
   </div>
+</div>
 
-  <div id="productModal" class="modal">
-    <div class="modal-content">
-      <button id="closeModal" class="close">✕</button>
-      <img id="modalImage" />
-      <h2 id="modalName"></h2>
-      <p id="modalPrice"></p>
-      <button id="modalAddBtn" class="add-cart-btn">Add to Cart</button>
-    </div>
+<div id="productModal" class="modal">
+  <div class="modal-content">
+    <button id="closeModal" class="close">✕</button>
+    <img id="modalImage" />
+    <div id="imageGallery" class="image-gallery"></div>
+    <h2 id="modalName"></h2>
+    <p id="modalPrice"></p>
+    <div class="ratings">⭐⭐⭐⭐⭐ (0 reviews)</div>
+    <button id="modalAddBtn" class="add-cart-btn">Add to Cart</button>
   </div>
+</div>
 
-  <script type="module" src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
