@@ -1,161 +1,419 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
   <title>Freshora Online Store</title>
 
-  <!-- FIXED PATH -->
-  <link rel="stylesheet" href="./style.css?v=10"/>
+  <link
+    rel="stylesheet"
+    href="style.css?v=10"
+  />
 
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+
 </head>
 
 <body>
 
-<!-- TOP BANNER -->
+<!-- =========================
+TOP BANNER
+========================= -->
+
 <div class="top-banner">
-  <p>Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</p>
+  Free Delivery Above Rs 5000 •
+  Cash On Delivery •
+  Fresh Daily Products
 </div>
 
-<!-- LOADING -->
-<div id="loadingScreen" class="loading-screen">
+<!-- =========================
+LOADING
+========================= -->
+
+<div
+  id="loadingScreen"
+  class="loading-screen"
+>
   <div class="loader"></div>
 </div>
 
-<!-- OVERLAY -->
-<div id="overlay" class="overlay"></div>
+<!-- =========================
+OVERLAY
+========================= -->
 
-<!-- HEADER -->
+<div
+  id="overlay"
+  class="overlay"
+  onclick="toggleCart()"
+></div>
+
+<!-- =========================
+HEADER
+========================= -->
+
 <header class="header">
 
-  <div class="logo-area" ondblclick="window.location='login.html'">
-    <img src="./logo.png" class="logo-img" alt="Freshora Logo"/>
-    <div class="logo-text">Freshora</div>
+  <!-- LOGO -->
+
+  <div
+    class="logo-area"
+    ondblclick="window.location='login.html'"
+  >
+
+    <img
+      src="logo.png"
+      class="logo-img"
+      alt="Freshora Logo"
+    />
+
+    <div class="logo-text">
+      Freshora
+    </div>
+
   </div>
+
+  <!-- SEARCH -->
 
   <div class="search-box">
+
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off"/>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search products..."
+      autocomplete="off"
+    />
+
   </div>
 
-  <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
+  <!-- DARK MODE -->
+
+  <button
+    id="darkModeBtn"
+    class="icon-btn"
+    onclick="toggleDarkMode()"
+  >
     <i class="fa-solid fa-moon"></i>
   </button>
 
 </header>
 
-<!-- FILTERS -->
+<!-- =========================
+FILTERS
+========================= -->
+
 <section class="advanced-search">
+
   <div class="filter-grid">
 
+    <!-- CATEGORY -->
+
     <select id="categoryFilter">
-      <option value="all">All Categories</option>
-      <option value="Grocery">Grocery</option>
-      <option value="Drinks">Drinks</option>
-      <option value="Snacks">Snacks</option>
-      <option value="Beauty">Beauty</option>
+
+      <option value="all">
+        All Categories
+      </option>
+
+      <option value="Grocery">
+        Grocery
+      </option>
+
+      <option value="Drinks">
+        Drinks
+      </option>
+
+      <option value="Snacks">
+        Snacks
+      </option>
+
+      <option value="Beauty">
+        Beauty
+      </option>
+
     </select>
+
+    <!-- PRICE -->
 
     <select id="priceFilter">
-      <option value="all">All Prices</option>
-      <option value="500">Under Rs 500</option>
-      <option value="1000">Under Rs 1000</option>
-      <option value="2000">Under Rs 2000</option>
+
+      <option value="all">
+        All Prices
+      </option>
+
+      <option value="500">
+        Under Rs 500
+      </option>
+
+      <option value="1000">
+        Under Rs 1000
+      </option>
+
+      <option value="2000">
+        Under Rs 2000
+      </option>
+
     </select>
+
+    <!-- DISCOUNT -->
 
     <select id="discountFilter">
-      <option value="all">All Discounts</option>
-      <option value="10">10%+</option>
-      <option value="20">20%+</option>
-      <option value="30">30%+</option>
+
+      <option value="all">
+        All Discounts
+      </option>
+
+      <option value="10">
+        10%+
+      </option>
+
+      <option value="20">
+        20%+
+      </option>
+
+      <option value="30">
+        30%+
+      </option>
+
     </select>
 
   </div>
+
 </section>
 
-<!-- PRODUCTS -->
-<section id="products" class="products-grid"></section>
+<!-- =========================
+PRODUCTS
+========================= -->
 
-<!-- FLOATING CART -->
-<button class="floating-cart" onclick="toggleCart()">
+<section
+  id="products"
+  class="products-grid"
+></section>
+
+<!-- =========================
+FLOATING CART
+========================= -->
+
+<button
+  class="floating-cart"
+  onclick="toggleCart()"
+>
+
   <i class="fa-solid fa-cart-shopping"></i>
-  <span id="floatingCartCount">0</span>
+
+  <span id="floatingCartCount">
+    0
+  </span>
+
 </button>
 
-<!-- CART -->
-<div id="cartDrawer" class="cart-drawer">
+<!-- =========================
+CART DRAWER
+========================= -->
+
+<div
+  id="cartDrawer"
+  class="cart-drawer"
+>
+
+  <!-- HEADER -->
+
   <div class="cart-header">
+
     <h2>Your Cart</h2>
-    <button onclick="toggleCart()" class="close-cart">
+
+    <button
+      class="close-cart"
+      onclick="toggleCart()"
+    >
       <i class="fa-solid fa-xmark"></i>
     </button>
+
   </div>
+
+  <!-- CART ITEMS -->
 
   <div id="cartItems"></div>
 
+  <!-- FORM -->
+
   <div class="checkout-form">
-    <input id="cusName" placeholder="Your Name"/>
-    <input id="cusPhone" placeholder="Phone Number"/>
-    <textarea id="cusAddress" placeholder="Address"></textarea>
+
+    <input
+      type="text"
+      id="cusName"
+      placeholder="Your Name"
+    />
+
+    <input
+      type="tel"
+      id="cusPhone"
+      placeholder="Phone Number"
+    />
+
+    <textarea
+      id="cusAddress"
+      placeholder="Delivery Address"
+    ></textarea>
+
   </div>
+
+  <!-- CHECKOUT -->
 
   <div class="sticky-checkout">
-    <h3 id="cartTotal">Total: Rs 0</h3>
+
+    <h3 id="cartTotal">
+      Total: Rs 0
+    </h3>
 
     <div class="checkout-actions">
-      <button class="checkout-btn" onclick="checkout()">
-        <i class="fab fa-whatsapp"></i> Order
+
+      <button
+        class="checkout-btn"
+        onclick="checkout()"
+      >
+
+        <i class="fab fa-whatsapp"></i>
+
+        Order via WhatsApp
+
       </button>
 
-      <button class="clear-btn" onclick="clearCart()">
-        Clear
+      <button
+        class="clear-btn"
+        onclick="clearCart()"
+      >
+        Clear Cart
       </button>
+
     </div>
+
   </div>
+
 </div>
 
-<!-- MODAL -->
-<div id="productModal" class="modal">
+<!-- =========================
+PRODUCT MODAL
+========================= -->
+
+<div
+  id="productModal"
+  class="modal"
+>
+
   <div class="modal-content">
 
-    <button class="close" onclick="closeModal()">
+    <!-- CLOSE -->
+
+    <button
+      class="close"
+      onclick="closeModal()"
+    >
       <i class="fa-solid fa-xmark"></i>
     </button>
 
-    <img id="modalImage"/>
+    <!-- IMAGE -->
+
+    <img
+      id="modalImage"
+      src="placeholder.png"
+      alt="Product"
+    />
+
+    <!-- DETAILS -->
 
     <div class="modal-details">
+
       <h2 id="modalName"></h2>
+
       <p id="modalPrice"></p>
 
-      <div>⭐ <span id="modalRatingText">5.0</span></div>
+      <!-- RATING -->
+
+      <div class="rating-box">
+
+        ⭐
+        <span id="modalRatingText">
+          5.0
+        </span>
+
+      </div>
+
+      <!-- REVIEW FORM -->
 
       <div class="review-form">
+
         <select id="reviewRating">
-          <option value="5">⭐⭐⭐⭐⭐</option>
-          <option value="4">⭐⭐⭐⭐</option>
-          <option value="3">⭐⭐⭐</option>
-          <option value="2">⭐⭐</option>
-          <option value="1">⭐</option>
+
+          <option value="5">
+            ⭐⭐⭐⭐⭐
+          </option>
+
+          <option value="4">
+            ⭐⭐⭐⭐
+          </option>
+
+          <option value="3">
+            ⭐⭐⭐
+          </option>
+
+          <option value="2">
+            ⭐⭐
+          </option>
+
+          <option value="1">
+            ⭐
+          </option>
+
         </select>
 
-        <textarea id="reviewText"></textarea>
+        <textarea
+          id="reviewText"
+          placeholder="Write your review..."
+        ></textarea>
 
-        <button id="reviewSubmitBtn">Submit Review</button>
+        <button id="reviewSubmitBtn">
+          Submit Review
+        </button>
+
       </div>
+
+      <!-- REVIEWS -->
 
       <div id="reviewList"></div>
 
-      <button id="modalAddBtn">Add to Cart</button>
+      <!-- ADD BUTTON -->
+
+      <button id="modalAddBtn">
+
+        <i class="fa-solid fa-cart-shopping"></i>
+
+        Add To Cart
+
+      </button>
+
     </div>
 
   </div>
+
 </div>
 
-<!-- FIXED MODULE PATH -->
-<script type="module" src="./app.js?v=10"></script>
+<!-- =========================
+APP JS
+========================= -->
+
+<script
+  type="module"
+  src="app.js?v=10"
+></script>
 
 </body>
 </html>
