@@ -1489,7 +1489,10 @@ padding:14px;
   gap:8px;
   margin-top:10px;
   overflow-x:auto;
-  padding:4px 0;
+  padding:6px 2px;
+
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .image-gallery img{
@@ -1500,6 +1503,9 @@ padding:14px;
   cursor:pointer;
   border:2px solid transparent;
   transition:.2s;
+
+  scroll-snap-align:start;
+  flex:0 0 auto;
 }
 
 .image-gallery img:hover{
@@ -1507,4 +1513,9 @@ padding:14px;
   transform:scale(1.05);
 }
 
-
+/* main image swipe feel */
+.main-image-wrapper img{
+  width:100%;
+  border-radius:16px;
+  transition:transform .3s ease;
+}
