@@ -50,7 +50,7 @@ window.toggleDarkMode = function () {
 };
 
 /* =========================
-   CART LOGIC (Updated with Qty & Remove)
+   CART LOGIC
 ========================= */
 window.toggleCart = function () {
   cartDrawer.classList.toggle("open");
@@ -97,12 +97,10 @@ function renderCart() {
             <button onclick="updateQty(${index}, 1)">+</button>
           </div>
         </div>
-        <button class="remove-btn" onclick="removeFromCart(${index})">
-          <i class="fa-solid fa-trash"></i>
-        </button>
+        <button class="remove-btn" onclick="removeFromCart(${index})">×</button>
       </div>`;
   }).join("");
-  cartTotal.innerText = `Total: Rs ${total.toLocaleString()}`;
+  if(cartTotal) cartTotal.innerText = `Total: Rs ${total.toLocaleString()}`;
 }
 
 /* =========================
@@ -127,22 +125,26 @@ function filterProducts() {
 }
 
 /* =========================
-   RENDER & INIT (Updated with Out of Stock)
+   RENDER PRODUCTS (Price Logic Included)
 ========================= */
 function renderProducts(products) {
   if (!productsDiv) return;
   productsDiv.innerHTML = products.map(p => {
-    const price = safeNumber(p.price);
-    const finalPrice = p.discount > 0 ? Math.round(price - (price * p.discount / 100)) : price;
+    const originalPrice = safeNumber(p.price);
+    const discount = safeNumber(p.discount);
+    const finalPrice = discount > 0 ? Math.round(originalPrice - (originalPrice * discount / 100)) : originalPrice;
     const isOutOfStock = p.stock === 0 || p.status === "out-of-stock";
 
     return `
       <div class="card ${isOutOfStock ? 'out-of-stock' : ''}">
-        ${p.discount > 0 ? `<div class="discount-badge">-${p.discount}%</div>` : ""}
+        ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
         <img src="${p.image}" />
         <div class="card-content">
           <h3>${p.name}</h3>
-          <div class="price-box"><span class="new-price">Rs ${finalPrice.toLocaleString()}</span></div>
+          <div class="price-box">
+            ${discount > 0 ? `<span class="old-price">Rs ${originalPrice.toLocaleString()}</span>` : ""}
+            <span class="new-price">Rs ${finalPrice.toLocaleString()}</span>
+          </div>
           <div class="card-buttons">
             <button class="view-btn" onclick="openModal('${p.id}')">View</button>
             ${isOutOfStock 
@@ -160,6 +162,9 @@ window.openModal = function(id) {
   if(!p) return;
   document.getElementById("modalName").innerText = p.name;
   document.getElementById("modalImage").src = p.image;
+  // Modal මිල පෙන්වීම සඳහා ID එකක් තිබිය යුතුය
+  const modalPrice = document.getElementById("modalPriceDisplay");
+  if(modalPrice) modalPrice.innerText = `Rs ${safeNumber(p.price).toLocaleString()}`;
   document.getElementById("productModal").classList.add("show");
 };
 
