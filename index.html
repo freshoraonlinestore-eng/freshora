@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<title>Freshora Online Store</title>
+<title>Freshora Store</title>
 
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -12,30 +12,26 @@
 
 <body>
 
-<!-- TOP BANNER -->
 <div class="top-banner">
   <p>Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</p>
 </div>
 
-<!-- LOADING -->
 <div id="loadingScreen" class="loading-screen">
   <div class="loader"></div>
 </div>
 
-<!-- OVERLAY -->
 <div id="overlay" class="overlay" onclick="toggleCart()"></div>
 
-<!-- HEADER -->
 <header class="header">
 
-  <div class="logo-area" ondblclick="window.location='login.html'">
-    <img src="logo.png" class="logo-img" />
+  <div class="logo-area">
+    <img src="logo.png" class="logo-img">
     <div class="logo-text">Freshora</div>
   </div>
 
   <div class="search-box">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input id="searchInput" placeholder="Search products..." />
+    <input id="searchInput" placeholder="Search products...">
   </div>
 
   <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
@@ -44,23 +40,14 @@
 
 </header>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-content">
     <span class="hero-badge">Fresh Daily Products</span>
-
-    <h1>Premium Grocery & Lifestyle Store</h1>
-
-    <p>Freshora delivers groceries, drinks, snacks & beauty products.</p>
-
-    <div class="hero-buttons">
-      <button class="hero-btn">Shop Now</button>
-      <button class="hero-outline-btn">Explore</button>
-    </div>
+    <h1>Premium Grocery Store</h1>
+    <p>Fresh products delivered to your home</p>
   </div>
 </section>
 
-<!-- CATEGORY -->
 <section class="category-slider">
   <button class="category-chip active">All</button>
   <button class="category-chip">Grocery</button>
@@ -69,7 +56,6 @@
   <button class="category-chip">Beauty</button>
 </section>
 
-<!-- FILTERS -->
 <section class="advanced-search">
   <div class="filter-grid">
 
@@ -83,36 +69,32 @@
 
     <select id="priceFilter">
       <option value="all">All Prices</option>
-      <option value="500">Under Rs 500</option>
-      <option value="1000">Under Rs 1000</option>
-      <option value="2000">Under Rs 2000</option>
+      <option value="500">Under 500</option>
+      <option value="1000">Under 1000</option>
     </select>
 
     <select id="discountFilter">
       <option value="all">All Discounts</option>
-      <option value="10">10%+</option>
-      <option value="20">20%+</option>
-      <option value="30">30%+</option>
+      <option value="10">10%</option>
+      <option value="20">20%</option>
     </select>
 
   </div>
 </section>
 
-<!-- PRODUCTS -->
 <section id="products" class="products-grid"></section>
 
-<!-- FLOATING CART -->
 <button class="floating-cart" onclick="toggleCart()">
   <i class="fa-solid fa-cart-shopping"></i>
   <span id="floatingCartCount">0</span>
 </button>
 
-<!-- ================= CART DRAWER (FIXED) ================= -->
+<!-- CART -->
 <div id="cartDrawer" class="cart-drawer">
 
   <div class="cart-header">
-    <h3>Your Cart</h3>
-    <button class="close-cart" onclick="toggleCart()">✕</button>
+    <h3>Cart</h3>
+    <button onclick="toggleCart()">✕</button>
   </div>
 
   <div id="cartItems"></div>
@@ -121,98 +103,57 @@
 
     <div id="cartTotal">Total: Rs 0</div>
 
-    <div class="checkout-form">
-      <input id="cusName" placeholder="Your Name">
-      <input id="cusPhone" placeholder="Phone">
-      <textarea id="cusAddress" placeholder="Address"></textarea>
-    </div>
+    <input id="cusName" placeholder="Name">
+    <input id="cusPhone" placeholder="Phone">
+    <textarea id="cusAddress" placeholder="Address"></textarea>
 
-    <div class="checkout-actions">
-      <button class="checkout-btn" onclick="checkout()">
-        Checkout WhatsApp
-      </button>
+    <button onclick="checkout()" class="checkout-btn">
+      Checkout
+    </button>
 
-      <button class="clear-btn" onclick="clearCart()">
-        Clear Cart
-      </button>
-    </div>
+    <button onclick="clearCart()" class="clear-btn">
+      Clear
+    </button>
 
   </div>
 
 </div>
 
-<!-- ================= PRODUCT MODAL (FIXED) ================= -->
+<!-- MODAL -->
 <div id="productModal" class="modal" onclick="closeModal()">
 
   <div class="modal-content" onclick="event.stopPropagation()">
 
     <button class="close" onclick="closeModal()">✕</button>
 
-    <div class="main-image-wrapper">
-      <img id="modalImage" />
-    </div>
+    <img id="modalImage" />
 
     <div id="imageGallery" class="image-gallery"></div>
 
-    <div class="modal-details">
+    <h2 id="modalName"></h2>
+    <p id="modalPrice"></p>
 
-      <h2 id="modalName"></h2>
-      <p id="modalPrice"></p>
+    <button id="modalAddBtn">Add to Cart</button>
 
-      <div class="rating-box">
-        ⭐ <span id="modalRatingText"></span>
-      </div>
+    <div class="review-form">
+      <select id="reviewRating">
+        <option value="5">5</option>
+        <option value="4">4</option>
+        <option value="3">3</option>
+      </select>
 
-      <button id="modalAddBtn">Add to Cart</button>
+      <textarea id="reviewText"></textarea>
 
-      <div class="review-form">
-        <select id="reviewRating">
-          <option value="5">5 ⭐</option>
-          <option value="4">4 ⭐</option>
-          <option value="3">3 ⭐</option>
-          <option value="2">2 ⭐</option>
-          <option value="1">1 ⭐</option>
-        </select>
-
-        <textarea id="reviewText" placeholder="Write review..."></textarea>
-
-        <button id="reviewSubmitBtn">Submit Review</button>
-      </div>
-
-      <div id="reviewList"></div>
-
+      <button id="reviewSubmitBtn">Submit</button>
     </div>
+
+    <div id="reviewList"></div>
 
   </div>
 
 </div>
 
-<!-- ================= BOTTOM NAV ================= -->
-<nav class="bottom-nav">
-
-  <button class="bottom-nav-item active">
-    <i class="fa-solid fa-house"></i>
-    <span>Home</span>
-  </button>
-
-  <button class="bottom-nav-item">
-    <i class="fa-solid fa-layer-group"></i>
-    <span>Categories</span>
-  </button>
-
-  <button class="bottom-nav-item" onclick="toggleCart()">
-    <i class="fa-solid fa-cart-shopping"></i>
-    <span>Cart</span>
-  </button>
-
-  <button class="bottom-nav-item">
-    <i class="fa-solid fa-heart"></i>
-    <span>Wishlist</span>
-  </button>
-
-</nav>
-
-<script type="module" src="app.js?v=6"></script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
