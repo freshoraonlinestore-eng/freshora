@@ -975,3 +975,512 @@ body.dark .clear-btn:hover{
     font-size:13px;
   }
 }
+/* =========================
+   TOP BANNER
+========================= */
+
+.top-banner{
+  width:100%;
+  background:#111;
+  color:#fff;
+
+  text-align:center;
+
+  padding:10px;
+
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.3px;
+}
+
+/* =========================
+   LOGO AREA
+========================= */
+
+.logo-area{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo-img{
+  width:44px;
+  height:44px;
+
+  border-radius:14px;
+
+  object-fit:cover;
+
+  box-shadow:
+  0 8px 20px rgba(0,0,0,.12);
+}
+
+.logo-text{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.3px;
+}
+
+/* =========================
+   PREMIUM HEADER
+========================= */
+
+.header{
+  position:sticky;
+  top:0;
+
+  z-index:1000;
+
+  padding:16px 20px;
+
+  background:
+  rgba(255,255,255,.75);
+
+  backdrop-filter:blur(18px);
+
+  border-bottom:
+  1px solid rgba(255,255,255,.2);
+}
+
+body.dark .header{
+  background:
+  rgba(15,15,16,.75);
+}
+
+/* =========================
+   SEARCH BOX
+========================= */
+
+.search-box{
+  border:
+  1px solid rgba(0,0,0,.05);
+
+  transition:.25s;
+}
+
+.search-box:focus-within{
+
+  transform:translateY(-2px);
+
+  box-shadow:
+  0 10px 30px rgba(0,0,0,.08);
+}
+
+body.dark .search-box{
+  border:
+  1px solid rgba(255,255,255,.04);
+}
+
+/* =========================
+   PRODUCTS GRID
+========================= */
+
+.products-grid{
+  padding:
+  10px 16px 120px;
+}
+
+/* =========================
+   PRODUCT CARD PREMIUM
+========================= */
+
+.card{
+  transition:
+  transform .35s ease,
+  box-shadow .35s ease;
+}
+
+.card:hover{
+
+  transform:
+  translateY(-10px)
+  scale(1.02);
+
+  box-shadow:
+  0 20px 50px rgba(0,0,0,.14);
+}
+
+.card img{
+  transition:
+  transform .5s ease;
+}
+
+.card:hover img{
+  transform:scale(1.08);
+}
+
+/* =========================
+   DISCOUNT BADGE
+========================= */
+
+.discount-badge{
+
+  background:
+  linear-gradient(
+    135deg,
+    #ff4d4d,
+    #ff2d55
+  );
+
+  box-shadow:
+  0 8px 20px rgba(255,45,85,.25);
+}
+
+/* =========================
+   WISHLIST BUTTON
+========================= */
+
+.wishlist-btn{
+
+  position:absolute;
+
+  top:12px;
+  right:12px;
+
+  z-index:20;
+
+  width:42px;
+  height:42px;
+
+  border-radius:50%;
+
+  background:
+  rgba(255,255,255,.92);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+
+  box-shadow:
+  0 8px 20px rgba(0,0,0,.12);
+
+  transition:.25s ease;
+}
+
+.wishlist-btn:hover{
+  transform:scale(1.1);
+}
+
+.wishlist-btn i{
+  color:#ff2d55;
+  font-size:18px;
+}
+
+/* =========================
+   CARD CONTENT
+========================= */
+
+.card-content{
+  padding:16px;
+}
+
+.card-content h3{
+  min-height:42px;
+}
+
+/* =========================
+   RATING
+========================= */
+
+.rating-preview{
+  margin-bottom:12px;
+
+  color:#ffb400;
+
+  font-size:14px;
+  font-weight:700;
+}
+
+/* =========================
+   PRICE
+========================= */
+
+.price-box{
+  margin-bottom:14px;
+}
+
+.new-price{
+  font-size:20px;
+}
+
+/* =========================
+   PREMIUM BUTTONS
+========================= */
+
+.view-btn,
+.add-cart-btn{
+
+  height:46px;
+
+  border-radius:14px;
+
+  font-size:14px;
+}
+
+.view-btn{
+
+  background:#f3f4f6;
+
+  color:#111;
+}
+
+body.dark .view-btn{
+
+  background:#262629;
+
+  color:#fff;
+}
+
+.add-cart-btn{
+
+  background:
+  linear-gradient(
+    135deg,
+    #111,
+    #2c2c2c
+  );
+}
+
+.add-cart-btn:hover,
+.view-btn:hover{
+  transform:translateY(-3px);
+}
+
+/* =========================
+   FLOATING CART
+========================= */
+
+.floating-cart{
+  animation:
+  floatingCart 3s ease infinite;
+}
+
+@keyframes floatingCart{
+
+  0%{
+    transform:translateY(0);
+  }
+
+  50%{
+    transform:translateY(-6px);
+  }
+
+  100%{
+    transform:translateY(0);
+  }
+
+}
+
+/* =========================
+   CART DRAWER
+========================= */
+
+.cart-drawer{
+  box-shadow:
+  -10px 0 40px rgba(0,0,0,.18);
+}
+
+/* =========================
+   CART ITEM
+========================= */
+
+.cart-item{
+  transition:.25s;
+}
+
+.cart-item:hover{
+  transform:translateY(-3px);
+}
+
+/* =========================
+   QTY BUTTONS
+========================= */
+
+.qty-box button{
+  transition:.2s;
+}
+
+.qty-box button:hover{
+  transform:scale(1.08);
+}
+
+/* =========================
+   CHECKOUT FORM
+========================= */
+
+.checkout-form input,
+.checkout-form textarea{
+
+  transition:.25s;
+}
+
+.checkout-form input:focus,
+.checkout-form textarea:focus{
+
+  border-color:#25D366;
+
+  box-shadow:
+  0 0 0 4px rgba(37,211,102,.12);
+}
+
+/* =========================
+   CHECKOUT BUTTON
+========================= */
+
+.checkout-btn{
+  transition:
+  transform .25s ease,
+  box-shadow .25s ease;
+}
+
+.checkout-btn:hover{
+
+  transform:translateY(-3px);
+
+  box-shadow:
+  0 14px 30px rgba(37,211,102,.32);
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+  backdrop-filter:blur(8px);
+}
+
+.modal-content{
+
+  max-height:92vh;
+
+  overflow-y:auto;
+
+  border:
+  1px solid rgba(255,255,255,.08);
+}
+
+#modalImage{
+  aspect-ratio:1/1;
+  object-fit:cover;
+}
+
+/* =========================
+   REVIEW FORM
+========================= */
+
+.review-form{
+
+  display:flex;
+  flex-direction:column;
+
+  gap:10px;
+
+  margin-top:18px;
+}
+
+.review-form select,
+.review-form textarea{
+
+  width:100%;
+
+  padding:14px;
+
+  border-radius:14px;
+
+  border:
+  1px solid var(--border);
+
+  background:var(--bg);
+
+  color:var(--text);
+}
+
+.review-form button{
+
+  height:48px;
+
+  border-radius:14px;
+
+  background:#111;
+
+  color:#fff;
+
+  font-weight:700;
+
+  cursor:pointer;
+}
+
+/* =========================
+   REVIEW ITEM
+========================= */
+
+.review-item{
+
+  padding:14px;
+
+  border-radius:14px;
+
+  background:var(--bg);
+
+  border:
+  1px solid var(--border);
+
+  margin-top:12px;
+}
+
+.review-stars{
+  margin-bottom:8px;
+}
+
+/* =========================
+   EMPTY REVIEW
+========================= */
+
+.empty-review{
+  color:var(--muted);
+  margin-top:14px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:768px){
+
+  .products-grid{
+    grid-template-columns:
+    repeat(2,1fr);
+  }
+
+  .header{
+    padding:14px;
+  }
+
+  .logo-text{
+    font-size:18px;
+  }
+
+}
+
+@media(max-width:480px){
+
+  .products-grid{
+    grid-template-columns:1fr;
+  }
+
+  .top-banner{
+    font-size:11px;
+  }
+
+  .logo-img{
+    width:38px;
+    height:38px;
+  }
+
+  .card-content{
+    padding:14px;
+  }
+
+}
