@@ -1,8 +1,7 @@
 import {
   db,
   collection,
-  onSnapshot,
-  addDoc
+  onSnapshot
 } from "./firebase.js";
 
 /* =========================
@@ -13,28 +12,27 @@ const productsDiv = document.getElementById("products");
 const loadingScreen = document.getElementById("loadingScreen");
 const cartDrawer = document.getElementById("cartDrawer");
 const overlay = document.getElementById("overlay");
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+const priceFilter = document.getElementById("priceFilter");
+const discountFilter = document.getElementById("discountFilter");
 
 /* =========================
    STATE
 ========================= */
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-let wishlist =
-  JSON.parse(localStorage.getItem("wishlist")) || [];
-
-let reviews =
-  JSON.parse(localStorage.getItem("reviews")) || {};
-
+let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+let reviews = JSON.parse(localStorage.getItem("reviews")) || {};
 let allProducts = [];
 
 /* =========================
    HELPERS
 ========================= */
 
-function safeNumber(value) {
-  const num = Number(value);
-  return isNaN(num) ? 0 : num;
+function safeNumber(v) {
+  const n = Number(v);
+  return isNaN(n) ? 0 : n;
 }
 
 function saveCart() {
@@ -44,26 +42,17 @@ function saveCart() {
 }
 
 function saveWishlist() {
-  localStorage.setItem(
-    "wishlist",
-    JSON.stringify(wishlist)
-  );
-
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
   renderProducts(allProducts);
 }
 
 function saveReviews() {
-  localStorage.setItem(
-    "reviews",
-    JSON.stringify(reviews)
-  );
+  localStorage.setItem("reviews", JSON.stringify(reviews));
 }
 
 function hideLoading() {
   if (!loadingScreen) return;
-
-  loadingScreen.style.opacity = "0";
-
+  loadingScreen.classList.add("hide");
   setTimeout(() => {
     loadingScreen.style.display = "none";
   }, 300);
@@ -75,25 +64,18 @@ function hideLoading() {
 
 window.toggleDarkMode = function () {
   document.body.classList.toggle("dark");
-
-  const dark =
-    document.body.classList.contains("dark");
-
-  localStorage.setItem("darkMode", dark);
-
+  localStorage.setItem(
+    "darkMode",
+    document.body.classList.contains("dark")
+  );
   updateDarkIcon();
 };
 
 function updateDarkIcon() {
-  const btn =
-    document.getElementById("darkModeBtn");
-
+  const btn = document.getElementById("darkModeBtn");
   if (!btn) return;
 
-  const dark =
-    document.body.classList.contains("dark");
-
-  btn.innerHTML = dark
+  btn.innerHTML = document.body.classList.contains("dark")
     ? '<i class="fa-solid fa-sun"></i>'
     : '<i class="fa-solid fa-moon"></i>';
 }
@@ -103,14 +85,8 @@ function updateDarkIcon() {
 ========================= */
 
 function updateCartCount() {
-  const total = cart.reduce(
-    (sum, item) => sum + safeNumber(item.qty),
-    0
-  );
-
-  const el =
-    document.getElementById("floatingCartCount");
-
+  const el = document.getElementById("floatingCartCount");
+  const total = cart.reduce((s, i) => s + safeNumber(i.qty), 0);
   if (el) el.innerText = total;
 }
 
@@ -119,14 +95,11 @@ function updateCartCount() {
 ========================= */
 
 window.toggleWishlist = function (id) {
-  const exists = wishlist.includes(id);
-
-  if (exists) {
-    wishlist = wishlist.filter(i => i !== id);
+  if (wishlist.includes(id)) {
+    wishlist = wishlist.filter(w => w !== id);
   } else {
     wishlist.push(id);
   }
-
   saveWishlist();
 };
 
@@ -135,106 +108,14 @@ function isWishlisted(id) {
 }
 
 /* =========================
-   REVIEWS
-========================= */
-
-function getProductReviews(productId) {
-  return reviews[productId] || [];
-}
-
-function getAverageRating(productId) {
-  const list = getProductReviews(productId);
-
-  if (list.length === 0) return 5;
-
-  const total = list.reduce(
-    (sum, r) => sum + safeNumber(r.rating),
-    0
-  );
-
-  return (total / list.length).toFixed(1);
-}
-
-window.submitReview = function (productId) {
-  const input =
-    document.getElementById("reviewText");
-
-  const rating =
-    document.getElementById("reviewRating");
-
-  if (!input || !rating) return;
-
-  const text = input.value.trim();
-
-  if (text === "") {
-    alert("Write a review");
-    return;
-  }
-
-  if (!reviews[productId]) {
-    reviews[productId] = [];
-  }
-
-  reviews[productId].push({
-    text,
-    rating: safeNumber(rating.value),
-    date: new Date().toLocaleDateString()
-  });
-
-  saveReviews();
-
-  input.value = "";
-
-  renderReviews(productId);
-  renderProducts(allProducts);
-};
-
-function renderReviews(productId) {
-  const reviewList =
-    document.getElementById("reviewList");
-
-  if (!reviewList) return;
-
-  const list = getProductReviews(productId);
-
-  if (list.length === 0) {
-    reviewList.innerHTML =
-      `<p class="empty-review">No reviews yet</p>`;
-    return;
-  }
-
-  reviewList.innerHTML = "";
-
-  list.reverse().forEach(r => {
-    reviewList.innerHTML += `
-      <div class="review-item">
-        <div class="review-stars">
-          ${"⭐".repeat(r.rating)}
-        </div>
-
-        <p>${r.text}</p>
-
-        <small>${r.date}</small>
-      </div>
-    `;
-  });
-}
-
-/* =========================
    CART ACTIONS
 ========================= */
 
-window.addToCart = function (
-  id,
-  name,
-  price,
-  image
-) {
-  const existing =
-    cart.find(i => i.id === id);
+window.addToCart = function (id, name, price, image) {
+  const item = cart.find(i => i.id === id);
 
-  if (existing) {
-    existing.qty += 1;
+  if (item) {
+    item.qty += 1;
   } else {
     cart.push({
       id,
@@ -248,597 +129,331 @@ window.addToCart = function (
   saveCart();
 };
 
-window.removeItem = function (index) {
-  cart.splice(index, 1);
+window.removeItem = function (i) {
+  cart.splice(i, 1);
   saveCart();
 };
 
-window.increaseQty = function (index) {
-  if (cart[index]) {
-    cart[index].qty++;
-    saveCart();
-  }
+window.increaseQty = function (i) {
+  if (cart[i]) cart[i].qty++;
+  saveCart();
 };
 
-window.decreaseQty = function (index) {
-  if (!cart[index]) return;
-
-  cart[index].qty--;
-
-  if (cart[index].qty <= 0) {
-    cart.splice(index, 1);
-  }
-
+window.decreaseQty = function (i) {
+  if (!cart[i]) return;
+  cart[i].qty--;
+  if (cart[i].qty <= 0) cart.splice(i, 1);
   saveCart();
 };
 
 window.clearCart = function () {
   if (!confirm("Clear cart?")) return;
-
   cart = [];
   saveCart();
 };
-
-/* =========================
-   RENDER CART
-========================= */
-
-function renderCart() {
-  const cartItems =
-    document.getElementById("cartItems");
-
-  const cartTotal =
-    document.getElementById("cartTotal");
-
-  if (!cartItems) return;
-
-  cartItems.innerHTML = "";
-
-  if (cart.length === 0) {
-    cartItems.innerHTML =
-      `<p class="empty">Cart empty</p>`;
-
-    cartTotal.innerText =
-      "Total: Rs 0";
-
-    return;
-  }
-
-  let total = 0;
-
-  cart.forEach((item, index) => {
-    const price =
-      safeNumber(item.price);
-
-    const qty =
-      safeNumber(item.qty);
-
-    total += price * qty;
-
-    cartItems.innerHTML += `
-      <div class="cart-item">
-
-        <img src="${item.image}" />
-
-        <div class="cart-details">
-          <h4>${item.name}</h4>
-
-          <p>
-            Rs ${price.toLocaleString()}
-          </p>
-
-          <div class="qty-box">
-            <button onclick="decreaseQty(${index})">-</button>
-
-            <span>${qty}</span>
-
-            <button onclick="increaseQty(${index})">+</button>
-          </div>
-        </div>
-
-        <button
-          class="remove-btn"
-          onclick="removeItem(${index})"
-        >
-          ✕
-        </button>
-
-      </div>
-    `;
-  });
-
-  cartTotal.innerText =
-    "Total: Rs " + total.toLocaleString();
-}
 
 /* =========================
    CART TOGGLE
 ========================= */
 
 window.toggleCart = function () {
-  cartDrawer.classList.toggle("open");
-
+  const open = cartDrawer.classList.toggle("open");
   overlay.classList.toggle("show");
-
-  document.body.style.overflow =
-    cartDrawer.classList.contains("open")
-      ? "hidden"
-      : "auto";
-
+  document.body.style.overflow = open ? "hidden" : "auto";
   renderCart();
 };
 
 /* =========================
-   WHATSAPP CHECKOUT
+   CART RENDER
 ========================= */
 
-window.checkout = function () {
+function renderCart() {
+  const box = document.getElementById("cartItems");
+  const totalEl = document.getElementById("cartTotal");
+
+  if (!box) return;
+
+  box.innerHTML = "";
+
   if (cart.length === 0) {
-    alert("Cart is empty");
+    box.innerHTML = `<p class="empty">Cart empty</p>`;
+    if (totalEl) totalEl.innerText = "Total: Rs 0";
     return;
   }
 
-  const name =
-    document.getElementById("cusName")?.value ||
-    "N/A";
+  let total = 0;
 
-  const phone =
-    document.getElementById("cusPhone")?.value ||
-    "N/A";
+  cart.forEach((c, i) => {
+    total += c.price * c.qty;
 
-  const address =
-    document.getElementById("cusAddress")?.value ||
-    "N/A";
+    box.innerHTML += `
+      <div class="cart-item">
+        <img src="${c.image || 'placeholder.png'}"/>
+        <div class="cart-details">
+          <h4>${c.name}</h4>
+          <p>Rs ${c.price.toLocaleString()}</p>
 
-  const orderId =
-    "FR-" + Date.now();
-
-  const date =
-    new Date().toLocaleString();
-
-  let subtotal = 0;
-
-  let message =
-    `🟢 FRESHORA NEW ORDER 🟢\n\n`;
-
-  message +=
-    `📦 Order ID: ${orderId}\n`;
-
-  message +=
-    `📅 Date: ${date}\n\n`;
-
-  message +=
-    `👤 CUSTOMER DETAILS\n`;
-
-  message +=
-    `Name: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n`;
-
-  message += `🛒 ITEMS\n`;
-
-  cart.forEach((item, i) => {
-    const itemTotal =
-      item.price * item.qty;
-
-    subtotal += itemTotal;
-
-    message +=
-      `${i + 1}) ${item.name} x${item.qty} = LKR ${itemTotal.toLocaleString()}\n`;
-  });
-
-  const delivery = 375;
-
-  const total =
-    subtotal + delivery;
-
-  message += `\n💰 BILL SUMMARY\n`;
-
-  message +=
-    `Subtotal: LKR ${subtotal.toLocaleString()}\n`;
-
-  message +=
-    `Delivery: LKR ${delivery}\n`;
-
-  message +=
-    `TOTAL: LKR ${total.toLocaleString()}\n\n`;
-
-  message +=
-    `🚚 Payment: Cash on Delivery\n`;
-
-  message +=
-    `📍 Freshora Online Store\n`;
-
-  const url =
-    "https://wa.me/94752425790?text=" +
-    encodeURIComponent(message);
-
-  window.open(url, "_blank");
-};
-
-/* =========================
-   PRODUCT MODAL
-========================= */
-
-window.openModal = function (product) {
-  const modal =
-    document.getElementById("productModal");
-
-  document.getElementById(
-    "modalImage"
-  ).src = product.image;
-
-  document.getElementById(
-    "modalName"
-  ).innerText = product.name;
-
-  document.getElementById(
-    "modalPrice"
-  ).innerText =
-    "Rs " +
-    safeNumber(product.finalPrice).toLocaleString();
-
-  document.getElementById(
-    "modalAddBtn"
-  ).onclick = () => {
-    addToCart(
-      product.id,
-      product.name,
-      product.finalPrice,
-      product.image
-    );
-  };
-
-  document.getElementById(
-    "modalRatingText"
-  ).innerText =
-    getAverageRating(product.id);
-
-  renderReviews(product.id);
-
-  document.getElementById(
-    "reviewSubmitBtn"
-  ).onclick = () => {
-    submitReview(product.id);
-  };
-
-  modal.classList.add("show");
-};
-
-window.closeModal = function () {
-
-  document
-    .getElementById("productModal")
-    .classList.remove("show");
-
-};
-
-/* =========================
-   PRODUCTS
-========================= */
-
-function renderProducts(products) {
-  if (!productsDiv) return;
-
-  productsDiv.innerHTML = "";
-
-  products.forEach(p => {
-    const price =
-      safeNumber(p.price);
-
-    const discount =
-      safeNumber(p.discount);
-
-    const finalPrice =
-      discount > 0
-        ? Math.round(
-            price -
-            (price * discount) / 100
-          )
-        : price;
-
-    const avgRating =
-      getAverageRating(p.id);
-
-    productsDiv.innerHTML += `
-      <div class="card">
-
-        ${
-          discount > 0
-            ? `
-          <div class="discount-badge">
-            -${discount}%
+          <div class="qty-box">
+            <button onclick="decreaseQty(${i})">-</button>
+            <span>${c.qty}</span>
+            <button onclick="increaseQty(${i})">+</button>
           </div>
-        `
-            : ""
-        }
-
-        <button
-          class="wishlist-btn"
-          onclick="toggleWishlist('${p.id}')"
-        >
-          <i class="${
-            isWishlisted(p.id)
-              ? "fa-solid"
-              : "fa-regular"
-          } fa-heart"></i>
-        </button>
-
-        <img src="${p.image}" />
-
-        <div class="card-content">
-
-          <h3>${p.name}</h3>
-
-          <div class="rating-preview">
-            ⭐ ${avgRating}
-          </div>
-
-          <div class="price-box">
-
-            ${
-              discount > 0
-                ? `
-              <span class="old-price">
-                Rs ${price.toLocaleString()}
-              </span>
-            `
-                : ""
-            }
-
-            <span class="new-price">
-              Rs ${finalPrice.toLocaleString()}
-            </span>
-
-          </div>
-
-          <div class="card-buttons">
-
-            <button
-              class="view-btn"
-              onclick='openModal(${JSON.stringify({
-                ...p,
-                finalPrice
-              })})'
-            >
-              View
-            </button>
-
-            <button
-              class="add-cart-btn"
-              onclick="addToCart(
-                '${p.id}',
-                '${p.name}',
-                ${finalPrice},
-                '${p.image}'
-              )"
-            >
-              Add to Cart
-            </button>
-
-          </div>
-
         </div>
 
+        <button class="remove-btn" onclick="removeItem(${i})">✕</button>
+      </div>
+    `;
+  });
+
+  if (totalEl)
+    totalEl.innerText = "Total: Rs " + total.toLocaleString();
+}
+
+/* =========================
+   REVIEWS
+========================= */
+
+function getReviews(id) {
+  return reviews[id] || [];
+}
+
+function avgRating(id) {
+  const list = getReviews(id);
+  if (!list.length) return 5;
+
+  const sum = list.reduce((a, b) => a + safeNumber(b.rating), 0);
+  return (sum / list.length).toFixed(1);
+}
+
+window.submitReview = function (id) {
+  const text = document.getElementById("reviewText")?.value?.trim();
+  const rating = document.getElementById("reviewRating")?.value;
+
+  if (!text) return alert("Write review");
+
+  if (!reviews[id]) reviews[id] = [];
+
+  reviews[id].push({
+    text,
+    rating: safeNumber(rating),
+    date: new Date().toLocaleDateString()
+  });
+
+  saveReviews();
+  renderReviews(id);
+  renderProducts(allProducts);
+};
+
+function renderReviews(id) {
+  const box = document.getElementById("reviewList");
+  if (!box) return;
+
+  const list = getReviews(id);
+
+  if (!list.length) {
+    box.innerHTML = `<p class="empty-review">No reviews yet</p>`;
+    return;
+  }
+
+  box.innerHTML = "";
+
+  [...list].reverse().forEach(r => {
+    box.innerHTML += `
+      <div class="review-item">
+        <div class="review-stars">${"⭐".repeat(r.rating)}</div>
+        <p>${r.text}</p>
+        <small>${r.date}</small>
       </div>
     `;
   });
 }
 
 /* =========================
+   MODAL
+========================= */
+
+window.openModal = function (p) {
+  const modal = document.getElementById("productModal");
+
+  document.getElementById("modalImage").src = p.image;
+  document.getElementById("modalName").innerText = p.name;
+  document.getElementById("modalPrice").innerText =
+    "Rs " + safeNumber(p.finalPrice).toLocaleString();
+
+  document.getElementById("modalRatingText").innerText =
+    avgRating(p.id);
+
+  document.getElementById("modalAddBtn").onclick = () =>
+    addToCart(p.id, p.name, p.finalPrice, p.image);
+
+  document.getElementById("reviewSubmitBtn").onclick = () =>
+    submitReview(p.id);
+
+  renderReviews(p.id);
+
+  modal.classList.add("show");
+};
+
+window.closeModal = function () {
+  document.getElementById("productModal").classList.remove("show");
+};
+
+/* =========================
+   PRODUCTS
+========================= */
+
+function renderProducts(list) {
+  if (!productsDiv) return;
+
+  productsDiv.innerHTML = "";
+
+  list.forEach(p => {
+    const price = safeNumber(p.price);
+    const discount = safeNumber(p.discount);
+
+    const finalPrice =
+      discount > 0
+        ? Math.round(price - (price * discount) / 100)
+        : price;
+
+    productsDiv.innerHTML += `
+      <div class="card">
+
+        ${
+          discount > 0
+            ? `<div class="discount-badge">-${discount}%</div>`
+            : ""
+        }
+
+        <button class="wishlist-btn" onclick="toggleWishlist('${p.id}')">
+          <i class="${
+            isWishlisted(p.id) ? "fa-solid" : "fa-regular"
+          } fa-heart"></i>
+        </button>
+
+        <img src="${p.image || 'placeholder.png'}"/>
+
+        <div class="card-content">
+          <h3>${p.name}</h3>
+
+          <div class="rating-preview">⭐ ${avgRating(p.id)}</div>
+
+          <div class="price-box">
+            ${
+              discount > 0
+                ? `<span class="old-price">Rs ${price.toLocaleString()}</span>`
+                : ""
+            }
+            <span class="new-price">Rs ${finalPrice.toLocaleString()}</span>
+          </div>
+
+          <div class="card-buttons">
+
+            <button class="view-btn" onclick="openModalById('${p.id}')">
+              View
+            </button>
+
+            <button class="add-cart-btn"
+              onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">
+              Add
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+    `;
+  });
+}
+
+/* =========================
+   MODAL BY ID (FIX)
+========================= */
+
+window.openModalById = function (id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+
+  const price = safeNumber(p.price);
+  const discount = safeNumber(p.discount);
+
+  const finalPrice =
+    discount > 0
+      ? Math.round(price - (price * discount) / 100)
+      : price;
+
+  openModal({ ...p, finalPrice });
+};
+
+/* =========================
    FIREBASE
 ========================= */
 
-onSnapshot(
-  collection(db, "products"),
-  snapshot => {
-    allProducts = [];
+onSnapshot(collection(db, "products"), snap => {
+  allProducts = [];
 
-    snapshot.forEach(doc => {
-      allProducts.push({
-        id: doc.id,
-        ...doc.data()
-      });
-    });
+  snap.forEach(d => {
+    allProducts.push({ id: d.id, ...d.data() });
+  });
 
-    renderProducts(allProducts);
+  renderProducts(allProducts);
+  hideLoading();
+});
 
-    hideLoading();
-  }
-);
+/* =========================
+   FILTERS
+========================= */
+
+function filterProducts() {
+  let f = [...allProducts];
+
+  const s = searchInput?.value?.toLowerCase();
+  if (s) f = f.filter(p => p.name?.toLowerCase().includes(s));
+
+  const c = categoryFilter?.value;
+  if (c && c !== "all")
+    f = f.filter(p => (p.category || "").toLowerCase() === c.toLowerCase());
+
+  const pr = safeNumber(priceFilter?.value);
+  if (pr) f = f.filter(p => safeNumber(p.price) <= pr);
+
+  const d = safeNumber(discountFilter?.value);
+  if (d) f = f.filter(p => safeNumber(p.discount) >= d);
+
+  renderProducts(f);
+}
+
+searchInput?.addEventListener("input", filterProducts);
+categoryFilter?.addEventListener("change", filterProducts);
+priceFilter?.addEventListener("change", filterProducts);
+discountFilter?.addEventListener("change", filterProducts);
 
 /* =========================
    INIT
 ========================= */
 
-window.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    const dark =
-      localStorage.getItem("darkMode") ===
-      "true";
-
-    if (dark) {
-      document.body.classList.add("dark");
-    }
-
-    updateDarkIcon();
-    updateCartCount();
-    renderCart();
+window.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark");
   }
-);
 
-window.addEventListener("load", () => {
-  setTimeout(hideLoading, 1200);
+  updateDarkIcon();
+  updateCartCount();
+  renderCart();
 });
 
-/* =========================
-   LIVE SEARCH
-========================= */
-
-const searchInput =
-  document.getElementById("searchInput");
-
-const categoryFilter =
-  document.getElementById("categoryFilter");
-
-const priceFilter =
-  document.getElementById("priceFilter");
-
-const discountFilter =
-  document.getElementById("discountFilter");
-
-function filterProducts() {
-
-  let filtered = [...allProducts];
-
-  /* SEARCH */
-
-  const search =
-    searchInput?.value
-      .toLowerCase()
-      .trim();
-
-  if (search) {
-
-    filtered = filtered.filter(p =>
-      p.name
-        ?.toLowerCase()
-        .includes(search)
-    );
-
-  }
-
-  /* CATEGORY */
-
-  const category =
-    categoryFilter?.value;
-
-  if (
-    category &&
-    category !== "all"
-  ) {
-
-    filtered = filtered.filter(
-      p => p.category === category
-    );
-
-  }
-
-  /* PRICE */
-
-  const price =
-    priceFilter?.value;
-
-  if (
-    price &&
-    price !== "all"
-  ) {
-
-    filtered = filtered.filter(
-      p =>
-        safeNumber(p.price) <=
-        safeNumber(price)
-    );
-
-  }
-
-  /* DISCOUNT */
-
-  const discount =
-    discountFilter?.value;
-
-  if (
-    discount &&
-    discount !== "all"
-  ) {
-
-    filtered = filtered.filter(
-      p =>
-        safeNumber(p.discount) >=
-        safeNumber(discount)
-    );
-
-  }
-
-  renderProducts(filtered);
-
-}
-
-/* =========================
-   FILTER EVENTS
-========================= */
-
-searchInput?.addEventListener(
-  "input",
-  filterProducts
-);
-
-categoryFilter?.addEventListener(
-  "change",
-  filterProducts
-);
-
-priceFilter?.addEventListener(
-  "change",
-  filterProducts
-);
-
-discountFilter?.addEventListener(
-  "change",
-  filterProducts
-);
-
-/* =========================
-   MODAL OUTSIDE CLICK
-========================= */
-
-window.addEventListener(
-  "click",
-  e => {
-
-    const modal =
-      document.getElementById(
-        "productModal"
-      );
-
-    if (
-      e.target === modal
-    ) {
-
-      closeModal();
-
-    }
-
-  }
-);
+window.addEventListener("load", () => setTimeout(hideLoading, 1000));
 
 /* =========================
    ESC CLOSE
 ========================= */
 
-window.addEventListener(
-  "keydown",
-  e => {
-
-    if (
-      e.key === "Escape"
-    ) {
-
-      closeModal();
-
-      if (
-        cartDrawer.classList.contains(
-          "open"
-        )
-      ) {
-
-        toggleCart();
-
-      }
-
-    }
-
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    closeModal();
+    if (cartDrawer.classList.contains("open")) toggleCart();
   }
-);
+});
 
 /* =========================
    IMAGE FALLBACK
@@ -846,17 +461,10 @@ window.addEventListener(
 
 document.addEventListener(
   "error",
-  function (e) {
-
-    if (
-      e.target.tagName === "IMG"
-    ) {
-
-      e.target.src =
-        "placeholder.png";
-
+  e => {
+    if (e.target.tagName === "IMG") {
+      e.target.src = "placeholder.png";
     }
-
   },
   true
 );
