@@ -1,53 +1,41 @@
 <!DOCTYPE html>
+<html lang="en">
 
-<header class="header">
+<head>
 
-  <div class="logo-area">
+  <meta charset="UTF-8" />
 
-    <img
-      src="logo.png"
-      class="logo-img"
-      alt="Freshora Logo"
-    />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
-    <div class="logo-text">
-      Freshora
-    </div>
+  <title>Freshora Online Store</title>
 
-  </div>
+  <link
+    rel="stylesheet"
+    href="style.css?v=4"
+  />
 
-  <div class="search-box">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
 
-    <i class="fa-solid fa-magnifying-glass"></i>
-
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Search products..."
-      autocomplete="off"
-    />
-
-  </div>
-
-  <button
-    id="darkModeBtn"
-    class="icon-btn"
-    onclick="toggleDarkMode()"
-  >
-    <i class="fa-solid fa-moon"></i>
-  </button>
-
-</header>
+</head>
 
 <body>
+
 <!-- TOP BANNER -->
 
 <div class="top-banner">
+
   <p>
     Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products
   </p>
+
 </div>
-  
+
 <!-- LOADING -->
 
 <div id="loadingScreen" class="loading-screen">
@@ -67,10 +55,20 @@
 <header class="header">
 
   <div
-    class="logo"
+    class="logo-area"
     ondblclick="window.location='login.html'"
   >
-    Freshora
+
+    <img
+      src="logo.png"
+      class="logo-img"
+      alt="Freshora Logo"
+    />
+
+    <div class="logo-text">
+      Freshora
+    </div>
+
   </div>
 
   <div class="search-box">
@@ -212,11 +210,7 @@
 
   </div>
 
-  <!-- CART ITEMS -->
-
   <div id="cartItems"></div>
-
-  <!-- FORM -->
 
   <div class="checkout-form">
 
@@ -239,34 +233,37 @@
 
   </div>
 
-  <!-- FOOTER -->
+  <div class="sticky-checkout">
 
-<div class="sticky-checkout">
+    <h3 id="cartTotal">
+      Total: Rs 0
+    </h3>
 
-  <h3 id="cartTotal">Total: Rs 0</h3>
+    <div class="checkout-actions">
 
-  <div class="checkout-actions">
+      <button
+        class="checkout-btn"
+        onclick="checkout()"
+      >
+        <i class="fab fa-whatsapp"></i>
+        Order via WhatsApp
+      </button>
 
-    <button
-      class="checkout-btn"
-      onclick="checkout()"
-    >
-      <i class="fab fa-whatsapp"></i>
-      Order via WhatsApp
-    </button>
+      <button
+        class="clear-btn"
+        onclick="clearCart()"
+      >
+        Clear Cart
+      </button>
 
-    <button
-      class="clear-btn"
-      onclick="clearCart()"
-    >
-      Clear Cart
-    </button>
+    </div>
 
   </div>
 
 </div>
+
 <!-- PRODUCT MODAL -->
-<!-- PRODUCT MODAL -->
+
 <div
   id="productModal"
   class="modal"
@@ -294,7 +291,6 @@
 
       <p id="modalPrice"></p>
 
-      <!-- RATING -->
       <div class="rating-box">
 
         <div class="modal-rating">
@@ -303,30 +299,15 @@
 
       </div>
 
-      <!-- REVIEW INPUT -->
       <div class="review-form">
 
         <select id="reviewRating">
 
-          <option value="5">
-            ⭐⭐⭐⭐⭐
-          </option>
-
-          <option value="4">
-            ⭐⭐⭐⭐
-          </option>
-
-          <option value="3">
-            ⭐⭐⭐
-          </option>
-
-          <option value="2">
-            ⭐⭐
-          </option>
-
-          <option value="1">
-            ⭐
-          </option>
+          <option value="5">⭐⭐⭐⭐⭐</option>
+          <option value="4">⭐⭐⭐⭐</option>
+          <option value="3">⭐⭐⭐</option>
+          <option value="2">⭐⭐</option>
+          <option value="1">⭐</option>
 
         </select>
 
@@ -341,10 +322,8 @@
 
       </div>
 
-      <!-- REVIEWS -->
       <div id="reviewList"></div>
 
-      <!-- ADD CART -->
       <button id="modalAddBtn">
         Add to Cart
       </button>
@@ -357,7 +336,7 @@
 
 <script
   type="module"
-  src="app.js?v=3"
+  src="app.js?v=4"
 ></script>
 
 </body>
