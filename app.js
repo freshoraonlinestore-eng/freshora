@@ -500,13 +500,15 @@ window.openModal = function (product) {
     submitReview(product.id);
   };
 
-  modal.style.display = "flex";
+  modal.classList.add("show");
 };
 
 window.closeModal = function () {
-  document.getElementById(
-    "productModal"
-  ).style.display = "none";
+
+  document
+    .getElementById("productModal")
+    .classList.remove("show");
+
 };
 
 /* =========================
