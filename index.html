@@ -3,148 +3,129 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Freshora Online Store</title>
-<link rel="stylesheet" href="style.css?v=11"/>
+<title>Freshora Ultra Store</title>
+
+<link rel="stylesheet" href="style.css?v=20"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
+
 <body>
 
-<div class="top-banner">Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</div>
+<div class="top-banner">
+  Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products
+</div>
 
 <div id="loadingScreen" class="loading-screen">
   <div class="loader"></div>
 </div>
 
-<div id="toast"></div>
-
 <div id="overlay" class="overlay" onclick="toggleCart()"></div>
 
 <header class="header">
   <div class="logo-area" ondblclick="window.location='login.html'">
-    <img src="logo.png" class="logo-img" alt="Freshora Logo"/>
+    <img src="logo.png" class="logo-img"/>
     <div class="logo-text">Freshora</div>
   </div>
 
   <div class="search-box">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off"/>
+    <input id="searchInput" placeholder="Search products..."/>
   </div>
 
-  <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
+  <button class="icon-btn" id="darkModeBtn" onclick="toggleDarkMode()">
     <i class="fa-solid fa-moon"></i>
   </button>
 </header>
 
-<section class="advanced-search">
-  <div class="filter-grid">
-    <select id="categoryFilter">
-      <option value="all">All Categories</option>
-      <option value="Grocery">Grocery</option>
-      <option value="Drinks">Drinks</option>
-      <option value="Snacks">Snacks</option>
-      <option value="Beauty">Beauty</option>
-    </select>
+<section class="filters">
+  <select id="categoryFilter">
+    <option value="all">All</option>
+    <option>Grocery</option>
+    <option>Drinks</option>
+    <option>Snacks</option>
+    <option>Beauty</option>
+  </select>
 
-    <select id="priceFilter">
-      <option value="all">All Prices</option>
-      <option value="500">Under Rs 500</option>
-      <option value="1000">Under Rs 1000</option>
-      <option value="2000">Under Rs 2000</option>
-    </select>
+  <select id="priceFilter">
+    <option value="all">Price</option>
+    <option value="500">Under 500</option>
+    <option value="1000">Under 1000</option>
+  </select>
 
-    <select id="discountFilter">
-      <option value="all">All Discounts</option>
-      <option value="10">10%+</option>
-      <option value="20">20%+</option>
-      <option value="30">30%+</option>
-    </select>
-  </div>
+  <select id="discountFilter">
+    <option value="all">Discount</option>
+    <option value="10">10%+</option>
+    <option value="20">20%+</option>
+  </select>
 </section>
 
-<section id="products" class="products-grid"></section>
+<section id="products" class="products"></section>
 
 <button class="floating-cart" onclick="toggleCart()">
-  <i class="fa-solid fa-cart-shopping"></i>
-  <span id="floatingCartCount">0</span>
+<i class="fa-solid fa-cart-shopping"></i>
+<span id="floatingCartCount">0</span>
 </button>
 
-<div id="cartDrawer" class="cart-drawer">
+<!-- CART -->
+<div id="cartDrawer" class="cart">
   <div class="cart-header">
-    <h2>Your Cart</h2>
-    <button class="close-cart" onclick="toggleCart()">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
+    <h3>Your Cart</h3>
+    <button onclick="toggleCart()">✕</button>
   </div>
 
   <div id="cartItems"></div>
 
-  <div class="checkout-form">
-    <input type="text" id="cusName" placeholder="Your Name"/>
-    <input type="tel" id="cusPhone" placeholder="Phone Number"/>
-    <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
-  </div>
-
-  <div class="sticky-checkout">
+  <div class="cart-footer">
     <h3 id="cartTotal">Total: Rs 0</h3>
 
-    <div class="checkout-actions">
-      <button class="checkout-btn" onclick="checkout()">
-        <i class="fab fa-whatsapp"></i> Order via WhatsApp
-      </button>
-
-      <button class="clear-btn" onclick="clearCart()">
-        Clear Cart
-      </button>
-    </div>
-  </div>
-</div>
-
-<div id="productModal" class="modal">
-  <div class="modal-content">
-    <button class="close" onclick="closeModal()">
-      <i class="fa-solid fa-xmark"></i>
+    <button class="checkout-btn" onclick="checkout()">
+      WhatsApp Order
     </button>
 
-    <img id="modalImage" src="placeholder.png"/>
-
-    <div class="modal-details">
-      <h2 id="modalName"></h2>
-      <p id="modalPrice"></p>
-
-      <div class="rating-box">
-        ⭐ <span id="modalRatingText">5.0</span>
-      </div>
-
-      <div class="review-form">
-        <select id="reviewRating">
-          <option value="5">⭐⭐⭐⭐⭐</option>
-          <option value="4">⭐⭐⭐⭐</option>
-          <option value="3">⭐⭐⭐</option>
-          <option value="2">⭐⭐</option>
-          <option value="1">⭐</option>
-        </select>
-
-        <textarea id="reviewText" placeholder="Write your review..."></textarea>
-        <button id="reviewSubmitBtn">Submit Review</button>
-      </div>
-
-      <div id="reviewList"></div>
-
-      <button id="modalAddBtn">
-        <i class="fa-solid fa-cart-shopping"></i>
-        Add To Cart
-      </button>
-    </div>
+    <button class="clear-btn" onclick="clearCart()">
+      Clear Cart
+    </button>
   </div>
 </div>
 
-<nav class="mobile-nav">
-  <button><i class="fa-solid fa-house"></i></button>
-  <button><i class="fa-solid fa-heart"></i></button>
-  <button onclick="toggleCart()"><i class="fa-solid fa-cart-shopping"></i></button>
-  <button><i class="fa-solid fa-user"></i></button>
+<!-- MODAL -->
+<div id="productModal" class="modal">
+  <div class="modal-box">
+
+    <button class="close" onclick="closeModal()">✕</button>
+
+    <img id="modalImage"/>
+
+    <h2 id="modalName"></h2>
+    <p id="modalPrice"></p>
+
+    <div id="reviewList"></div>
+
+    <textarea id="reviewText"></textarea>
+    <select id="reviewRating">
+      <option value="5">⭐⭐⭐⭐⭐</option>
+      <option value="4">⭐⭐⭐⭐</option>
+      <option value="3">⭐⭐⭐</option>
+    </select>
+
+    <button id="reviewSubmitBtn">Submit</button>
+
+    <button id="modalAddBtn" class="add-btn">
+      Add to Cart
+    </button>
+
+  </div>
+</div>
+
+<!-- MOBILE NAV -->
+<nav class="bottom-nav">
+  <button><i class="fa fa-home"></i></button>
+  <button><i class="fa fa-heart"></i></button>
+  <button onclick="toggleCart()"><i class="fa fa-cart-shopping"></i></button>
+  <button><i class="fa fa-user"></i></button>
 </nav>
 
-<script type="module" src="app.js?v=11"></script>
+<script type="module" src="app.js?v=20"></script>
+
 </body>
 </html>
