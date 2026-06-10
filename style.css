@@ -1,22 +1,18 @@
 /* =========================
-ROOT VARIABLES
+ROOT
 ========================= */
 :root{
   --bg:#f5f7fb;
-  --card:#ffffff;
+  --card:#fff;
   --text:#111;
   --muted:#777;
   --primary:#111;
   --green:#25D366;
   --danger:#ff3b30;
   --border:#ececec;
-  --radius:18px;
   --shadow:0 10px 30px rgba(0,0,0,.08);
 }
 
-/* =========================
-DARK MODE
-========================= */
 body.dark{
   --bg:#0f0f10;
   --card:#1a1a1c;
@@ -40,7 +36,6 @@ body{
   background:var(--bg);
   color:var(--text);
   overflow-x:hidden;
-  transition:.25s;
 }
 
 img{width:100%;display:block;}
@@ -55,7 +50,6 @@ button,input,textarea,select{
 TOP BANNER
 ========================= */
 .top-banner{
-  width:100%;
   background:#111;
   color:#fff;
   text-align:center;
@@ -96,14 +90,13 @@ LOGO
 SEARCH
 ========================= */
 .search-box{
-  height:48px;
+  height:46px;
   display:flex;
   align-items:center;
   gap:10px;
   padding:0 16px;
   border-radius:999px;
   background:#f1f1f1;
-  border:1px solid rgba(0,0,0,.05);
   transition:.25s;
 }
 
@@ -114,7 +107,6 @@ SEARCH
 
 body.dark .search-box{
   background:#262629;
-  border:1px solid rgba(255,255,255,.04);
 }
 
 .search-box input{
@@ -124,7 +116,7 @@ body.dark .search-box{
 }
 
 /* =========================
-ICON BUTTON
+BUTTON
 ========================= */
 .icon-btn{
   width:46px;
@@ -135,34 +127,10 @@ ICON BUTTON
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor:pointer;
-  transition:.25s;
-}
-
-.icon-btn:hover{transform:translateY(-2px);}
-
-/* =========================
-FILTERS
-========================= */
-.advanced-search{padding:16px;}
-
-.filter-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-
-.filter-grid select{
-  height:46px;
-  padding:0 14px;
-  border-radius:14px;
-  background:var(--card);
-  border:1px solid var(--border);
-  color:var(--text);
 }
 
 /* =========================
-PRODUCT GRID
+GRID
 ========================= */
 .products-grid{
   display:grid;
@@ -172,33 +140,70 @@ PRODUCT GRID
 }
 
 /* =========================
-PRODUCT CARD
+CARD
 ========================= */
 .card{
-  position:relative;
   background:var(--card);
-  border-radius:22px;
-  overflow:hidden;
+  border-radius:20px;
   border:1px solid var(--border);
   box-shadow:var(--shadow);
+  overflow:hidden;
   transition:.3s;
 }
 
 .card:hover{
-  transform:translateY(-10px) scale(1.02);
-  box-shadow:0 20px 50px rgba(0,0,0,.14);
+  transform:translateY(-8px);
 }
 
 .card img{
   aspect-ratio:1/1;
   object-fit:cover;
-  transition:.5s;
 }
 
-.card:hover img{transform:scale(1.08);}
+/* =========================
+CONTENT
+========================= */
+.card-content{padding:14px;}
+
+.card-content h3{
+  font-size:15px;
+  font-weight:600;
+  line-height:1.4;
+}
 
 /* =========================
-BADGE
+PRICE
+========================= */
+.price-box{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+
+.new-price{font-weight:800;}
+.old-price{color:var(--muted);text-decoration:line-through;font-size:13px;}
+
+/* =========================
+BUTTONS
+========================= */
+.card-buttons{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
+
+.view-btn,.add-cart-btn{
+  flex:1;
+  height:42px;
+  border-radius:12px;
+  font-weight:700;
+}
+
+.view-btn{background:#f1f1f1;}
+.add-cart-btn{background:#111;color:#fff;}
+
+/* =========================
+DISCOUNT
 ========================= */
 .discount-badge{
   position:absolute;
@@ -213,57 +218,7 @@ BADGE
 }
 
 /* =========================
-CONTENT
-========================= */
-.card-content{padding:16px;}
-
-.card-content h3{
-  font-size:15px;
-  font-weight:600;
-  line-height:1.4;
-  min-height:42px;
-}
-
-/* =========================
-PRICE
-========================= */
-.price-box{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  margin-top:8px;
-}
-
-.new-price{font-size:18px;font-weight:800;}
-.old-price{font-size:13px;color:var(--muted);text-decoration:line-through;}
-
-/* =========================
-BUTTONS
-========================= */
-.card-buttons{
-  display:flex;
-  gap:8px;
-  margin-top:12px;
-}
-
-.view-btn,.add-cart-btn{
-  flex:1;
-  height:44px;
-  border-radius:12px;
-  font-weight:700;
-  cursor:pointer;
-  transition:.25s;
-}
-
-.view-btn{background:#f1f1f1;color:#111;}
-.add-cart-btn{background:#111;color:#fff;}
-
-.view-btn:hover,.add-cart-btn:hover{
-  transform:translateY(-3px);
-}
-
-/* =========================
-FLOATING CART
+CART FLOAT
 ========================= */
 .floating-cart{
   position:fixed;
@@ -278,11 +233,6 @@ FLOATING CART
   align-items:center;
   justify-content:center;
   z-index:3000;
-  animation:floatingCart 3s ease infinite;
-}
-
-@keyframes floatingCart{
-  50%{transform:translateY(-6px);}
 }
 
 .floating-cart span{
@@ -300,46 +250,42 @@ FLOATING CART
 }
 
 /* =========================
-CART DRAWER
+CART
 ========================= */
 .overlay{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.45);
+  background:rgba(0,0,0,.4);
   opacity:0;
   visibility:hidden;
-  transition:.3s;
-  z-index:4000;
 }
 
 .overlay.show{opacity:1;visibility:visible;}
 
 .cart-drawer{
   position:fixed;
-  top:0;
   right:0;
-  width:100%;
-  max-width:420px;
+  top:0;
+  width:420px;
   height:100vh;
   background:var(--card);
   transform:translateX(100%);
-  transition:.35s;
-  z-index:5000;
+  transition:.3s;
   display:flex;
   flex-direction:column;
+  z-index:5000;
 }
 
 .cart-drawer.open{transform:translateX(0);}
 
-#cartItems{flex:1;overflow-y:auto;padding:14px;}
+#cartItems{flex:1;overflow:auto;padding:14px;}
 
 .cart-item{
   display:flex;
-  gap:12px;
+  gap:10px;
   padding:12px;
-  border-radius:18px;
+  border-radius:14px;
   background:var(--bg);
-  border:1px solid var(--border);
 }
 
 /* =========================
@@ -352,7 +298,6 @@ CHECKOUT
   color:#fff;
   border-radius:14px;
   font-weight:700;
-  cursor:pointer;
 }
 
 /* =========================
@@ -367,15 +312,13 @@ MODAL
   justify-content:center;
   opacity:0;
   visibility:hidden;
-  transition:.25s;
 }
 
 .modal.show{opacity:1;visibility:visible;}
 
 .modal-content{
-  background:var(--card);
-  border-radius:20px;
-  max-width:420px;
   width:100%;
-  overflow:hidden;
+  max-width:420px;
+  background:var(--card);
+  border-radius:18px;
 }
