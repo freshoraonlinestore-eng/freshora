@@ -1484,38 +1484,72 @@ padding:14px;
 
 }
 
-.image-gallery{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-  overflow-x:auto;
-  padding:6px 2px;
+/* =========================
+IMAGE GALLERY (IMPROVED)
+========================= */
 
-  scroll-snap-type:x mandatory;
+.image-gallery {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding: 8px 4px;
+
+  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: none; /* Firefox */
 }
 
-.image-gallery img{
-  width:60px;
-  height:60px;
-  border-radius:10px;
-  object-fit:cover;
-  cursor:pointer;
-  border:2px solid transparent;
-  transition:.2s;
-
-  scroll-snap-align:start;
-  flex:0 0 auto;
+.image-gallery::-webkit-scrollbar {
+  display: none; /* Chrome */
 }
 
-.image-gallery img:hover{
-  border-color:#25D366;
-  transform:scale(1.05);
+.image-gallery img {
+  width: 62px;
+  height: 62px;
+
+  border-radius: 12px;
+  object-fit: cover;
+  cursor: pointer;
+
+  border: 2px solid transparent;
+  transition: 0.25s ease;
+
+  scroll-snap-align: start;
+  flex: 0 0 auto;
 }
 
-/* main image swipe feel */
-.main-image-wrapper img{
-  width:100%;
-  border-radius:16px;
-  transition:transform .3s ease;
+.image-gallery img:hover {
+  border-color: #25D366;
+  transform: scale(1.08);
+}
+
+/* active thumbnail (JS use කරන්න පුළුවන්) */
+.image-gallery img.active {
+  border-color: #25D366;
+  box-shadow: 0 0 0 3px rgba(37,211,102,0.2);
+}
+
+/* =========================
+MAIN IMAGE (PREMIUM LOOK)
+========================= */
+
+.main-image-wrapper {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.main-image-wrapper img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+
+  border-radius: 16px;
+
+  transition: transform 0.35s ease;
+}
+
+.main-image-wrapper img:active {
+  transform: scale(0.98);
 }
