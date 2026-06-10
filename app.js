@@ -45,7 +45,6 @@ function loadProducts() {
 
   onSnapshot(ref, (snapshot) => {
     products = [];
-
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
@@ -103,8 +102,8 @@ function addToCart(id) {
   }
 
   saveCart();
-  renderCartCount();
   renderCart();
+  renderCartCount();
 }
 
 function increaseQty(id) {
@@ -158,6 +157,15 @@ function closeCart() {
   overlay.classList.remove("active");
 }
 
+function toggleCart() {
+  if (cartDrawer.classList.contains("open")) {
+    closeCart();
+  } else {
+    openCart();
+  }
+}
+window.toggleCart = toggleCart;
+
 /* =========================
    RENDER CART
 ========================= */
@@ -169,13 +177,13 @@ function renderCart() {
 
   cartDrawer.innerHTML = `
     <h2>🛒 Your Cart</h2>
-    <div class="cart-items"></div>
+    <div id="cartItems"></div>
     <hr>
     <h3 class="cart-total"></h3>
     <button id="checkoutBtn" class="add-btn">Checkout WhatsApp</button>
   `;
 
-  const container = cartDrawer.querySelector(".cart-items");
+  const container = document.getElementById("cartItems");
 
   if (cart.length === 0) {
     container.innerHTML = "<p style='padding:10px'>Cart is empty 😢</p>";
@@ -207,10 +215,9 @@ function renderCart() {
     container.appendChild(div);
   });
 
-  cartDrawer.querySelector(".cart-total").innerText =
-    "Total: Rs. " + total;
+  const totalEl = cartDrawer.querySelector(".cart-total");
+  if (totalEl) totalEl.innerText = "Total: Rs. " + total;
 
-  /* EVENTS */
   cartDrawer.querySelectorAll(".inc").forEach(b =>
     b.onclick = () => increaseQty(b.dataset.id)
   );
@@ -223,11 +230,12 @@ function renderCart() {
     b.onclick = () => removeFromCart(b.dataset.id)
   );
 
-  document.getElementById("checkoutBtn").onclick = checkout;
+  const btn = document.getElementById("checkoutBtn");
+  if (btn) btn.onclick = checkout;
 }
 
 /* =========================
-   WHATSAPP CHECKOUT
+   CHECKOUT
 ========================= */
 
 function checkout() {
@@ -246,17 +254,15 @@ function checkout() {
   message += `%0A💰 *Total: Rs.${total}*`;
 
   const phone = "94752425790";
-  const url = `https://wa.me/${phone}?text=${message}`;
-
-  window.open(url, "_blank");
+  window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
 }
 
 /* =========================
-   EVENTS + SEARCH (DEBOUNCE)
+   EVENTS
 ========================= */
 
 function setupEvents() {
-  cartBtn?.addEventListener("click", openCart);
+  cartBtn?.addEventListener("click", toggleCart);
   overlay?.addEventListener("click", closeCart);
 
   let timeout;
@@ -277,19 +283,19 @@ function setupEvents() {
 }
 
 /* =========================
-   COUNT
+   CART COUNT (FIXED)
 ========================= */
 
 function renderCartCount() {
-  if (!cartBtn) return;
-
   const count = cart.reduce((sum, i) => sum + i.qty, 0);
-  cartBtn.innerHTML = `🛒 ${count}`;
+
+  const countEl = document.getElementById("floatingCartCount");
+  if (countEl) countEl.innerText = count;
 }
 
 /* =========================
-   GLOBAL
+   GLOBAL EXPORT
 ========================= */
 
-window.closeCart = closeCart;
 window.openCart = openCart;
+window.closeCart = closeCart;
