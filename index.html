@@ -1,29 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="UTF-8" />
+<header class="header">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <div class="logo-area">
 
-  <title>Freshora Online Store</title>
+    <img
+      src="logo.png"
+      class="logo-img"
+      alt="Freshora Logo"
+    />
 
-  <link
-    rel="stylesheet"
-    href="style.css?v=3"
-  />
+    <div class="logo-text">
+      Freshora
+    </div>
 
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  />
-</head>
+  </div>
+
+  <div class="search-box">
+
+    <i class="fa-solid fa-magnifying-glass"></i>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search products..."
+      autocomplete="off"
+    />
+
+  </div>
+
+  <button
+    id="darkModeBtn"
+    class="icon-btn"
+    onclick="toggleDarkMode()"
+  >
+    <i class="fa-solid fa-moon"></i>
+  </button>
+
+</header>
 
 <body>
+<!-- TOP BANNER -->
 
+<div class="top-banner">
+  <p>
+    Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products
+  </p>
+</div>
+  
 <!-- LOADING -->
 
 <div id="loadingScreen" class="loading-screen">
