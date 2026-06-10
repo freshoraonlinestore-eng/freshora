@@ -274,4 +274,45 @@ window.addEventListener("DOMContentLoaded", () => {
   updateCartCount();
 });
 
-// Search & Filter Logic omitted for brevity, but remains same as original.
+/* =========================
+   SELECT FILTERS (Elements)
+========================= */
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+const priceFilter = document.getElementById("priceFilter");
+const discountFilter = document.getElementById("discountFilter");
+
+/* =========================
+   FILTER LOGIC
+========================= */
+function filterProducts() {
+  const searchTerm = searchInput?.value.toLowerCase() || "";
+  const category = categoryFilter?.value || "all";
+  const priceRange = priceFilter?.value || "all";
+  const minDiscount = discountFilter?.value || "all";
+
+  let filtered = allProducts.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm);
+    const matchesCategory = category === "all" || p.category === category;
+    
+    // Price Logic
+    const pPrice = safeNumber(p.price);
+    const matchesPrice = priceRange === "all" || 
+      (priceRange === "low" && pPrice < 1000) ||
+      (priceRange === "mid" && pPrice >= 1000 && pPrice < 5000) ||
+      (priceRange === "high" && pPrice >= 5000);
+
+    // Discount Logic
+    const matchesDiscount = minDiscount === "all" || safeNumber(p.discount) >= safeNumber(minDiscount);
+
+    return matchesSearch && matchesCategory && matchesPrice && matchesDiscount;
+  });
+
+  renderProducts(filtered);
+}
+
+// Event Listeners
+searchInput?.addEventListener("input", filterProducts);
+categoryFilter?.addEventListener("change", filterProducts);
+priceFilter?.addEventListener("change", filterProducts);
+discountFilter?.addEventListener("change", filterProducts);
