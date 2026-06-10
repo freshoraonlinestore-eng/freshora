@@ -1,15 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Freshora Online Store</title>
-
-  <link rel="stylesheet" href="style.css?v=5" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-</head>
-
 <body>
 
 <!-- TOP BANNER -->
@@ -35,7 +23,12 @@
 
   <div class="search-box">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off" />
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search products..."
+      autocomplete="off"
+    />
   </div>
 
   <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
@@ -44,8 +37,68 @@
 
 </header>
 
+<!-- HERO -->
+<section class="hero">
+
+  <div class="hero-content">
+
+    <span class="hero-badge">
+      Fresh Daily Products
+    </span>
+
+    <h1>
+      Premium Grocery &
+      Lifestyle Store
+    </h1>
+
+    <p>
+      Freshora delivers fresh groceries,
+      drinks, snacks & beauty products
+      directly to your doorstep.
+    </p>
+
+    <div class="hero-buttons">
+      <button class="hero-btn">
+        Shop Now
+      </button>
+
+      <button class="hero-outline-btn">
+        Explore
+      </button>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- CATEGORY SLIDER -->
+<section class="category-slider">
+
+  <button class="category-chip active">
+    All
+  </button>
+
+  <button class="category-chip">
+    Grocery
+  </button>
+
+  <button class="category-chip">
+    Drinks
+  </button>
+
+  <button class="category-chip">
+    Snacks
+  </button>
+
+  <button class="category-chip">
+    Beauty
+  </button>
+
+</section>
+
 <!-- FILTERS -->
 <section class="advanced-search">
+
   <div class="filter-grid">
 
     <select id="categoryFilter">
@@ -71,7 +124,14 @@
     </select>
 
   </div>
+
 </section>
+
+<!-- SECTION TITLE -->
+<div class="section-header">
+  <h2>Popular Products</h2>
+  <span>Fresh picks for you</span>
+</div>
 
 <!-- PRODUCTS -->
 <section id="products" class="products-grid"></section>
@@ -82,91 +142,31 @@
   <span id="floatingCartCount">0</span>
 </button>
 
-<!-- CART -->
-<div id="cartDrawer" class="cart-drawer">
+<!-- MOBILE BOTTOM NAV -->
+<nav class="bottom-nav">
 
-  <div class="cart-header">
-    <h2>Your Cart</h2>
-    <button class="close-cart" onclick="toggleCart()">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  </div>
+  <button class="bottom-nav-item active">
+    <i class="fa-solid fa-house"></i>
+    <span>Home</span>
+  </button>
 
-  <div id="cartItems"></div>
+  <button class="bottom-nav-item">
+    <i class="fa-solid fa-layer-group"></i>
+    <span>Categories</span>
+  </button>
 
-  <div class="checkout-form">
-    <input type="text" id="cusName" placeholder="Your Name" />
-    <input type="tel" id="cusPhone" placeholder="Phone Number" />
-    <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
-  </div>
+  <button class="bottom-nav-item" onclick="toggleCart()">
+    <i class="fa-solid fa-cart-shopping"></i>
+    <span>Cart</span>
+  </button>
 
-  <div class="sticky-checkout">
-    <h3 id="cartTotal">Total: Rs 0</h3>
+  <button class="bottom-nav-item">
+    <i class="fa-solid fa-heart"></i>
+    <span>Wishlist</span>
+  </button>
 
-    <div class="checkout-actions">
-      <button class="checkout-btn" onclick="checkout()">
-        <i class="fab fa-whatsapp"></i>
-        Order via WhatsApp
-      </button>
-
-      <button class="clear-btn" onclick="clearCart()">
-        Clear Cart
-      </button>
-    </div>
-  </div>
-
-</div>
-
-<!-- PRODUCT MODAL -->
-<div id="productModal" class="modal">
-
-  <div class="modal-content">
-
-    <button class="close" onclick="closeModal()">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-
-    <!-- MAIN IMAGE WRAPPER -->
-    <div class="main-image-wrapper">
-      <img id="modalImage" src="placeholder.png" alt="product image">
-    </div>
-
-    <!-- IMAGE GALLERY -->
-    <div class="image-gallery" id="imageGallery"></div>
-
-    <div class="modal-details">
-
-      <h2 id="modalName"></h2>
-      <p id="modalPrice"></p>
-
-      <div class="rating-box">
-        ⭐ <span id="modalRatingText">5.0</span>
-      </div>
-
-      <div class="review-form">
-        <select id="reviewRating">
-          <option value="5">⭐⭐⭐⭐⭐</option>
-          <option value="4">⭐⭐⭐⭐</option>
-          <option value="3">⭐⭐⭐</option>
-          <option value="2">⭐⭐</option>
-          <option value="1">⭐</option>
-        </select>
-
-        <textarea id="reviewText" placeholder="Write your review..."></textarea>
-
-        <button id="reviewSubmitBtn">Submit Review</button>
-      </div>
-
-      <div id="reviewList"></div>
-
-      <button id="modalAddBtn">Add to Cart</button>
-
-    </div>
-
-  </div>
-</div>
+</nav>
 
 <script type="module" src="app.js?v=6"></script>
 
 </body>
-</html>
