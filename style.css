@@ -1507,9 +1507,4 @@ padding:14px;
   transform:scale(1.05);
 }
 
-/* rating preview fix */
-.rating-preview{
-  margin-bottom:10px;
-  color:#ffb400;
-  font-weight:600;
-}
+
