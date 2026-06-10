@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Freshora Online Store</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <link rel="stylesheet" href="style.css?v=6" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<title>Freshora Online Store</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
@@ -29,19 +29,13 @@
 <header class="header">
 
   <div class="logo-area" ondblclick="window.location='login.html'">
-    <img src="logo.png" class="logo-img" alt="Freshora Logo" />
+    <img src="logo.png" class="logo-img" />
     <div class="logo-text">Freshora</div>
   </div>
 
   <div class="search-box">
     <i class="fa-solid fa-magnifying-glass"></i>
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="Search products..."
-      autocomplete="off"
-      oninput="handleSearch(this.value)"
-    />
+    <input id="searchInput" placeholder="Search products..." />
   </div>
 
   <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
@@ -52,74 +46,34 @@
 
 <!-- HERO -->
 <section class="hero">
-
   <div class="hero-content">
-
     <span class="hero-badge">Fresh Daily Products</span>
 
     <h1>Premium Grocery & Lifestyle Store</h1>
 
-    <p>
-      Freshora delivers fresh groceries,
-      drinks, snacks & beauty products
-      directly to your doorstep.
-    </p>
+    <p>Freshora delivers groceries, drinks, snacks & beauty products.</p>
 
     <div class="hero-buttons">
-      <button class="hero-btn" onclick="scrollToProducts()">
-        Shop Now
-      </button>
-
-      <button class="hero-outline-btn" onclick="resetFilters()">
-        Explore
-      </button>
+      <button class="hero-btn">Shop Now</button>
+      <button class="hero-outline-btn">Explore</button>
     </div>
-
   </div>
-
 </section>
 
-<!-- CATEGORY SLIDER -->
+<!-- CATEGORY -->
 <section class="category-slider">
-
-  <button class="category-chip active"
-    onclick="filterCategory('all')"
-    data-category="all">
-    All
-  </button>
-
-  <button class="category-chip"
-    onclick="filterCategory('Grocery')"
-    data-category="Grocery">
-    Grocery
-  </button>
-
-  <button class="category-chip"
-    onclick="filterCategory('Drinks')"
-    data-category="Drinks">
-    Drinks
-  </button>
-
-  <button class="category-chip"
-    onclick="filterCategory('Snacks')"
-    data-category="Snacks">
-    Snacks
-  </button>
-
-  <button class="category-chip"
-    onclick="filterCategory('Beauty')"
-    data-category="Beauty">
-    Beauty
-  </button>
-
+  <button class="category-chip active">All</button>
+  <button class="category-chip">Grocery</button>
+  <button class="category-chip">Drinks</button>
+  <button class="category-chip">Snacks</button>
+  <button class="category-chip">Beauty</button>
 </section>
 
 <!-- FILTERS -->
 <section class="advanced-search">
-
   <div class="filter-grid">
 
-    <select id="categoryFilter" onchange="filterCategory(this.value)">
+    <select id="categoryFilter">
       <option value="all">All Categories</option>
       <option value="Grocery">Grocery</option>
       <option value="Drinks">Drinks</option>
@@ -127,29 +81,22 @@
       <option value="Beauty">Beauty</option>
     </select>
 
-    <select id="priceFilter" onchange="filterProducts()">
+    <select id="priceFilter">
       <option value="all">All Prices</option>
       <option value="500">Under Rs 500</option>
       <option value="1000">Under Rs 1000</option>
       <option value="2000">Under Rs 2000</option>
     </select>
 
-    <select id="discountFilter" onchange="filterProducts()">
+    <select id="discountFilter">
       <option value="all">All Discounts</option>
-      <option value="10">10%+ Discount</option>
-      <option value="20">20%+ Discount</option>
-      <option value="30">30%+ Discount</option>
+      <option value="10">10%+</option>
+      <option value="20">20%+</option>
+      <option value="30">30%+</option>
     </select>
 
   </div>
-
 </section>
-
-<!-- SECTION TITLE -->
-<div class="section-header" id="productsSection">
-  <h2>Popular Products</h2>
-  <span>Fresh picks for you</span>
-</div>
 
 <!-- PRODUCTS -->
 <section id="products" class="products-grid"></section>
@@ -160,17 +107,97 @@
   <span id="floatingCartCount">0</span>
 </button>
 
-<!-- MOBILE BOTTOM NAV -->
+<!-- ================= CART DRAWER (FIXED) ================= -->
+<div id="cartDrawer" class="cart-drawer">
+
+  <div class="cart-header">
+    <h3>Your Cart</h3>
+    <button class="close-cart" onclick="toggleCart()">✕</button>
+  </div>
+
+  <div id="cartItems"></div>
+
+  <div class="sticky-checkout">
+
+    <div id="cartTotal">Total: Rs 0</div>
+
+    <div class="checkout-form">
+      <input id="cusName" placeholder="Your Name">
+      <input id="cusPhone" placeholder="Phone">
+      <textarea id="cusAddress" placeholder="Address"></textarea>
+    </div>
+
+    <div class="checkout-actions">
+      <button class="checkout-btn" onclick="checkout()">
+        Checkout WhatsApp
+      </button>
+
+      <button class="clear-btn" onclick="clearCart()">
+        Clear Cart
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= PRODUCT MODAL (FIXED) ================= -->
+<div id="productModal" class="modal" onclick="closeModal()">
+
+  <div class="modal-content" onclick="event.stopPropagation()">
+
+    <button class="close" onclick="closeModal()">✕</button>
+
+    <div class="main-image-wrapper">
+      <img id="modalImage" />
+    </div>
+
+    <div id="imageGallery" class="image-gallery"></div>
+
+    <div class="modal-details">
+
+      <h2 id="modalName"></h2>
+      <p id="modalPrice"></p>
+
+      <div class="rating-box">
+        ⭐ <span id="modalRatingText"></span>
+      </div>
+
+      <button id="modalAddBtn">Add to Cart</button>
+
+      <div class="review-form">
+        <select id="reviewRating">
+          <option value="5">5 ⭐</option>
+          <option value="4">4 ⭐</option>
+          <option value="3">3 ⭐</option>
+          <option value="2">2 ⭐</option>
+          <option value="1">1 ⭐</option>
+        </select>
+
+        <textarea id="reviewText" placeholder="Write review..."></textarea>
+
+        <button id="reviewSubmitBtn">Submit Review</button>
+      </div>
+
+      <div id="reviewList"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= BOTTOM NAV ================= -->
 <nav class="bottom-nav">
 
-  <button class="bottom-nav-item active" onclick="scrollToTop()">
+  <button class="bottom-nav-item active">
     <i class="fa-solid fa-house"></i>
     <span>Home</span>
   </button>
 
-  <button class="bottom-nav-item" onclick="scrollToProducts()">
+  <button class="bottom-nav-item">
     <i class="fa-solid fa-layer-group"></i>
-    <span>Products</span>
+    <span>Categories</span>
   </button>
 
   <button class="bottom-nav-item" onclick="toggleCart()">
@@ -178,110 +205,14 @@
     <span>Cart</span>
   </button>
 
-  <button class="bottom-nav-item" onclick="openWishlist()">
+  <button class="bottom-nav-item">
     <i class="fa-solid fa-heart"></i>
     <span>Wishlist</span>
   </button>
 
 </nav>
 
-<script type="module" src="app.js?v=7"></script>
-
-<!-- =========================
-LOCAL STORAGE INIT + HOOKS
-========================= -->
-
-<script>
-/* =========================
-BASIC UI HELPERS
-========================= */
-
-function scrollToProducts(){
-  document.getElementById("productsSection")
-  .scrollIntoView({behavior:"smooth"});
-}
-
-function scrollToTop(){
-  window.scrollTo({top:0, behavior:"smooth"});
-}
-
-function resetFilters(){
-  document.getElementById("categoryFilter").value = "all";
-  document.getElementById("priceFilter").value = "all";
-  document.getElementById("discountFilter").value = "all";
-
-  if(typeof filterProducts === "function"){
-    filterProducts();
-  }
-}
-
-/* =========================
-LOCAL STORAGE CART INIT
-========================= */
-
-let cart = JSON.parse(localStorage.getItem("freshora_cart")) || [];
-
-function saveCart(){
-  localStorage.setItem("freshora_cart", JSON.stringify(cart));
-  updateCartUI();
-}
-
-/* =========================
-WISHLIST SYSTEM
-========================= */
-
-let wishlist = JSON.parse(localStorage.getItem("freshora_wishlist")) || [];
-
-function saveWishlist(){
-  localStorage.setItem("freshora_wishlist", JSON.stringify(wishlist));
-}
-
-/* =========================
-SEARCH HOOK
-========================= */
-
-function handleSearch(value){
-  if(typeof filterProducts === "function"){
-    filterProducts(value);
-  }
-}
-
-/* =========================
-CATEGORY FILTER HOOK
-========================= */
-
-function filterCategory(cat){
-  document.querySelectorAll(".category-chip")
-  .forEach(btn=>{
-    btn.classList.remove("active");
-    if(btn.dataset.category === cat){
-      btn.classList.add("active");
-    }
-  });
-
-  if(typeof filterProducts === "function"){
-    filterProducts();
-  }
-}
-
-/* =========================
-WISHLIST OPEN (placeholder)
-========================= */
-
-function openWishlist(){
-  alert("Wishlist feature ready (connect UI in app.js)");
-}
-
-/* =========================
-CART UI UPDATE HOOK
-========================= */
-
-function updateCartUI(){
-  let count = cart.reduce((a,b)=>a+b.qty,0);
-
-  document.getElementById("floatingCartCount").innerText = count;
-}
-</script>
+<script type="module" src="app.js?v=6"></script>
 
 </body>
 </html>
