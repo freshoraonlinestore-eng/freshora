@@ -16,16 +16,18 @@
   <p>Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</p>
 </div>
 
+<!-- LOADING -->
 <div id="loadingScreen" class="loading-screen">
   <div class="loader"></div>
 </div>
 
-<div id="overlay" class="overlay" onclick="toggleCart()"></div>
+<!-- OVERLAY -->
+<div id="overlay" class="overlay"></div>
 
 <header class="header">
 
   <div class="logo-area">
-    <img src="logo.png" class="logo-img">
+    <img src="logo.png" class="logo-img" alt="logo">
     <div class="logo-text">Freshora</div>
   </div>
 
@@ -34,7 +36,7 @@
     <input id="searchInput" placeholder="Search products...">
   </div>
 
-  <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
+  <button id="darkModeBtn" class="icon-btn">
     <i class="fa-solid fa-moon"></i>
   </button>
 
@@ -49,11 +51,11 @@
 </section>
 
 <section class="category-slider">
-  <button class="category-chip active">All</button>
-  <button class="category-chip">Grocery</button>
-  <button class="category-chip">Drinks</button>
-  <button class="category-chip">Snacks</button>
-  <button class="category-chip">Beauty</button>
+  <button class="category-chip active" data-cat="all">All</button>
+  <button class="category-chip" data-cat="Grocery">Grocery</button>
+  <button class="category-chip" data-cat="Drinks">Drinks</button>
+  <button class="category-chip" data-cat="Snacks">Snacks</button>
+  <button class="category-chip" data-cat="Beauty">Beauty</button>
 </section>
 
 <section class="advanced-search">
@@ -82,19 +84,21 @@
   </div>
 </section>
 
+<!-- PRODUCTS -->
 <section id="products" class="products-grid"></section>
 
-<button class="floating-cart" onclick="toggleCart()">
+<!-- FLOAT CART -->
+<button class="floating-cart" id="cartBtn">
   <i class="fa-solid fa-cart-shopping"></i>
   <span id="floatingCartCount">0</span>
 </button>
 
-<!-- CART -->
+<!-- CART DRAWER -->
 <div id="cartDrawer" class="cart-drawer">
 
   <div class="cart-header">
     <h3>Cart</h3>
-    <button onclick="toggleCart()">✕</button>
+    <button id="closeCart">✕</button>
   </div>
 
   <div id="cartItems"></div>
@@ -107,24 +111,19 @@
     <input id="cusPhone" placeholder="Phone">
     <textarea id="cusAddress" placeholder="Address"></textarea>
 
-    <button onclick="checkout()" class="checkout-btn">
-      Checkout
-    </button>
-
-    <button onclick="clearCart()" class="clear-btn">
-      Clear
-    </button>
+    <button id="checkoutBtn" class="checkout-btn">Checkout</button>
+    <button id="clearBtn" class="clear-btn">Clear</button>
 
   </div>
 
 </div>
 
 <!-- MODAL -->
-<div id="productModal" class="modal" onclick="closeModal()">
+<div id="productModal" class="modal">
 
-  <div class="modal-content" onclick="event.stopPropagation()">
+  <div class="modal-content">
 
-    <button class="close" onclick="closeModal()">✕</button>
+    <button id="closeModal" class="close">✕</button>
 
     <img id="modalImage" />
 
