@@ -5,7 +5,7 @@ import {
 } from "./firebase.js";
 
 /* =========================
-SAFE HELPERS (NEW FIX)
+SAFE HELPERS
 ========================= */
 
 const $ = (id) => document.getElementById(id);
@@ -16,25 +16,34 @@ const safeEl = (id) => {
   return el;
 };
 
+/* =========================
+ELEMENTS
+========================= */
+
 const productsDiv = safeEl("products");
 const loadingScreen = safeEl("loadingScreen");
 const cartDrawer = safeEl("cartDrawer");
 const overlay = safeEl("overlay");
 
+const modal = safeEl("productModal");
+const modalImg = safeEl("modalImage");
+const modalName = safeEl("modalName");
+const modalPrice = safeEl("modalPrice");
+const modalAddBtn = safeEl("modalAddBtn");
+
+/* =========================
+STATE
+========================= */
+
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-let reviews = JSON.parse(localStorage.getItem("reviews")) || {};
 let allProducts = [];
 
 /* =========================
-SAFE NUMBER
+UTILS
 ========================= */
 
-const safeNumber = v => isNaN(Number(v)) ? 0 : Number(v);
-
-/* =========================
-SAVE FUNCTIONS
-========================= */
+const safeNumber = (v) => isNaN(Number(v)) ? 0 : Number(v);
 
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
@@ -47,12 +56,24 @@ function saveWishlist() {
   renderProducts(allProducts);
 }
 
-function saveReviews() {
-  localStorage.setItem("reviews", JSON.stringify(reviews));
+/* =========================
+OVERLAY CONTROL
+========================= */
+
+function closeAll() {
+  cartDrawer?.classList.remove("open");
+  modal?.classList.remove("open");
+  overlay?.classList.remove("show");
+  document.body.style.overflow = "auto";
+}
+
+/* overlay click */
+if (overlay) {
+  overlay.onclick = closeAll;
 }
 
 /* =========================
-DARK MODE (SAFE)
+DARK MODE
 ========================= */
 
 window.toggleDarkMode = function () {
@@ -73,14 +94,13 @@ window.toggleDarkMode = function () {
 };
 
 /* =========================
-CART FIX
+CART
 ========================= */
 
 function updateCartCount() {
-  const total = cart.reduce((s, i) => s + safeNumber(i.qty), 0);
   const count = safeEl("floatingCartCount");
-
-  if (count) count.innerText = total;
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+  if (count) count.innerText = totalQty;
 }
 
 window.addToCart = function (id, name, price, image) {
@@ -121,21 +141,19 @@ window.clearCart = function () {
 
 window.toggleCart = function () {
 
-  if (!cartDrawer || !overlay) return;
+  if (!cartDrawer) return;
 
   cartDrawer.classList.toggle("open");
-  overlay.classList.toggle("show");
+  overlay?.classList.toggle("show");
 
   document.body.style.overflow =
-    cartDrawer.classList.contains("open")
-      ? "hidden"
-      : "auto";
+    cartDrawer.classList.contains("open") ? "hidden" : "auto";
 
   renderCart();
 };
 
 /* =========================
-RENDER CART (SAFE)
+CART RENDER
 ========================= */
 
 function renderCart() {
@@ -157,7 +175,7 @@ function renderCart() {
 
   cart.forEach((item, index) => {
 
-    const itemTotal = safeNumber(item.price) * safeNumber(item.qty);
+    const itemTotal = item.price * item.qty;
     total += itemTotal;
 
     cartItems.innerHTML += `
@@ -167,7 +185,7 @@ function renderCart() {
 
         <div class="cart-details">
           <h4>${item.name}</h4>
-          <p>Rs ${safeNumber(item.price).toLocaleString()}</p>
+          <p>Rs ${item.price}</p>
 
           <div class="qty-box">
             <button onclick="decreaseQty(${index})">-</button>
@@ -176,43 +194,51 @@ function renderCart() {
           </div>
         </div>
 
-        <button class="remove-btn" onclick="removeItem(${index})">✕</button>
+        <button onclick="removeItem(${index})">✕</button>
       </div>
     `;
   });
 
   if (cartTotal) {
-    cartTotal.innerText = "Total: Rs " + total.toLocaleString();
+    cartTotal.innerText = "Total: Rs " + total;
   }
 }
 
 /* =========================
-CHECKOUT SAFE
+MODAL
 ========================= */
 
-window.checkout = function () {
+window.openModal = function (product) {
 
-  if (!cart.length) return alert("Cart is empty");
+  if (!modal) return;
 
-  const name = safeEl("cusName")?.value || "N/A";
-  const phone = safeEl("cusPhone")?.value || "N/A";
-  const address = safeEl("cusAddress")?.value || "N/A";
+  modal.classList.add("open");
+  overlay?.classList.add("show");
 
-  let message = `🟢 ORDER\n\n`;
+  modalImg.src = product.image;
+  modalName.innerText = product.name;
+  modalPrice.innerText = "Rs " + product.finalPrice;
 
-  cart.forEach((i, index) => {
-    message += `${index + 1}) ${i.name} x${i.qty}\n`;
-  });
+  modalAddBtn.onclick = () => {
+    addToCart(
+      product.id,
+      product.name,
+      product.finalPrice,
+      product.image
+    );
+  };
 
-  const url =
-    "https://wa.me/94752425790?text=" +
-    encodeURIComponent(message);
+  document.body.style.overflow = "hidden";
+};
 
-  window.open(url, "_blank");
+window.closeModal = function () {
+  modal?.classList.remove("open");
+  overlay?.classList.remove("show");
+  document.body.style.overflow = "auto";
 };
 
 /* =========================
-WISHLIST FIX
+WISHLIST
 ========================= */
 
 window.toggleWishlist = function (id) {
@@ -225,7 +251,7 @@ window.toggleWishlist = function (id) {
 };
 
 /* =========================
-PRODUCT RENDER SAFE
+PRODUCT RENDER
 ========================= */
 
 function renderProducts(products) {
@@ -246,43 +272,36 @@ function renderProducts(products) {
     productsDiv.innerHTML += `
       <div class="card">
 
-        <button class="wishlist-btn"
-          onclick="toggleWishlist('${p.id}')">
-          <i class="fa-solid fa-heart"></i>
+        <button onclick="toggleWishlist('${p.id}')">
+          ❤
         </button>
 
         <img src="${p.image}" />
 
-        <div class="card-content">
+        <h3>${p.name}</h3>
 
-          <h3>${p.name}</h3>
+        <p>Rs ${finalPrice}</p>
 
-          <div class="price-box">
-            <span class="new-price">Rs ${finalPrice}</span>
-          </div>
+        <button onclick='openModal(${JSON.stringify({
+          id: p.id,
+          name: p.name,
+          image: p.image,
+          finalPrice
+        })})'>
+          View
+        </button>
 
-          <div class="card-buttons">
+        <button onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">
+          Add
+        </button>
 
-            <button class="view-btn"
-              onclick="openModal(${JSON.stringify({ ...p, finalPrice })})">
-              View
-            </button>
-
-            <button class="add-cart-btn"
-              onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">
-              Add
-            </button>
-
-          </div>
-
-        </div>
       </div>
     `;
   });
 }
 
 /* =========================
-FIREBASE SAFE
+FIREBASE LOAD
 ========================= */
 
 onSnapshot(collection(db, "products"), snap => {
@@ -299,7 +318,7 @@ onSnapshot(collection(db, "products"), snap => {
 });
 
 /* =========================
-INIT FIX
+INIT
 ========================= */
 
 window.addEventListener("DOMContentLoaded", () => {
