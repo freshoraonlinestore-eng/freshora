@@ -1483,3 +1483,33 @@ padding:14px;
 }
 
 }
+
+.image-gallery{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+  overflow-x:auto;
+  padding:4px 0;
+}
+
+.image-gallery img{
+  width:60px;
+  height:60px;
+  border-radius:10px;
+  object-fit:cover;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:.2s;
+}
+
+.image-gallery img:hover{
+  border-color:#25D366;
+  transform:scale(1.05);
+}
+
+/* rating preview fix */
+.rating-preview{
+  margin-bottom:10px;
+  color:#ffb400;
+  font-weight:600;
+}
