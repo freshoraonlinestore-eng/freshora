@@ -6,7 +6,7 @@ import {
 } from "./firebase.js";
 
 /* =========================
-   ELEMENTS
+STATE
 ========================= */
 
 const productsDiv = document.getElementById("products");
@@ -14,552 +14,182 @@ const loadingScreen = document.getElementById("loadingScreen");
 const cartDrawer = document.getElementById("cartDrawer");
 const overlay = document.getElementById("overlay");
 
-/* =========================
-   STATE
-========================= */
-
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-let wishlist =
-  JSON.parse(localStorage.getItem("wishlist")) || [];
-
-let reviews =
-  JSON.parse(localStorage.getItem("reviews")) || {};
-
+let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+let reviews = JSON.parse(localStorage.getItem("reviews")) || {};
 let allProducts = [];
 
 /* =========================
-   HELPERS
+UTILS
 ========================= */
 
-function safeNumber(value) {
-  const num = Number(value);
-  return isNaN(num) ? 0 : num;
-}
+const safeNumber = v => isNaN(Number(v)) ? 0 : Number(v);
 
-function saveCart() {
+function saveCart(){
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartCount();
   renderCart();
 }
 
-function saveWishlist() {
-  localStorage.setItem(
-    "wishlist",
-    JSON.stringify(wishlist)
-  );
-
+function saveWishlist(){
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
   renderProducts(allProducts);
 }
 
-function saveReviews() {
-  localStorage.setItem(
-    "reviews",
-    JSON.stringify(reviews)
-  );
-}
-
-function hideLoading() {
-  if (!loadingScreen) return;
-
-  loadingScreen.style.opacity = "0";
-
-  setTimeout(() => {
-    loadingScreen.style.display = "none";
-  }, 300);
+function saveReviews(){
+  localStorage.setItem("reviews", JSON.stringify(reviews));
 }
 
 /* =========================
-   DARK MODE
+DARK MODE
 ========================= */
 
-window.toggleDarkMode = function () {
+window.toggleDarkMode = function(){
   document.body.classList.toggle("dark");
-
-  const dark =
-    document.body.classList.contains("dark");
-
-  localStorage.setItem("darkMode", dark);
-
+  localStorage.setItem("darkMode", document.body.classList.contains("dark"));
   updateDarkIcon();
 };
 
-function updateDarkIcon() {
-  const btn =
-    document.getElementById("darkModeBtn");
+function updateDarkIcon(){
+  const btn = document.getElementById("darkModeBtn");
+  if(!btn) return;
 
-  if (!btn) return;
-
-  const dark =
-    document.body.classList.contains("dark");
-
-  btn.innerHTML = dark
+  btn.innerHTML = document.body.classList.contains("dark")
     ? '<i class="fa-solid fa-sun"></i>'
     : '<i class="fa-solid fa-moon"></i>';
 }
 
 /* =========================
-   CART COUNT
+CART
 ========================= */
 
-function updateCartCount() {
-  const total = cart.reduce(
-    (sum, item) => sum + safeNumber(item.qty),
-    0
-  );
-
-  const el =
-    document.getElementById("floatingCartCount");
-
-  if (el) el.innerText = total;
+function updateCartCount(){
+  const total = cart.reduce((s,i)=>s + safeNumber(i.qty),0);
+  document.getElementById("floatingCartCount").innerText = total;
 }
 
-/* =========================
-   WISHLIST
-========================= */
-
-window.toggleWishlist = function (id) {
-  const exists = wishlist.includes(id);
-
-  if (exists) {
-    wishlist = wishlist.filter(i => i !== id);
-  } else {
-    wishlist.push(id);
-  }
-
-  saveWishlist();
-};
-
-function isWishlisted(id) {
-  return wishlist.includes(id);
-}
-
-/* =========================
-   REVIEWS
-========================= */
-
-function getProductReviews(productId) {
-  return reviews[productId] || [];
-}
-
-function getAverageRating(productId) {
-  const list = getProductReviews(productId);
-
-  if (list.length === 0) return 5;
-
-  const total = list.reduce(
-    (sum, r) => sum + safeNumber(r.rating),
-    0
-  );
-
-  return (total / list.length).toFixed(1);
-}
-
-window.submitReview = function (productId) {
-  const input =
-    document.getElementById("reviewText");
-
-  const rating =
-    document.getElementById("reviewRating");
-
-  if (!input || !rating) return;
-
-  const text = input.value.trim();
-
-  if (text === "") {
-    alert("Write a review");
-    return;
-  }
-
-  if (!reviews[productId]) {
-    reviews[productId] = [];
-  }
-
-  reviews[productId].push({
-    text,
-    rating: safeNumber(rating.value),
-    date: new Date().toLocaleDateString()
-  });
-
-  saveReviews();
-
-  input.value = "";
-
-  renderReviews(productId);
-  renderProducts(allProducts);
-};
-
-function renderReviews(productId) {
-  const reviewList =
-    document.getElementById("reviewList");
-
-  if (!reviewList) return;
-
-  const list = getProductReviews(productId);
-
-  if (list.length === 0) {
-    reviewList.innerHTML =
-      `<p class="empty-review">No reviews yet</p>`;
-    return;
-  }
-
-  reviewList.innerHTML = "";
-
-  list.reverse().forEach(r => {
-    reviewList.innerHTML += `
-      <div class="review-item">
-        <div class="review-stars">
-          ${"⭐".repeat(r.rating)}
-        </div>
-
-        <p>${r.text}</p>
-
-        <small>${r.date}</small>
-      </div>
-    `;
-  });
-}
-
-/* =========================
-   CART ACTIONS
-========================= */
-
-window.addToCart = function (
-  id,
-  name,
-  price,
-  image
-) {
-  const existing =
-    cart.find(i => i.id === id);
-
-  if (existing) {
-    existing.qty += 1;
-  } else {
-    cart.push({
-      id,
-      name,
-      price: safeNumber(price),
-      image,
-      qty: 1
-    });
-  }
-
+window.addToCart = function(id,name,price,image){
+  const ex = cart.find(i=>i.id===id);
+  if(ex) ex.qty++;
+  else cart.push({id,name,price:safeNumber(price),image,qty:1});
   saveCart();
 };
 
-window.removeItem = function (index) {
-  cart.splice(index, 1);
-  saveCart();
-};
-
-window.increaseQty = function (index) {
-  if (cart[index]) {
-    cart[index].qty++;
-    saveCart();
-  }
-};
-
-window.decreaseQty = function (index) {
-  if (!cart[index]) return;
-
-  cart[index].qty--;
-
-  if (cart[index].qty <= 0) {
-    cart.splice(index, 1);
-  }
-
-  saveCart();
-};
-
-window.clearCart = function () {
-  if (!confirm("Clear cart?")) return;
-
-  cart = [];
-  saveCart();
-};
-
-/* =========================
-   RENDER CART
-========================= */
-
-function renderCart() {
-  const cartItems =
-    document.getElementById("cartItems");
-
-  const cartTotal =
-    document.getElementById("cartTotal");
-
-  if (!cartItems) return;
-
-  cartItems.innerHTML = "";
-
-  if (cart.length === 0) {
-    cartItems.innerHTML =
-      `<p class="empty">Cart empty</p>`;
-
-    cartTotal.innerText =
-      "Total: Rs 0";
-
-    return;
-  }
-
-  let total = 0;
-
-  cart.forEach((item, index) => {
-    const price =
-      safeNumber(item.price);
-
-    const qty =
-      safeNumber(item.qty);
-
-    total += price * qty;
-
-    cartItems.innerHTML += `
-      <div class="cart-item">
-
-        <img src="${item.image}" />
-
-        <div class="cart-details">
-          <h4>${item.name}</h4>
-
-          <p>
-            Rs ${price.toLocaleString()}
-          </p>
-
-          <div class="qty-box">
-            <button onclick="decreaseQty(${index})">-</button>
-
-            <span>${qty}</span>
-
-            <button onclick="increaseQty(${index})">+</button>
-          </div>
-        </div>
-
-        <button
-          class="remove-btn"
-          onclick="removeItem(${index})"
-        >
-          ✕
-        </button>
-
-      </div>
-    `;
-  });
-
-  cartTotal.innerText =
-    "Total: Rs " + total.toLocaleString();
-}
-
-/* =========================
-   CART TOGGLE
-========================= */
-
-window.toggleCart = function () {
+window.toggleCart = function(){
   cartDrawer.classList.toggle("open");
-
   overlay.classList.toggle("show");
-
-  document.body.style.overflow =
-    cartDrawer.classList.contains("open")
-      ? "hidden"
-      : "auto";
-
+  document.body.style.overflow = cartDrawer.classList.contains("open") ? "hidden":"auto";
   renderCart();
 };
 
 /* =========================
-   WHATSAPP CHECKOUT
+WISHLIST
 ========================= */
 
-window.checkout = function () {
-  if (cart.length === 0) {
-    alert("Cart is empty");
-    return;
-  }
+window.toggleWishlist = function(id){
+  wishlist = wishlist.includes(id)
+    ? wishlist.filter(i=>i!==id)
+    : [...wishlist,id];
 
-  const name =
-    document.getElementById("cusName")?.value ||
-    "N/A";
+  saveWishlist();
+};
 
-  const phone =
-    document.getElementById("cusPhone")?.value ||
-    "N/A";
+const isWishlisted = id => wishlist.includes(id);
 
-  const address =
-    document.getElementById("cusAddress")?.value ||
-    "N/A";
+/* =========================
+REVIEWS
+========================= */
 
-  const orderId =
-    "FR-" + Date.now();
+function getReviews(id){
+  return reviews[id] || [];
+}
 
-  const date =
-    new Date().toLocaleString();
+function avgRating(id){
+  const r = getReviews(id);
+  if(!r.length) return 5;
+  return (r.reduce((s,i)=>s+i.rating,0)/r.length).toFixed(1);
+}
 
-  let subtotal = 0;
+window.submitReview = function(pid){
+  const text = document.getElementById("reviewText").value.trim();
+  const rating = document.getElementById("reviewRating").value;
 
-  let message =
-    `🟢 FRESHORA NEW ORDER 🟢\n\n`;
+  if(!text) return alert("Write review");
 
-  message +=
-    `📦 Order ID: ${orderId}\n`;
+  if(!reviews[pid]) reviews[pid]=[];
 
-  message +=
-    `📅 Date: ${date}\n\n`;
-
-  message +=
-    `👤 CUSTOMER DETAILS\n`;
-
-  message +=
-    `Name: ${name}\nPhone: ${phone}\nAddress: ${address}\n\n`;
-
-  message += `🛒 ITEMS\n`;
-
-  cart.forEach((item, i) => {
-    const itemTotal =
-      item.price * item.qty;
-
-    subtotal += itemTotal;
-
-    message +=
-      `${i + 1}) ${item.name} x${item.qty} = LKR ${itemTotal.toLocaleString()}\n`;
+  reviews[pid].push({
+    text,
+    rating:safeNumber(rating),
+    date:new Date().toLocaleDateString()
   });
 
-  const delivery = 375;
-
-  const total =
-    subtotal + delivery;
-
-  message += `\n💰 BILL SUMMARY\n`;
-
-  message +=
-    `Subtotal: LKR ${subtotal.toLocaleString()}\n`;
-
-  message +=
-    `Delivery: LKR ${delivery}\n`;
-
-  message +=
-    `TOTAL: LKR ${total.toLocaleString()}\n\n`;
-
-  message +=
-    `🚚 Payment: Cash on Delivery\n`;
-
-  message +=
-    `📍 Freshora Online Store\n`;
-
-  const url =
-    "https://wa.me/94752425790?text=" +
-    encodeURIComponent(message);
-
-  window.open(url, "_blank");
+  saveReviews();
+  renderReviews(pid);
 };
 
 /* =========================
-   PRODUCT MODAL
+MODAL (WITH GALLERY)
 ========================= */
 
-window.openModal = function (product) {
-  const modal =
-    document.getElementById("productModal");
+window.openModal = function(p){
 
-  document.getElementById(
-    "modalImage"
-  ).src = product.image;
+  const modal = document.getElementById("productModal");
 
-  document.getElementById(
-    "modalName"
-  ).innerText = product.name;
+  document.getElementById("modalImage").src = p.image;
+  document.getElementById("modalName").innerText = p.name;
+  document.getElementById("modalPrice").innerText =
+    "Rs " + safeNumber(p.finalPrice).toLocaleString();
 
-  document.getElementById(
-    "modalPrice"
-  ).innerText =
-    "Rs " +
-    safeNumber(product.finalPrice).toLocaleString();
+  document.getElementById("modalRatingText").innerText = avgRating(p.id);
 
-  document.getElementById(
-    "modalAddBtn"
-  ).onclick = () => {
-    addToCart(
-      product.id,
-      product.name,
-      product.finalPrice,
-      product.image
-    );
+  /* gallery */
+  const gallery = document.getElementById("imageGallery");
+  gallery.innerHTML = "";
+
+  (p.images || [p.image]).forEach(img=>{
+    const el = document.createElement("img");
+    el.src = img;
+    el.onclick = ()=>document.getElementById("modalImage").src = img;
+    gallery.appendChild(el);
+  });
+
+  document.getElementById("modalAddBtn").onclick = ()=>{
+    addToCart(p.id,p.name,p.finalPrice,p.image);
   };
 
-  document.getElementById(
-    "modalRatingText"
-  ).innerText =
-    getAverageRating(product.id);
-
-  renderReviews(product.id);
-
-  document.getElementById(
-    "reviewSubmitBtn"
-  ).onclick = () => {
-    submitReview(product.id);
+  document.getElementById("reviewSubmitBtn").onclick = ()=>{
+    submitReview(p.id);
   };
 
   modal.classList.add("show");
 };
 
-window.closeModal = function () {
-
-  document
-    .getElementById("productModal")
-    .classList.remove("show");
-
+window.closeModal = function(){
+  document.getElementById("productModal").classList.remove("show");
 };
 
 /* =========================
-   PRODUCTS
+PRODUCTS
 ========================= */
 
-function renderProducts(products) {
-  if (!productsDiv) return;
-
+function renderProducts(products){
   productsDiv.innerHTML = "";
 
-  products.forEach(p => {
-    const price =
-      safeNumber(p.price);
+  products.forEach(p=>{
 
-    const discount =
-      safeNumber(p.discount);
+    const price = safeNumber(p.price);
+    const discount = safeNumber(p.discount);
 
-    const finalPrice =
-      discount > 0
-        ? Math.round(
-            price -
-            (price * discount) / 100
-          )
-        : price;
-
-    const avgRating =
-      getAverageRating(p.id);
+    const finalPrice = discount
+      ? Math.round(price - price*discount/100)
+      : price;
 
     productsDiv.innerHTML += `
       <div class="card">
 
-        ${
-          discount > 0
-            ? `
-          <div class="discount-badge">
-            -${discount}%
-          </div>
-        `
-            : ""
-        }
-
-        <button
-          class="wishlist-btn"
-          onclick="toggleWishlist('${p.id}')"
-        >
-          <i class="${
-            isWishlisted(p.id)
-              ? "fa-solid"
-              : "fa-regular"
-          } fa-heart"></i>
+        <button class="wishlist-btn" onclick="toggleWishlist('${p.id}')">
+          <i class="${isWishlisted(p.id)?'fa-solid':'fa-regular'} fa-heart"></i>
         </button>
 
         <img src="${p.image}" />
@@ -568,50 +198,22 @@ function renderProducts(products) {
 
           <h3>${p.name}</h3>
 
-          <div class="rating-preview">
-            ⭐ ${avgRating}
-          </div>
+          <div class="rating-preview">⭐ ${avgRating(p.id)}</div>
 
           <div class="price-box">
-
-            ${
-              discount > 0
-                ? `
-              <span class="old-price">
-                Rs ${price.toLocaleString()}
-              </span>
-            `
-                : ""
-            }
-
-            <span class="new-price">
-              Rs ${finalPrice.toLocaleString()}
-            </span>
-
+            <span class="new-price">Rs ${finalPrice}</span>
           </div>
 
           <div class="card-buttons">
 
-            <button
-              class="view-btn"
-              onclick='openModal(${JSON.stringify({
-                ...p,
-                finalPrice
-              })})'
-            >
+            <button class="view-btn"
+              onclick='openModal(${JSON.stringify({...p,finalPrice})})'>
               View
             </button>
 
-            <button
-              class="add-cart-btn"
-              onclick="addToCart(
-                '${p.id}',
-                '${p.name}',
-                ${finalPrice},
-                '${p.image}'
-              )"
-            >
-              Add to Cart
+            <button class="add-cart-btn"
+              onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">
+              Add
             </button>
 
           </div>
@@ -624,239 +226,28 @@ function renderProducts(products) {
 }
 
 /* =========================
-   FIREBASE
+FIREBASE
 ========================= */
 
-onSnapshot(
-  collection(db, "products"),
-  snapshot => {
-    allProducts = [];
+onSnapshot(collection(db,"products"),snap=>{
+  allProducts = [];
+  snap.forEach(d=>{
+    allProducts.push({id:d.id,...d.data()});
+  });
 
-    snapshot.forEach(doc => {
-      allProducts.push({
-        id: doc.id,
-        ...doc.data()
-      });
-    });
-
-    renderProducts(allProducts);
-
-    hideLoading();
-  }
-);
-
-/* =========================
-   INIT
-========================= */
-
-window.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    const dark =
-      localStorage.getItem("darkMode") ===
-      "true";
-
-    if (dark) {
-      document.body.classList.add("dark");
-    }
-
-    updateDarkIcon();
-    updateCartCount();
-    renderCart();
-  }
-);
-
-window.addEventListener("load", () => {
-  setTimeout(hideLoading, 1200);
+  renderProducts(allProducts);
+  loadingScreen.style.display="none";
 });
 
 /* =========================
-   LIVE SEARCH
+INIT
 ========================= */
 
-const searchInput =
-  document.getElementById("searchInput");
-
-const categoryFilter =
-  document.getElementById("categoryFilter");
-
-const priceFilter =
-  document.getElementById("priceFilter");
-
-const discountFilter =
-  document.getElementById("discountFilter");
-
-function filterProducts() {
-
-  let filtered = [...allProducts];
-
-  /* SEARCH */
-
-  const search =
-    searchInput?.value
-      .toLowerCase()
-      .trim();
-
-  if (search) {
-
-    filtered = filtered.filter(p =>
-      p.name
-        ?.toLowerCase()
-        .includes(search)
-    );
-
+window.addEventListener("DOMContentLoaded",()=>{
+  if(localStorage.getItem("darkMode")==="true"){
+    document.body.classList.add("dark");
   }
 
-  /* CATEGORY */
-
-  const category =
-    categoryFilter?.value;
-
-  if (
-    category &&
-    category !== "all"
-  ) {
-
-    filtered = filtered.filter(
-      p => p.category === category
-    );
-
-  }
-
-  /* PRICE */
-
-  const price =
-    priceFilter?.value;
-
-  if (
-    price &&
-    price !== "all"
-  ) {
-
-    filtered = filtered.filter(
-      p =>
-        safeNumber(p.price) <=
-        safeNumber(price)
-    );
-
-  }
-
-  /* DISCOUNT */
-
-  const discount =
-    discountFilter?.value;
-
-  if (
-    discount &&
-    discount !== "all"
-  ) {
-
-    filtered = filtered.filter(
-      p =>
-        safeNumber(p.discount) >=
-        safeNumber(discount)
-    );
-
-  }
-
-  renderProducts(filtered);
-
-}
-
-/* =========================
-   FILTER EVENTS
-========================= */
-
-searchInput?.addEventListener(
-  "input",
-  filterProducts
-);
-
-categoryFilter?.addEventListener(
-  "change",
-  filterProducts
-);
-
-priceFilter?.addEventListener(
-  "change",
-  filterProducts
-);
-
-discountFilter?.addEventListener(
-  "change",
-  filterProducts
-);
-
-/* =========================
-   MODAL OUTSIDE CLICK
-========================= */
-
-window.addEventListener(
-  "click",
-  e => {
-
-    const modal =
-      document.getElementById(
-        "productModal"
-      );
-
-    if (
-      e.target === modal
-    ) {
-
-      closeModal();
-
-    }
-
-  }
-);
-
-/* =========================
-   ESC CLOSE
-========================= */
-
-window.addEventListener(
-  "keydown",
-  e => {
-
-    if (
-      e.key === "Escape"
-    ) {
-
-      closeModal();
-
-      if (
-        cartDrawer.classList.contains(
-          "open"
-        )
-      ) {
-
-        toggleCart();
-
-      }
-
-    }
-
-  }
-);
-
-/* =========================
-   IMAGE FALLBACK
-========================= */
-
-document.addEventListener(
-  "error",
-  function (e) {
-
-    if (
-      e.target.tagName === "IMG"
-    ) {
-
-      e.target.src =
-        "placeholder.png";
-
-    }
-
-  },
-  true
-);
+  updateCartCount();
+  updateDarkIcon();
+});
