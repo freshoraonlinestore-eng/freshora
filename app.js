@@ -13,7 +13,7 @@ const loadingScreen = document.getElementById("loadingScreen");
 const cartDrawer = document.getElementById("cartDrawer");
 const overlay = document.getElementById("overlay");
 const cartBtn = document.querySelector(".floating-cart");
-const searchInput = document.querySelector(".search-box input");
+const searchInput = document.getElementById("searchInput");
 
 /* =========================
    STATE
@@ -45,6 +45,7 @@ function loadProducts() {
 
   onSnapshot(ref, (snapshot) => {
     products = [];
+
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
@@ -54,7 +55,7 @@ function loadProducts() {
 }
 
 /* =========================
-   PRODUCTS
+   PRODUCTS (FIXED EVENT SYSTEM)
 ========================= */
 
 function renderProducts(list) {
@@ -66,53 +67,22 @@ function renderProducts(list) {
 
     card.innerHTML = `
       <img src="${p.image || 'https://via.placeholder.com/300'}">
-      <h3>${p.name}</h3>
+      <h3>${p.name || "No Name"}</h3>
       <p>Rs. ${Number(p.price || 0)}</p>
       <button class="add-btn" data-id="${p.id}">Add to Cart</button>
     `;
 
     productsDiv.appendChild(card);
   });
-
-  document.querySelectorAll(".add-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      addToCart(e.target.dataset.id);
-    });
-  });
 }
 
-/* =========================
-   TOAST SYSTEM (SAFE ADD)
-========================= */
+/* 🔥 FIX: EVENT DELEGATION (NO MORE BROKEN BUTTONS) */
 
-function toast(msg){
-  const t = document.createElement("div");
-  t.innerText = msg;
-
-  t.style.cssText = `
-    position:fixed;
-    bottom:100px;
-    left:50%;
-    transform:translateX(-50%);
-    background:rgba(17,17,17,0.95);
-    color:#fff;
-    padding:10px 16px;
-    border-radius:10px;
-    z-index:9999;
-    font-size:13px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.2);
-    animation:fadeInToast .2s ease;
-  `;
-
-  document.body.appendChild(t);
-
-  setTimeout(() => {
-    t.style.opacity = "0";
-    t.style.transition = "0.3s";
-  }, 900);
-
-  setTimeout(() => t.remove(), 1200);
-}
+productsDiv.addEventListener("click", (e) => {
+  if (e.target.classList.contains("add-btn")) {
+    addToCart(e.target.dataset.id);
+  }
+});
 
 /* =========================
    CART LOGIC
@@ -323,7 +293,7 @@ function setupEvents() {
 }
 
 /* =========================
-   CART COUNT (FIXED)
+   CART COUNT
 ========================= */
 
 function renderCartCount() {
@@ -331,6 +301,37 @@ function renderCartCount() {
 
   const countEl = document.getElementById("floatingCartCount");
   if (countEl) countEl.innerText = count;
+}
+
+/* =========================
+   TOAST (GLOBAL SAFE)
+========================= */
+
+function toast(msg){
+  const t = document.createElement("div");
+  t.innerText = msg;
+
+  t.style.cssText = `
+    position:fixed;
+    bottom:100px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.9);
+    color:#fff;
+    padding:10px 16px;
+    border-radius:10px;
+    z-index:9999;
+    font-size:13px;
+  `;
+
+  document.body.appendChild(t);
+
+  setTimeout(() => {
+    t.style.opacity = "0";
+    t.style.transition = "0.3s";
+  }, 900);
+
+  setTimeout(() => t.remove(), 1200);
 }
 
 /* =========================
