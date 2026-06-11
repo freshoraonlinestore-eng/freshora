@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Freshora Online Store</title>
 
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
@@ -16,7 +16,7 @@
   <p>Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</p>
 </div>
 
-<!-- LOADING -->
+<!-- LOADING SCREEN -->
 <div id="loadingScreen" class="loading-screen">
   <div class="loader"></div>
 </div>
@@ -69,7 +69,7 @@
   </div>
 </section>
 
-<!-- PRODUCTS -->
+<!-- PRODUCT GRID -->
 <section id="products" class="products-grid"></section>
 
 <!-- FLOAT CART -->
@@ -121,7 +121,7 @@
       <i class="fa-solid fa-xmark"></i>
     </button>
 
-    <img id="modalImage" src="" />
+    <img id="modalImage" src="" alt="product" />
 
     <h2 id="modalName"></h2>
     <p id="modalPrice"></p>
@@ -135,22 +135,26 @@
       <i class="fa-regular fa-star" data-value="5"></i>
     </div>
 
-    <input type="hidden" id="reviewRating" value="5" />
-
+    <!-- REVIEW INPUT -->
     <textarea id="reviewText" placeholder="Write your review..."></textarea>
 
     <button id="reviewSubmitBtn">Submit Review</button>
 
+    <!-- REVIEWS LIST -->
     <div id="reviewList"></div>
 
+    <!-- ADD TO CART -->
     <button id="modalAddBtn">Add to Cart</button>
 
   </div>
 
 </div>
 
-<!-- FIREBASE APP -->
-<script type="module" src="app.js?v=5"></script>
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- APP JS -->
+<script type="module" src="app.js?v=6"></script>
 
 </body>
 </html>
