@@ -15,12 +15,11 @@ function showToast(msg) {
 
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
-    // Filter Listeners
+    // Listeners
     document.getElementById("searchInput")?.addEventListener("input", filterProducts);
     document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
     document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
     document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
-    // Rating Listeners
     setupStarRating();
 });
 
@@ -75,14 +74,9 @@ window.clearCart = () => { cart = []; updateCartDisplay(); };
 window.filterProducts = () => {
     const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const category = document.getElementById("categoryFilter")?.value || "all";
-    const priceLimit = document.getElementById("priceFilter")?.value || "all";
-    
-    const filtered = allProducts.filter(p => {
-        const matchSearch = p.name.toLowerCase().includes(searchTerm);
-        const matchCat = (category === "all" || p.category === category);
-        const matchPrice = (priceLimit === "all" || p.price <= Number(priceLimit));
-        return matchSearch && matchCat && matchPrice;
-    });
+    const filtered = allProducts.filter(p => 
+        p.name.toLowerCase().includes(searchTerm) && (category === "all" || p.category === category)
+    );
     renderProducts(filtered);
 };
 
@@ -93,12 +87,16 @@ window.renderProducts = (products) => {
     grid.innerHTML = products.map(p => {
         const discount = Number(p.discount || 0);
         const final = discount > 0 ? Math.round(p.price - (p.price * discount / 100)) : p.price;
+        const rating = p.rating || 0; // Firebase හි rating දත්ත තිබේ නම්
         return `
             <div class="card">
                 ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
                 <img src="${p.image}" />
                 <div class="card-content">
                     <h3>${p.name}</h3>
+                    <div style="color: #ffb400; font-size: 12px; margin-bottom: 5px;">
+                        ${[1,2,3,4,5].map(i => i <= rating ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>').join('')}
+                    </div>
                     <div class="price-box">
                         ${discount > 0 ? `<span class="old-price">Rs ${p.price}</span>` : ""}
                         <span class="new-price">Rs ${final}</span>
@@ -132,12 +130,10 @@ window.openModal = (id) => {
             ${images.map(img => `<img src="${img}" class="thumbnail" onclick="document.getElementById('mainModalImg').src='${img}'" />`).join('')}
         </div>`;
 
-    // Rating Reset
     selectedRating = 0;
     updateStars(0);
 
-    const modalAddBtn = document.getElementById("modalAddBtn");
-    modalAddBtn.onclick = () => {
+    document.getElementById("modalAddBtn").onclick = () => {
         window.addToCart(p.id, p.name, final, images[0]);
         closeModal();
     };
