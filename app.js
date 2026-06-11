@@ -2,11 +2,11 @@ import { db, collection, onSnapshot } from "./firebase.js";
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
-let selectedRating = 0;
 let currentProductId = null;
 
 function showToast(msg) {
     const toast = document.getElementById("toast");
+    if(!toast) return;
     toast.innerText = msg;
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2000);
@@ -16,7 +16,7 @@ window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
 });
 
-/* CART SYSTEM - UPDATED UI */
+/* CART SYSTEM */
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
     const cartTotal = document.getElementById("cartTotal");
@@ -46,9 +46,30 @@ window.updateCartDisplay = () => {
     localStorage.setItem("cart", JSON.stringify(cart));
 };
 
-/* PRODUCT RENDER - WITH DISCOUNT TAG */
+window.addToCart = (id, name, price, image) => {
+    const existing = cart.find(i => i.id === id);
+    if (existing) {
+        existing.qty++;
+    } else {
+        cart.push({ id, name, price: Number(price), image, qty: 1 });
+    }
+    updateCartDisplay();
+    showToast("Added to cart 🛒");
+};
+
+window.changeQty = (i, d) => {
+    cart[i].qty += d;
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+    updateCartDisplay();
+};
+
+window.removeFromCart = (i) => { cart.splice(i, 1); updateCartDisplay(); };
+window.clearCart = () => { cart = []; updateCartDisplay(); };
+
+/* PRODUCT RENDER */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
+    if (!grid) return;
     grid.innerHTML = products.map(p => {
         const discount = Number(p.discount || 0);
         const final = discount > 0 ? Math.round(p.price - (p.price * discount / 100)) : p.price;
@@ -71,20 +92,29 @@ window.renderProducts = (products) => {
     }).join("");
 };
 
-/* MODAL FIX - OPEN ON VIEW CLICK */
+/* MODAL & GALLERY */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
     currentProductId = id;
 
+    const discount = Number(p.discount || 0);
+    const final = discount > 0 ? Math.round(p.price - (p.price * discount / 100)) : p.price;
+
     document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalImage").src = p.image;
-    document.getElementById("modalPrice").innerText = "Rs " + (p.price - (p.price * (p.discount || 0) / 100));
+    document.getElementById("modalPrice").innerText = "Rs " + final;
+    document.getElementById("modalDesc").innerText = p.description || "No description provided.";
     
-    // Add logic to Add Button
+    // Gallery Logic
+    const images = p.images || [p.image];
+    document.getElementById("galleryContainer").innerHTML = `
+        <img src="${images[0]}" class="main-img" id="mainModalImg" />
+        <div class="thumbnail-grid">
+            ${images.map(img => `<img src="${img}" class="thumbnail" onclick="document.getElementById('mainModalImg').src='${img}'" />`).join('')}
+        </div>`;
+
     document.getElementById("modalAddBtn").onclick = () => {
-        addToCart(p.id, p.name, (p.price - (p.price * (p.discount || 0) / 100)), p.image);
-        closeModal();
+        window.addToCart(p.id, p.name, final, images[0]);
     };
 
     document.getElementById("productModal").classList.add("show");
