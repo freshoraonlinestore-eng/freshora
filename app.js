@@ -1,5 +1,5 @@
 /* =========================
-SERVICE WORKER (CACHE FIX)
+SERVICE WORKER
 ========================= */
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js")
@@ -18,9 +18,10 @@ STATE
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 let selectedRating = 0;
+let currentProductId = null;
 
 /* =========================
-TOAST SYSTEM
+TOAST
 ========================= */
 function showToast(msg) {
     const toast = document.getElementById("toast");
@@ -29,13 +30,11 @@ function showToast(msg) {
     toast.innerText = msg;
     toast.classList.add("show");
 
-    setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2000);
+    setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
 /* =========================
-CART SYSTEM
+CART
 ========================= */
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
@@ -69,7 +68,7 @@ window.updateCartDisplay = () => {
                     </div>
 
                     <button class="remove-btn" onclick="removeFromCart(${index})">
-                        <i class="fa fa-xmark"></i>
+                        ✕
                     </button>
                 </div>
             `;
@@ -144,7 +143,6 @@ window.renderProducts = (products) => {
 
         return `
             <div class="card">
-
                 ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
                 <img src="${p.image}" />
@@ -168,11 +166,13 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL
+MODAL (FIXED)
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
+
+    currentProductId = id;
 
     const finalPrice = Math.round(p.price - (p.price * (p.discount || 0) / 100));
 
@@ -180,31 +180,33 @@ window.openModal = (id) => {
     document.getElementById("modalImage").src = p.image;
     document.getElementById("modalPrice").innerText = "Rs " + finalPrice;
 
+    document.getElementById("reviewText").value = "";
     selectedRating = 0;
     resetStars();
 
-    loadReviews(p.id);
+    loadReviews(id);
 
     document.getElementById("modalAddBtn").onclick = () => {
         addToCart(p.id, p.name, finalPrice, p.image);
         closeModal();
     };
 
-    setupStars();
-
     document.getElementById("reviewSubmitBtn").onclick = () => {
-        submitReview(p.id);
+        submitReview(currentProductId);
     };
+
+    setupStars();
 
     document.getElementById("productModal").classList.add("show");
 };
 
 window.closeModal = () => {
     document.getElementById("productModal")?.classList.remove("show");
+    currentProductId = null;
 };
 
 /* =========================
-⭐ STAR RATING
+⭐ STAR SYSTEM (FIXED)
 ========================= */
 function setupStars() {
     document.querySelectorAll(".star-rating i").forEach(star => {
@@ -227,7 +229,7 @@ function resetStars() {
 }
 
 /* =========================
-REVIEWS SYSTEM (PRO)
+REVIEWS (FIXED PER PRODUCT)
 ========================= */
 function submitReview(productId) {
     const text = document.getElementById("reviewText").value;
@@ -271,11 +273,8 @@ window.loadReviews = (productId) => {
         <h4>⭐ ${avg} / 5 (${reviews.length})</h4>
         ${reviews.map(r => `
             <div class="review-item">
-                <div class="review-header">
-                    <span class="review-user">${"⭐".repeat(r.rating)}</span>
-                    <small>${r.date}</small>
-                </div>
-                <div class="review-text">${r.text}</div>
+                <div>${"⭐".repeat(r.rating)}</div>
+                <div>${r.text}</div>
             </div>
         `).join("")}
     `;
@@ -300,10 +299,7 @@ window.checkout = () => {
     const phone = document.getElementById("cusPhone")?.value;
     const address = document.getElementById("cusAddress")?.value;
 
-    if (!name || !phone || !address) {
-        showToast("Fill details!");
-        return;
-    }
+    if (!name || !phone || !address) return showToast("Fill details!");
 
     let subtotal = 0;
     cart.forEach(i => subtotal += i.price * i.qty);
@@ -311,8 +307,7 @@ window.checkout = () => {
     const delivery = 375;
     const total = subtotal + delivery;
 
-    let msg = `🟢 ORDER%0A`;
-    msg += `Name: ${name}%0APhone: ${phone}%0A`;
+    let msg = `🟢 ORDER%0AName:${name}%0A`;
 
     cart.forEach((i, k) => {
         msg += `${k + 1}) ${i.name} x${i.qty}%0A`;
