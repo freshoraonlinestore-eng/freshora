@@ -1,17 +1,460 @@
-const CACHE_NAME = "freshora-cache-v1";
+/* =========================
+ROOT VARIABLES
+========================= */
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #111111;
+  --muted: #777777;
 
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
+  --primary: #111111;
+  --green: #25d366;
+  --danger: #ff3b30;
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(keys.map((key) => caches.delete(key)));
-    })
-  );
-});
+  --border: #ececec;
 
-self.addEventListener("fetch", (event) => {
-  event.respondWith(fetch(event.request));
-});
+  --radius: 16px;
+
+  --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* DARK MODE */
+body.dark {
+  --bg: #0f1115;
+  --card: #1a1d24;
+  --text: #ffffff;
+  --muted: #aaaaaa;
+  --border: #2a2f3a;
+}
+
+/* =========================
+GLOBAL RESET
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: 0.3s;
+}
+
+/* =========================
+TOP BANNER
+========================= */
+.top-banner {
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 8px;
+  font-size: 13px;
+}
+
+/* =========================
+HEADER
+========================= */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--card);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow);
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.logo-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* SEARCH */
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.search-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+}
+
+/* ICON BTN */
+.icon-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* =========================
+FILTERS
+========================= */
+.advanced-search {
+  padding: 12px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.filter-grid select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+}
+
+/* =========================
+PRODUCT GALLERY
+========================= */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: 0.25s;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+}
+
+.card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 12px;
+}
+
+.card h3 {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.price-box {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.old-price {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.new-price {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--green);
+}
+
+/* BUTTONS */
+.card-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.card-buttons button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.card-buttons button:first-child {
+  background: var(--bg);
+}
+
+.card-buttons button:last-child {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* DISCOUNT */
+.discount-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 10px;
+}
+
+/* =========================
+FLOAT CART
+========================= */
+.floating-cart {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 50%;
+}
+
+/* =========================
+CART
+========================= */
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 320px;
+  height: 100%;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  z-index: 2000;
+}
+
+.cart-drawer.open {
+  right: 0;
+}
+
+.cart-header {
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* FIX IMPORTANT (cart-items ID used in JS) */
+#cartItems {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.cart-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+}
+
+.qty-box {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.qty-box button {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 3px 8px;
+}
+
+/* REMOVE */
+.remove-btn {
+  background: var(--danger);
+  border: none;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+/* CHECKOUT */
+.checkout-form {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkout-form input,
+.checkout-form textarea {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.sticky-checkout {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.checkout-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.checkout-btn {
+  flex: 1;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 10px;
+}
+
+.clear-btn {
+  flex: 1;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+
+/* =========================
+MODAL
+========================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--card);
+  padding: 12px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+}
+
+.modal-content img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+/* =========================
+LOADER
+========================= */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ddd;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================
+⭐ STAR RATING UI (NEW)
+========================= */
+
+.star-rating {
+  display: flex;
+  gap: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.star-rating i {
+  color: #ccc;
+  transition: 0.2s;
+}
+
+.star-rating i.active {
+  color: #ffb400;
+}
+
+.modal-rating-stars {
+  display: flex;
+  gap: 3px;
+  color: #ffb400;
+}
+
+/* =========================
+RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .cart-drawer {
+    width: 100%;
+  }
+}
