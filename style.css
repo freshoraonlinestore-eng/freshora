@@ -1191,42 +1191,30 @@ PREMIUM BUTTONS
 
 .view-btn,
 .add-cart-btn{
-
-height:46px;
-
-border-radius:14px;
-
-font-size:14px;
+  height: 38px;          /* 46px සිට 38px දක්වා අඩු කළා */
+  border-radius: 10px;   /* 14px සිට 10px දක්වා අඩු කළා */
+  font-size: 13px;       /* 14px සිට 13px දක්වා අකුරු ප්‍රමාණය තරමක් අඩු කළා */
 }
 
 .view-btn{
-
-background:#f3f4f6;
-
-color:#111;
+  background: #f3f4f6;
+  color: #111;
 }
 
 body.dark .view-btn{
-
-background:#262629;
-
-color:#fff;
+  background: #262629;
+  color: #fff;
 }
 
 .add-cart-btn{
-
-background:
-linear-gradient(
-135deg,
-#111,
-#2c2c2c
-);
+  background: linear-gradient(135deg, #111, #2c2c2c);
 }
 
 .add-cart-btn:hover,
 .view-btn:hover{
-transform:translateY(-3px);
+  transform: translateY(-2px); /* hover effect එක තරමක් සියුම් කළා */
 }
+
 
 /* =========================
 FLOATING CART
