@@ -1,19 +1,42 @@
+/* =========================
+SERVICE WORKER (CACHE FIX)
+========================= */
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js")
         .then(() => console.log("SW Registered"))
         .catch(err => console.log("SW Error", err));
 }
 
+/* =========================
+FIREBASE
+========================= */
 import { db, collection, onSnapshot } from "./firebase.js";
 
+/* =========================
+STATE
+========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
-let selectedRating = 5;
+let selectedRating = 0;
+
+/* =========================
+TOAST SYSTEM
+========================= */
+function showToast(msg) {
+    const toast = document.getElementById("toast");
+    if (!toast) return;
+
+    toast.innerText = msg;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
 
 /* =========================
 CART SYSTEM
 ========================= */
-
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
     const cartTotal = document.getElementById("cartTotal");
@@ -33,20 +56,20 @@ window.updateCartDisplay = () => {
 
             return `
                 <div class="cart-item">
-                    <img src="${item.image}" alt="${item.name}">
+                    <img src="${item.image}" />
                     <div class="cart-details">
                         <h4>${item.name}</h4>
                         <p>Rs ${item.price * item.qty}</p>
 
                         <div class="qty-box">
-                            <button onclick="changeQty(${index}, -1)">-</button>
+                            <button onclick="changeQty(${index},-1)">-</button>
                             <span>${item.qty}</span>
-                            <button onclick="changeQty(${index}, 1)">+</button>
+                            <button onclick="changeQty(${index},1)">+</button>
                         </div>
                     </div>
 
                     <button class="remove-btn" onclick="removeFromCart(${index})">
-                        <i class="fa-solid fa-xmark"></i>
+                        <i class="fa fa-xmark"></i>
                     </button>
                 </div>
             `;
@@ -57,33 +80,24 @@ window.updateCartDisplay = () => {
     localStorage.setItem("cart", JSON.stringify(cart));
 };
 
-window.changeQty = (index, delta) => {
-    if (!cart[index]) return;
-
-    cart[index].qty += delta;
-
-    if (cart[index].qty <= 0) {
-        cart.splice(index, 1);
-    }
-
-    updateCartDisplay();
-};
-
 window.addToCart = (id, name, price, image) => {
-    const existing = cart.find(item => item.id === id);
+    const existing = cart.find(i => i.id === id);
 
-    if (existing) {
-        existing.qty += 1;
-    } else {
-        cart.push({ id, name, price: Number(price), image, qty: 1 });
-    }
+    if (existing) existing.qty++;
+    else cart.push({ id, name, price: Number(price), image, qty: 1 });
 
     updateCartDisplay();
-    alert("Added to cart!");
+    showToast("Added to cart 🛒");
 };
 
-window.removeFromCart = (index) => {
-    cart.splice(index, 1);
+window.changeQty = (i, d) => {
+    cart[i].qty += d;
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+    updateCartDisplay();
+};
+
+window.removeFromCart = (i) => {
+    cart.splice(i, 1);
     updateCartDisplay();
 };
 
@@ -93,22 +107,21 @@ window.clearCart = () => {
 };
 
 /* =========================
-FILTER SYSTEM
+FILTER
 ========================= */
-
 window.filterProducts = () => {
-    const searchQuery = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const category = document.getElementById("categoryFilter")?.value || "all";
-    const priceLimit = document.getElementById("priceFilter")?.value || "all";
-    const discountLimit = document.getElementById("discountFilter")?.value || "all";
+    const price = document.getElementById("priceFilter")?.value || "all";
+    const discount = document.getElementById("discountFilter")?.value || "all";
 
     const filtered = allProducts.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery);
-        const matchesCategory = category === "all" || p.category === category;
-        const matchesPrice = priceLimit === "all" || Number(p.price) <= Number(priceLimit);
-        const matchesDiscount = discountLimit === "all" || Number(p.discount || 0) >= Number(discountLimit);
-
-        return matchesSearch && matchesCategory && matchesPrice && matchesDiscount;
+        return (
+            p.name.toLowerCase().includes(search) &&
+            (category === "all" || p.category === category) &&
+            (price === "all" || Number(p.price) <= Number(price)) &&
+            (discount === "all" || Number(p.discount || 0) >= Number(discount))
+        );
     });
 
     renderProducts(filtered);
@@ -117,12 +130,12 @@ window.filterProducts = () => {
 /* =========================
 PRODUCT RENDER
 ========================= */
-
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
     if (!grid) return;
 
     grid.innerHTML = products.map(p => {
+
         const original = Number(p.price);
         const discount = Number(p.discount || 0);
         const final = discount > 0
@@ -131,9 +144,10 @@ window.renderProducts = (products) => {
 
         return `
             <div class="card">
+
                 ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
-                <img src="${p.image}" alt="${p.name}">
+                <img src="${p.image}" />
 
                 <div class="card-content">
                     <h3>${p.name}</h3>
@@ -154,9 +168,8 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL + DETAILS
+MODAL
 ========================= */
-
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
@@ -167,11 +180,20 @@ window.openModal = (id) => {
     document.getElementById("modalImage").src = p.image;
     document.getElementById("modalPrice").innerText = "Rs " + finalPrice;
 
+    selectedRating = 0;
+    resetStars();
+
     loadReviews(p.id);
 
     document.getElementById("modalAddBtn").onclick = () => {
         addToCart(p.id, p.name, finalPrice, p.image);
         closeModal();
+    };
+
+    setupStars();
+
+    document.getElementById("reviewSubmitBtn").onclick = () => {
+        submitReview(p.id);
     };
 
     document.getElementById("productModal").classList.add("show");
@@ -181,53 +203,56 @@ window.closeModal = () => {
     document.getElementById("productModal")?.classList.remove("show");
 };
 
-window.toggleCart = () => {
-    document.getElementById("cartDrawer")?.classList.toggle("open");
-};
-
-window.toggleDarkMode = () => {
-    document.body.classList.toggle("dark");
-
-    const icon = document.querySelector("#darkModeBtn i");
-    if (!icon) return;
-
-    icon.classList.toggle("fa-moon");
-    icon.classList.toggle("fa-sun");
-};
-
 /* =========================
-⭐ STAR RATING SYSTEM
+⭐ STAR RATING
 ========================= */
-
-window.addEventListener("DOMContentLoaded", () => {
-    const stars = document.querySelectorAll("#starRating i");
-    const input = document.getElementById("reviewRating");
-
-    if (!stars.length || !input) return;
-
-    stars.forEach((star, index) => {
-        star.addEventListener("click", () => {
-            selectedRating = index + 1;
-            input.value = selectedRating;
-
-            stars.forEach((s, i) => {
-                if (i <= index) {
-                    s.classList.add("active");
-                    s.classList.remove("fa-regular");
-                    s.classList.add("fa-solid");
-                } else {
-                    s.classList.remove("active");
-                    s.classList.add("fa-regular");
-                    s.classList.remove("fa-solid");
-                }
-            });
-        });
+function setupStars() {
+    document.querySelectorAll(".star-rating i").forEach(star => {
+        star.onclick = () => {
+            selectedRating = Number(star.dataset.value);
+            highlightStars(selectedRating);
+        };
     });
-});
+}
+
+function highlightStars(r) {
+    document.querySelectorAll(".star-rating i").forEach(star => {
+        star.classList.toggle("active", Number(star.dataset.value) <= r);
+    });
+}
+
+function resetStars() {
+    selectedRating = 0;
+    document.querySelectorAll(".star-rating i").forEach(s => s.classList.remove("active"));
+}
 
 /* =========================
-REVIEWS SYSTEM
+REVIEWS SYSTEM (PRO)
 ========================= */
+function submitReview(productId) {
+    const text = document.getElementById("reviewText").value;
+
+    if (!selectedRating) return showToast("Select rating ⭐");
+    if (!text) return showToast("Write review");
+
+    const key = "reviews_" + productId;
+    const reviews = JSON.parse(localStorage.getItem(key)) || [];
+
+    reviews.push({
+        rating: selectedRating,
+        text,
+        date: new Date().toLocaleString()
+    });
+
+    localStorage.setItem(key, JSON.stringify(reviews));
+
+    document.getElementById("reviewText").value = "";
+    resetStars();
+
+    loadReviews(productId);
+
+    showToast("Review added ⭐");
+}
 
 window.loadReviews = (productId) => {
     const list = document.getElementById("reviewList");
@@ -246,45 +271,61 @@ window.loadReviews = (productId) => {
         <h4>⭐ ${avg} / 5 (${reviews.length})</h4>
         ${reviews.map(r => `
             <div class="review-item">
-                <div class="modal-rating-stars">
-                    ${Array.from({ length: 5 }, (_, i) =>
-                        `<i class="fa${i < r.rating ? 's' : 'r'} fa-star"></i>`
-                    ).join("")}
+                <div class="review-header">
+                    <span class="review-user">${"⭐".repeat(r.rating)}</span>
+                    <small>${r.date}</small>
                 </div>
-                <p>${r.text}</p>
+                <div class="review-text">${r.text}</div>
             </div>
         `).join("")}
     `;
 };
 
-document.getElementById("reviewSubmitBtn")?.addEventListener("click", () => {
-    const text = document.getElementById("reviewText")?.value;
+/* =========================
+CART TOGGLE
+========================= */
+window.toggleCart = () => {
+    document.getElementById("cartDrawer")?.classList.toggle("open");
+};
 
-    if (!text) return alert("Write review first!");
-
-    const productName = document.getElementById("modalName")?.innerText;
-    const product = allProducts.find(p => p.name === productName);
-
-    if (!product) return;
-
-    const key = "reviews_" + product.id;
-    const reviews = JSON.parse(localStorage.getItem(key)) || [];
-
-    reviews.push({
-        rating: selectedRating,
-        text
-    });
-
-    localStorage.setItem(key, JSON.stringify(reviews));
-
-    document.getElementById("reviewText").value = "";
-    loadReviews(product.id);
-});
+window.toggleDarkMode = () => {
+    document.body.classList.toggle("dark");
+};
 
 /* =========================
-FIREBASE
+CHECKOUT
 ========================= */
+window.checkout = () => {
+    const name = document.getElementById("cusName")?.value;
+    const phone = document.getElementById("cusPhone")?.value;
+    const address = document.getElementById("cusAddress")?.value;
 
+    if (!name || !phone || !address) {
+        showToast("Fill details!");
+        return;
+    }
+
+    let subtotal = 0;
+    cart.forEach(i => subtotal += i.price * i.qty);
+
+    const delivery = 375;
+    const total = subtotal + delivery;
+
+    let msg = `🟢 ORDER%0A`;
+    msg += `Name: ${name}%0APhone: ${phone}%0A`;
+
+    cart.forEach((i, k) => {
+        msg += `${k + 1}) ${i.name} x${i.qty}%0A`;
+    });
+
+    msg += `Total: Rs ${total}`;
+
+    window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
+};
+
+/* =========================
+FIREBASE LOAD
+========================= */
 onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -294,6 +335,5 @@ onSnapshot(collection(db, "products"), (snapshot) => {
     renderProducts(allProducts);
     updateCartDisplay();
 
-    const loader = document.getElementById("loadingScreen");
-    if (loader) loader.style.display = "none";
+    document.getElementById("loadingScreen")?.remove();
 });
