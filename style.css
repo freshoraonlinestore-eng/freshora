@@ -247,15 +247,12 @@ PRODUCTS GRID
 ========================= */
 
 .products-grid{
-display:grid;
-
-grid-template-columns:
-repeat(auto-fit,minmax(180px,1fr));
-
-gap:16px;
-
-padding:0 16px 120px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* 180px සිට 150px දක්වා */
+  gap: 10px; /* 16px සිට 10px දක්වා */
+  padding: 0 10px 80px; /* පෑඩිං අඩු කරන්න */
 }
+
 
 /* =========================
 PRODUCT CARD
@@ -319,16 +316,14 @@ font-weight:700;
 /* =========================
 CONTENT
 ========================= */
-
 .card-content{
-padding:14px;
+  padding: 10px; /* 14px සිට 10px දක්වා */
 }
 
 .card-content h3{
-font-size:15px;
-line-height:1.4;
+  font-size: 13px; /* 15px සිට 13px දක්වා */
+  margin-bottom: 5px; /* 10px සිට 5px දක්වා */
 
-margin-bottom:10px;
 
 display:-webkit-box;
 -webkit-line-clamp:2;
@@ -364,41 +359,37 @@ CARD BUTTONS
 ========================= */
 
 .card-buttons{
-display:flex;
-gap:8px;
-
-margin-top:14px;
+  display: flex;
+  gap: 6px;           /* 8px සිට 6px දක්වා අඩු කළා */
+  margin-top: 10px;   /* 14px සිට 10px දක්වා අඩු කළා */
 }
 
 .view-btn,
 .add-cart-btn{
-flex:1;
-
-height:44px;
-
-border-radius:12px;
-
-font-weight:700;
-
-cursor:pointer;
-
-transition:.25s;
+  flex: 1;
+  height: 36px;       /* 44px සිට 36px දක්වා උස අඩු කළා */
+  border-radius: 8px; /* 12px සිට 8px දක්වා රවුම් බව අඩු කළා */
+  font-size: 12px;    /* බොත්තමේ අකුරු ප්‍රමාණය කුඩා කළා */
+  font-weight: 700;
+  cursor: pointer;
+  transition: .25s;
 }
 
 .view-btn{
-background:#f1f1f1;
-color:#111111;
+  background: #f1f1f1;
+  color: #111111;
 }
 
 .add-cart-btn{
-background:#111111;
-color:#ffffff;
+  background: #111111;
+  color: #ffffff;
 }
 
 .view-btn:hover,
 .add-cart-btn:hover{
-transform:translateY(-2px);
+  transform: translateY(-2px);
 }
+
 
 /* =========================
 FLOATING CART
