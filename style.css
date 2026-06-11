@@ -12,6 +12,7 @@ ROOT VARIABLES
   --danger:#ff3b30;
 
   --border:#ececec;
+
   --radius:18px;
 
   --shadow:0 10px 30px rgba(0,0,0,.08);
@@ -78,32 +79,35 @@ HEADER
   top:0;
   z-index:1000;
 
-  display:grid;
-  grid-template-columns:1fr auto;
+  display:flex;
   align-items:center;
-  gap:12px;
+  justify-content:space-between;
 
   padding:16px 20px;
 
   background:rgba(255,255,255,.75);
   backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(0,0,0,.05);
+
+  border-bottom:1px solid var(--border);
 }
 
 body.dark .header{
   background:rgba(15,15,16,.75);
 }
 
+/* =========================
+LOGO
+========================= */
 .logo-area{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
 }
 
 .logo-img{
   width:44px;
   height:44px;
-  border-radius:14px;
+  border-radius:12px;
   object-fit:cover;
 }
 
@@ -116,21 +120,20 @@ body.dark .header{
 SEARCH
 ========================= */
 .search-box{
-  height:46px;
   display:flex;
   align-items:center;
   gap:10px;
 
-  padding:0 16px;
-  border-radius:999px;
+  height:46px;
+  padding:0 14px;
 
+  border-radius:999px;
   background:#f1f1f1;
-  border:1px solid rgba(0,0,0,.05);
+  border:1px solid var(--border);
 }
 
 body.dark .search-box{
   background:#262629;
-  border:1px solid rgba(255,255,255,.04);
 }
 
 .search-box input{
@@ -176,7 +179,8 @@ CARD
   overflow:hidden;
   border:1px solid var(--border);
   box-shadow:var(--shadow);
-  transition:.3s;
+  transition:.25s;
+  position:relative;
 }
 
 .card:hover{
@@ -188,6 +192,7 @@ CARD
   object-fit:cover;
 }
 
+/* discount */
 .discount-badge{
   position:absolute;
   top:8px;
@@ -195,9 +200,11 @@ CARD
 
   background:linear-gradient(135deg,#ff4d4d,#ff2d55);
   color:#fff;
+
   padding:4px 8px;
   border-radius:999px;
   font-size:10px;
+  font-weight:700;
 }
 
 /* =========================
@@ -210,16 +217,18 @@ CARD CONTENT
 .card-content h3{
   font-size:14px;
   margin-bottom:6px;
+
   display:-webkit-box;
   -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
 }
 
+/* price */
 .price-box{
   display:flex;
-  gap:6px;
   align-items:center;
+  gap:6px;
   margin-bottom:10px;
 }
 
@@ -272,8 +281,8 @@ FLOATING CART
 
   width:56px;
   height:56px;
-
   border-radius:50%;
+
   background:#111;
   color:#fff;
 
@@ -282,6 +291,7 @@ FLOATING CART
   justify-content:center;
 
   box-shadow:var(--shadow);
+  z-index:3000;
 }
 
 /* =========================
@@ -297,6 +307,7 @@ CART DRAWER
   height:100vh;
 
   background:var(--card);
+
   transform:translateX(100%);
   transition:.3s;
 
@@ -315,6 +326,7 @@ MODAL
 .modal{
   position:fixed;
   inset:0;
+
   background:rgba(0,0,0,.6);
 
   display:flex;
@@ -323,6 +335,7 @@ MODAL
 
   opacity:0;
   visibility:hidden;
+  transition:.25s;
 }
 
 .modal.show{
@@ -333,26 +346,28 @@ MODAL
 .modal-content{
   width:100%;
   max-width:420px;
+
   background:var(--card);
   border-radius:18px;
   overflow:hidden;
 }
 
 /* =========================
-MOBILE
+MOBILE RESPONSIVE
 ========================= */
 @media(max-width:768px){
 
-  .products-grid{
-    grid-template-columns:repeat(2,1fr);
+  .header{
+    flex-wrap:wrap;
+    gap:10px;
   }
 
   .filter-grid{
     grid-template-columns:1fr;
   }
 
-  .search-box{
-    grid-column:1/-1;
+  .products-grid{
+    grid-template-columns:repeat(2,1fr);
   }
 }
 
@@ -364,5 +379,9 @@ MOBILE
 
   .logo-text{
     font-size:16px;
+  }
+
+  .search-box{
+    width:100%;
   }
 }
