@@ -1,7 +1,6 @@
 /* =========================
-FRESHORA - FULL COMPLETE STYLE.CSS
+FRESHORA - PROFESSIONAL UI
 ========================= */
-
 :root {
   --bg: #f5f7fb;
   --card: #ffffff;
@@ -108,13 +107,14 @@ body { background: var(--bg); color: var(--text); transition: 0.3s; }
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 3000; }
 .modal.show { display: flex; }
 .modal-content { background: var(--card); width: 90%; max-width: 400px; border-radius: 20px; padding: 25px; position: relative; display: flex; flex-direction: column; gap: 15px; }
-.modal-content img { width: 100%; height: 250px; object-fit: contain; border-radius: 15px; background: var(--bg); }
+.modal-content img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 16px; background: var(--bg); padding: 10px; }
 .close { align-self: flex-end; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text); }
 #modalAddBtn { background: var(--primary); color: #fff; padding: 14px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; }
 
-.star-rating { display: flex; gap: 5px; font-size: 18px; cursor: pointer; margin: 10px 0; }
-.star-rating i { color: #ccc; transition: 0.2s; }
-.star-rating i.active { color: #ffb400; }
+/* STAR RATING - IMPROVED */
+.star-rating { display: flex; gap: 8px; font-size: 28px; cursor: pointer; margin: 15px 0; justify-content: center; }
+.star-rating i { color: #ddd; transition: transform 0.2s; }
+.star-rating i:hover, .star-rating i.active { color: #ffb400; transform: scale(1.2); }
 
 .review-item { background: var(--bg); padding: 10px; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); }
 
