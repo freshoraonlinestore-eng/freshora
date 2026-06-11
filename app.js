@@ -1,12 +1,20 @@
+/* =========================
+SERVICE WORKER (CACHE FIX)
+========================= */
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js")
         .then(() => console.log("SW Registered"))
         .catch(err => console.log("SW Error", err));
 }
 
-
+/* =========================
+FIREBASE IMPORT
+========================= */
 import { db, collection, onSnapshot } from "./firebase.js";
 
+/* =========================
+STATE
+========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 
@@ -21,7 +29,8 @@ window.updateCartDisplay = () => {
 
     if (!cartItems || !cartTotal || !floatingCount) return;
 
-    floatingCount.innerText = cart.length;
+    // TOTAL QUANTITY FIX (not just item count)
+    floatingCount.innerText = cart.reduce((sum, item) => sum + item.qty, 0);
 
     let total = 0;
 
@@ -125,6 +134,7 @@ window.renderProducts = (products) => {
     grid.innerHTML = products.map(p => {
         const original = Number(p.price);
         const discount = Number(p.discount || 0);
+
         const final = discount > 0
             ? Math.round(original - (original * discount / 100))
             : original;
@@ -156,7 +166,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-PRODUCT MODAL + DETAILS + REVIEWS
+PRODUCT MODAL + DETAILS
 ========================= */
 
 window.openModal = (id) => {
@@ -168,8 +178,6 @@ window.openModal = (id) => {
     document.getElementById("modalName").innerText = p.name;
     document.getElementById("modalImage").src = p.image;
     document.getElementById("modalPrice").innerText = "Rs " + finalPrice;
-
-    loadReviews(p.id);
 
     document.getElementById("modalAddBtn").onclick = () => {
         addToCart(p.id, p.name, finalPrice, p.image);
@@ -200,7 +208,7 @@ window.toggleDarkMode = () => {
 };
 
 /* =========================
-CHECKOUT
+CHECKOUT (FIXED)
 ========================= */
 
 window.checkout = () => {
@@ -233,64 +241,15 @@ window.checkout = () => {
 
     msg += `%0ASubtotal: Rs ${subtotal}%0ADelivery: Rs ${delivery}%0ATotal: Rs ${total}`;
 
-    window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
+    // IMPORTANT FIX (no WhatsApp break)
+    window.open(
+        `https://wa.me/94752425790?text=${encodeURIComponent(msg)}`,
+        "_blank"
+    );
 };
 
 /* =========================
-REVIEWS SYSTEM (LOCAL STORAGE)
-========================= */
-
-window.loadReviews = (productId) => {
-    const list = document.getElementById("reviewList");
-    if (!list) return;
-
-    const reviews = JSON.parse(localStorage.getItem("reviews_" + productId)) || [];
-
-    if (reviews.length === 0) {
-        list.innerHTML = "<p>No reviews yet</p>";
-        return;
-    }
-
-    const avg = (
-        reviews.reduce((a, b) => a + b.rating, 0) / reviews.length
-    ).toFixed(1);
-
-    list.innerHTML = `
-        <h4>⭐ ${avg} / 5 (${reviews.length})</h4>
-        ${reviews.map(r => `
-            <div class="review-item">
-                <b>${"⭐".repeat(r.rating)}</b>
-                <p>${r.text}</p>
-            </div>
-        `).join("")}
-    `;
-};
-
-document.getElementById("reviewSubmitBtn")?.addEventListener("click", () => {
-    const rating = Number(document.getElementById("reviewRating")?.value);
-    const text = document.getElementById("reviewText")?.value;
-
-    if (!text) return alert("Write review first!");
-
-    const productName = document.getElementById("modalName")?.innerText;
-    const product = allProducts.find(p => p.name === productName);
-
-    if (!product) return;
-
-    const key = "reviews_" + product.id;
-    const reviews = JSON.parse(localStorage.getItem(key)) || [];
-
-    reviews.push({ rating, text });
-
-    localStorage.setItem(key, JSON.stringify(reviews));
-
-    document.getElementById("reviewText").value = "";
-
-    loadReviews(product.id);
-});
-
-/* =========================
-FIREBASE INIT
+FIREBASE LIVE DATA
 ========================= */
 
 onSnapshot(collection(db, "products"), (snapshot) => {
