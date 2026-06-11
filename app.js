@@ -2,11 +2,12 @@ import { db, collection, onSnapshot } from "./firebase.js";
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
+let selectedRating = 0;
 let currentProductId = null;
 
 function showToast(msg) {
     const toast = document.getElementById("toast");
-    if(!toast) return;
+    if (!toast) return;
     toast.innerText = msg;
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2000);
@@ -14,11 +15,13 @@ function showToast(msg) {
 
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
-    // Search & Filter listeners
+    // Filter Listeners
     document.getElementById("searchInput")?.addEventListener("input", filterProducts);
     document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
     document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
     document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
+    // Rating Listeners
+    setupStarRating();
 });
 
 /* CART SYSTEM */
@@ -68,19 +71,22 @@ window.changeQty = (i, d) => {
 window.removeFromCart = (i) => { cart.splice(i, 1); updateCartDisplay(); };
 window.clearCart = () => { cart = []; updateCartDisplay(); };
 
-/* PRODUCT RENDER & FILTERS */
+/* FILTERS */
 window.filterProducts = () => {
     const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const category = document.getElementById("categoryFilter")?.value || "all";
+    const priceLimit = document.getElementById("priceFilter")?.value || "all";
     
     const filtered = allProducts.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm);
-        const matchesCategory = (category === "all" || p.category === category);
-        return matchesSearch && matchesCategory;
+        const matchSearch = p.name.toLowerCase().includes(searchTerm);
+        const matchCat = (category === "all" || p.category === category);
+        const matchPrice = (priceLimit === "all" || p.price <= Number(priceLimit));
+        return matchSearch && matchCat && matchPrice;
     });
     renderProducts(filtered);
 };
 
+/* RENDER */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
     if (!grid) return;
@@ -119,13 +125,16 @@ window.openModal = (id) => {
     document.getElementById("modalPrice").innerText = "Rs " + final;
     document.getElementById("modalDesc").innerText = p.description || "No description provided.";
     
-    // Gallery Logic
     const images = (p.images && p.images.length > 0) ? p.images : [p.image];
     document.getElementById("galleryContainer").innerHTML = `
         <img src="${images[0]}" class="main-img" id="mainModalImg" />
         <div class="thumbnail-grid">
             ${images.map(img => `<img src="${img}" class="thumbnail" onclick="document.getElementById('mainModalImg').src='${img}'" />`).join('')}
         </div>`;
+
+    // Rating Reset
+    selectedRating = 0;
+    updateStars(0);
 
     const modalAddBtn = document.getElementById("modalAddBtn");
     modalAddBtn.onclick = () => {
@@ -138,17 +147,32 @@ window.openModal = (id) => {
 
 window.closeModal = () => document.getElementById("productModal").classList.remove("show");
 
+/* STAR RATING LOGIC */
+function setupStarRating() {
+    const stars = document.querySelectorAll("#starRating i");
+    stars.forEach((star, index) => {
+        star.onclick = () => {
+            selectedRating = index + 1;
+            updateStars(selectedRating);
+        };
+    });
+}
+
+function updateStars(rating) {
+    const stars = document.querySelectorAll("#starRating i");
+    stars.forEach((star, index) => {
+        if (index < rating) star.classList.replace("fa-regular", "fa-solid");
+        else star.classList.replace("fa-solid", "fa-regular");
+    });
+}
+
 /* UI TOGGLES */
 window.toggleCart = () => document.getElementById("cartDrawer").classList.toggle("open");
-
 window.toggleDarkMode = () => {
     document.body.classList.toggle("dark");
     const icon = document.querySelector("#darkModeBtn i");
-    if (document.body.classList.contains("dark")) {
-        icon.classList.replace("fa-moon", "fa-sun");
-    } else {
-        icon.classList.replace("fa-sun", "fa-moon");
-    }
+    if (document.body.classList.contains("dark")) icon.classList.replace("fa-moon", "fa-sun");
+    else icon.classList.replace("fa-sun", "fa-moon");
 };
 
 /* FIREBASE LOAD */
