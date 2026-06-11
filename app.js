@@ -14,6 +14,11 @@ function showToast(msg) {
 
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
+    // Search & Filter listeners
+    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
+    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
+    document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
+    document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
 });
 
 /* CART SYSTEM */
@@ -48,11 +53,8 @@ window.updateCartDisplay = () => {
 
 window.addToCart = (id, name, price, image) => {
     const existing = cart.find(i => i.id === id);
-    if (existing) {
-        existing.qty++;
-    } else {
-        cart.push({ id, name, price: Number(price), image, qty: 1 });
-    }
+    if (existing) existing.qty++;
+    else cart.push({ id, name, price: Number(price), image, qty: 1 });
     updateCartDisplay();
     showToast("Added to cart 🛒");
 };
@@ -66,7 +68,19 @@ window.changeQty = (i, d) => {
 window.removeFromCart = (i) => { cart.splice(i, 1); updateCartDisplay(); };
 window.clearCart = () => { cart = []; updateCartDisplay(); };
 
-/* PRODUCT RENDER */
+/* PRODUCT RENDER & FILTERS */
+window.filterProducts = () => {
+    const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const category = document.getElementById("categoryFilter")?.value || "all";
+    
+    const filtered = allProducts.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm);
+        const matchesCategory = (category === "all" || p.category === category);
+        return matchesSearch && matchesCategory;
+    });
+    renderProducts(filtered);
+};
+
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
     if (!grid) return;
@@ -106,15 +120,17 @@ window.openModal = (id) => {
     document.getElementById("modalDesc").innerText = p.description || "No description provided.";
     
     // Gallery Logic
-    const images = p.images || [p.image];
+    const images = (p.images && p.images.length > 0) ? p.images : [p.image];
     document.getElementById("galleryContainer").innerHTML = `
         <img src="${images[0]}" class="main-img" id="mainModalImg" />
         <div class="thumbnail-grid">
             ${images.map(img => `<img src="${img}" class="thumbnail" onclick="document.getElementById('mainModalImg').src='${img}'" />`).join('')}
         </div>`;
 
-    document.getElementById("modalAddBtn").onclick = () => {
+    const modalAddBtn = document.getElementById("modalAddBtn");
+    modalAddBtn.onclick = () => {
         window.addToCart(p.id, p.name, final, images[0]);
+        closeModal();
     };
 
     document.getElementById("productModal").classList.add("show");
@@ -124,7 +140,16 @@ window.closeModal = () => document.getElementById("productModal").classList.remo
 
 /* UI TOGGLES */
 window.toggleCart = () => document.getElementById("cartDrawer").classList.toggle("open");
-window.toggleDarkMode = () => document.body.classList.toggle("dark");
+
+window.toggleDarkMode = () => {
+    document.body.classList.toggle("dark");
+    const icon = document.querySelector("#darkModeBtn i");
+    if (document.body.classList.contains("dark")) {
+        icon.classList.replace("fa-moon", "fa-sun");
+    } else {
+        icon.classList.replace("fa-sun", "fa-moon");
+    }
+};
 
 /* FIREBASE LOAD */
 onSnapshot(collection(db, "products"), (snapshot) => {
