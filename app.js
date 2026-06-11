@@ -146,13 +146,34 @@ window.checkout = () => {
     const name = document.getElementById("cusName").value;
     const phone = document.getElementById("cusPhone").value;
     const address = document.getElementById("cusAddress").value;
-    if (!name || !phone || !address) return alert("Please fill in your details!");
     
-    let msg = `New Order:%0A------------------%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0AItems:%0A`;
-    cart.forEach(item => { msg += `- ${item.name} (x${item.qty}) Rs ${item.price * item.qty}%0A`; });
-    msg += `------------------%0ATotal: ${document.getElementById("cartTotal").innerText}`;
+    if (!name || !phone || !address) return alert("Please fill in your details!");
+
+    // Order ID සහ Date නිර්මාණය
+    const orderId = "FR-" + Date.now();
+    const date = new Date().toLocaleString();
+    
+    // බිල්පත් ගණනය කිරීම
+    let subtotal = 0;
+    cart.forEach(item => { subtotal += (item.price * item.qty); });
+    const delivery = 375; // අවශ්‍ය නම් මෙය වෙනස් කළ හැක
+    const total = subtotal + delivery;
+
+    // පණිවිඩය සකස් කිරීම
+    let msg = `🟢 FRESHORA NEW ORDER 🟢%0A%0A`;
+    msg += `📦 Order ID: ${orderId}%0A`;
+    msg += `📅 Date: ${date}%0A%0A`;
+    msg += `👤 CUSTOMER DETAILS%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0A`;
+    msg += `🛒 ITEMS%0A`;
+    cart.forEach((item, index) => { 
+        msg += `${index + 1}) ${item.name} x${item.qty} = LKR ${item.price * item.qty}%0A`; 
+    });
+    msg += `%0A💰 BILL SUMMARY%0ASubtotal: LKR ${subtotal}%0ADelivery: LKR ${delivery}%0ATOTAL: LKR ${total}%0A%0A`;
+    msg += `🚚 Payment: Cash on Delivery%0A📍 Freshora Online Store`;
+
     window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
 };
+
 
 onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
