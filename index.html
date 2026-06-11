@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Freshora Online Store</title>
 
-  <link rel="stylesheet" href="style.css?v=5" />
+  <!-- CACHE SAFE VERSION -->
+  <link rel="stylesheet" href="style.css?v=12" />
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
@@ -16,13 +18,13 @@
   <p>Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</p>
 </div>
 
-<!-- LOADING -->
+<!-- LOADING SCREEN -->
 <div id="loadingScreen" class="loading-screen">
   <div class="loader"></div>
 </div>
 
-<!-- OVERLAY (CART CLOSE) -->
-<div id="overlay" class="overlay" onclick="toggleCart()"></div>
+<!-- OVERLAY (CART CLOSE FIX) -->
+<div id="overlay" onclick="toggleCart()"></div>
 
 <!-- HEADER -->
 <header class="header">
@@ -43,7 +45,7 @@
 
 </header>
 
-<!-- FILTERS -->
+<!-- FILTER SECTION -->
 <section class="advanced-search">
   <div class="filter-grid">
 
@@ -72,10 +74,10 @@
   </div>
 </section>
 
-<!-- PRODUCT GALLERY -->
+<!-- PRODUCTS GRID -->
 <section id="products" class="products-grid"></section>
 
-<!-- FLOAT CART -->
+<!-- FLOAT CART BUTTON -->
 <button class="floating-cart" onclick="toggleCart()">
   <i class="fa-solid fa-cart-shopping"></i>
   <span id="floatingCartCount">0</span>
@@ -86,15 +88,18 @@
 
   <div class="cart-header">
     <h2>Your Cart</h2>
+
+    <!-- FIXED CLASS (MATCH CSS) -->
     <button class="close" onclick="toggleCart()">
       <i class="fa-solid fa-xmark"></i>
     </button>
+
   </div>
 
-  <!-- CART ITEMS -->
+  <!-- IMPORTANT FIX: MUST MATCH JS -->
   <div id="cartItems" class="cart-items"></div>
 
-  <!-- CUSTOMER INFO -->
+  <!-- CUSTOMER FORM -->
   <div class="checkout-form">
     <input type="text" id="cusName" placeholder="Your Name" />
     <input type="tel" id="cusPhone" placeholder="Phone Number" />
@@ -103,6 +108,7 @@
 
   <!-- TOTAL + ACTIONS -->
   <div class="sticky-checkout">
+
     <h3 id="cartTotal">Total: Rs 0</h3>
 
     <div class="checkout-actions">
@@ -114,6 +120,7 @@
         Clear Cart
       </button>
     </div>
+
   </div>
 
 </div>
@@ -129,43 +136,16 @@
 
     <img id="modalImage" src="placeholder.png" alt="Product" />
 
-    <div class="modal-details">
+    <h2 id="modalName"></h2>
+    <p id="modalPrice"></p>
 
-      <h2 id="modalName"></h2>
-      <p id="modalPrice"></p>
+    <button id="modalAddBtn">Add to Cart</button>
 
-      <div class="rating-box">
-        ⭐ <span id="modalRatingText">5.0</span>
-      </div>
-
-      <!-- REVIEW -->
-      <div class="review-form">
-
-        <select id="reviewRating">
-          <option value="5">⭐⭐⭐⭐⭐</option>
-          <option value="4">⭐⭐⭐⭐</option>
-          <option value="3">⭐⭐⭐</option>
-          <option value="2">⭐⭐</option>
-          <option value="1">⭐</option>
-        </select>
-
-        <textarea id="reviewText" placeholder="Write your review..."></textarea>
-
-        <button id="reviewSubmitBtn">Submit Review</button>
-
-      </div>
-
-      <!-- REVIEW LIST -->
-      <div id="reviewList" class="review-list"></div>
-
-      <!-- ADD TO CART -->
-      <button id="modalAddBtn">Add to Cart</button>
-
-    </div>
   </div>
+
 </div>
 
-<script type="module" src="app.js?v=5"></script>
+<script type="module" src="app.js?v=12"></script>
 
 </body>
 </html>
