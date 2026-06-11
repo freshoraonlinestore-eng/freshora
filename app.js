@@ -34,7 +34,25 @@ function showToast(msg) {
 }
 
 /* =========================
-CART
+SAFE INIT (FIX SEARCH + FILTER)
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+
+    const search = document.getElementById("searchInput");
+    const cat = document.getElementById("categoryFilter");
+    const price = document.getElementById("priceFilter");
+    const discount = document.getElementById("discountFilter");
+
+    if (search) search.addEventListener("input", filterProducts);
+    if (cat) cat.addEventListener("change", filterProducts);
+    if (price) price.addEventListener("change", filterProducts);
+    if (discount) discount.addEventListener("change", filterProducts);
+
+    updateCartDisplay();
+});
+
+/* =========================
+CART SYSTEM
 ========================= */
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
@@ -67,9 +85,7 @@ window.updateCartDisplay = () => {
                         </div>
                     </div>
 
-                    <button class="remove-btn" onclick="removeFromCart(${index})">
-                        ✕
-                    </button>
+                    <button class="remove-btn" onclick="removeFromCart(${index})">✕</button>
                 </div>
             `;
         }).join("");
@@ -106,21 +122,29 @@ window.clearCart = () => {
 };
 
 /* =========================
-FILTER
+FILTER SYSTEM (FIXED)
 ========================= */
 window.filterProducts = () => {
-    const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
+
+    const searchQuery = (document.getElementById("searchInput")?.value || "").toLowerCase();
     const category = document.getElementById("categoryFilter")?.value || "all";
-    const price = document.getElementById("priceFilter")?.value || "all";
-    const discount = document.getElementById("discountFilter")?.value || "all";
+    const priceLimit = document.getElementById("priceFilter")?.value || "all";
+    const discountLimit = document.getElementById("discountFilter")?.value || "all";
 
     const filtered = allProducts.filter(p => {
-        return (
-            p.name.toLowerCase().includes(search) &&
-            (category === "all" || p.category === category) &&
-            (price === "all" || Number(p.price) <= Number(price)) &&
-            (discount === "all" || Number(p.discount || 0) >= Number(discount))
-        );
+
+        const matchSearch = (p.name || "").toLowerCase().includes(searchQuery);
+
+        const matchCategory =
+            category === "all" || p.category === category;
+
+        const matchPrice =
+            priceLimit === "all" || Number(p.price) <= Number(priceLimit);
+
+        const matchDiscount =
+            discountLimit === "all" || Number(p.discount || 0) >= Number(discountLimit);
+
+        return matchSearch && matchCategory && matchPrice && matchDiscount;
     });
 
     renderProducts(filtered);
@@ -137,12 +161,14 @@ window.renderProducts = (products) => {
 
         const original = Number(p.price);
         const discount = Number(p.discount || 0);
+
         const final = discount > 0
             ? Math.round(original - (original * discount / 100))
             : original;
 
         return `
             <div class="card">
+
                 ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
                 <img src="${p.image}" />
@@ -166,7 +192,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL (FIXED)
+MODAL FIX
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -206,7 +232,7 @@ window.closeModal = () => {
 };
 
 /* =========================
-⭐ STAR SYSTEM (FIXED)
+⭐ STAR SYSTEM
 ========================= */
 function setupStars() {
     document.querySelectorAll(".star-rating i").forEach(star => {
@@ -229,9 +255,10 @@ function resetStars() {
 }
 
 /* =========================
-REVIEWS (FIXED PER PRODUCT)
+REVIEWS SYSTEM (FIXED)
 ========================= */
 function submitReview(productId) {
+
     const text = document.getElementById("reviewText").value;
 
     if (!selectedRating) return showToast("Select rating ⭐");
@@ -257,6 +284,7 @@ function submitReview(productId) {
 }
 
 window.loadReviews = (productId) => {
+
     const list = document.getElementById("reviewList");
     if (!list) return;
 
@@ -267,7 +295,7 @@ window.loadReviews = (productId) => {
         return;
     }
 
-    const avg = (reviews.reduce((a, b) => a + b.rating, 0) / reviews.length).toFixed(1);
+    const avg = (reviews.reduce((a,b)=>a+b.rating,0)/reviews.length).toFixed(1);
 
     list.innerHTML = `
         <h4>⭐ ${avg} / 5 (${reviews.length})</h4>
@@ -281,7 +309,7 @@ window.loadReviews = (productId) => {
 };
 
 /* =========================
-CART TOGGLE
+UI TOGGLES
 ========================= */
 window.toggleCart = () => {
     document.getElementById("cartDrawer")?.classList.toggle("open");
@@ -295,6 +323,7 @@ window.toggleDarkMode = () => {
 CHECKOUT
 ========================= */
 window.checkout = () => {
+
     const name = document.getElementById("cusName")?.value;
     const phone = document.getElementById("cusPhone")?.value;
     const address = document.getElementById("cusAddress")?.value;
@@ -304,13 +333,12 @@ window.checkout = () => {
     let subtotal = 0;
     cart.forEach(i => subtotal += i.price * i.qty);
 
-    const delivery = 375;
-    const total = subtotal + delivery;
+    const total = subtotal + 375;
 
     let msg = `🟢 ORDER%0AName:${name}%0A`;
 
-    cart.forEach((i, k) => {
-        msg += `${k + 1}) ${i.name} x${i.qty}%0A`;
+    cart.forEach((i,k)=>{
+        msg += `${k+1}) ${i.name} x${i.qty}%0A`;
     });
 
     msg += `Total: Rs ${total}`;
@@ -322,6 +350,7 @@ window.checkout = () => {
 FIREBASE LOAD
 ========================= */
 onSnapshot(collection(db, "products"), (snapshot) => {
+
     allProducts = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
