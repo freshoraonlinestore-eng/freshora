@@ -89,7 +89,9 @@ HEADER
   font-weight: 600;
 }
 
-/* SEARCH */
+/* =========================
+SEARCH BOX
+========================= */
 .search-box {
   flex: 1;
   display: flex;
@@ -109,7 +111,7 @@ HEADER
   color: var(--text);
 }
 
-/* ICON BTN */
+/* ICON BUTTON */
 .icon-btn {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -119,7 +121,7 @@ HEADER
 }
 
 /* =========================
-FILTERS
+FILTER SECTION
 ========================= */
 .advanced-search {
   padding: 12px;
@@ -140,7 +142,7 @@ FILTERS
 }
 
 /* =========================
-PRODUCT GALLERY
+PRODUCT GRID
 ========================= */
 .products-grid {
   display: grid;
@@ -149,6 +151,7 @@ PRODUCT GALLERY
   padding: 16px;
 }
 
+/* CARD */
 .card {
   background: var(--card);
   border-radius: 18px;
@@ -220,7 +223,7 @@ PRODUCT GALLERY
   color: #fff;
 }
 
-/* DISCOUNT */
+/* DISCOUNT BADGE */
 .discount-badge {
   position: absolute;
   top: 10px;
@@ -244,10 +247,11 @@ FLOAT CART
   border: none;
   padding: 14px;
   border-radius: 50%;
+  box-shadow: var(--shadow);
 }
 
 /* =========================
-CART
+CART DRAWER
 ========================= */
 .cart-drawer {
   position: fixed;
@@ -274,7 +278,6 @@ CART
   justify-content: space-between;
 }
 
-/* FIX IMPORTANT (cart-items ID used in JS) */
 #cartItems {
   flex: 1;
   overflow-y: auto;
@@ -309,7 +312,6 @@ CART
   padding: 3px 8px;
 }
 
-/* REMOVE */
 .remove-btn {
   background: var(--danger);
   border: none;
@@ -366,8 +368,8 @@ MODAL
 .modal {
   position: fixed;
   inset: 0;
-  display: none;
   background: rgba(0,0,0,0.6);
+  display: none;
   justify-content: center;
   align-items: center;
 }
@@ -378,10 +380,10 @@ MODAL
 
 .modal-content {
   background: var(--card);
-  padding: 12px;
   width: 90%;
-  max-width: 400px;
-  border-radius: 12px;
+  max-width: 420px;
+  border-radius: 14px;
+  padding: 14px;
 }
 
 .modal-content img {
@@ -391,15 +393,15 @@ MODAL
 }
 
 /* =========================
-LOADER
+LOADING
 ========================= */
 .loading-screen {
   position: fixed;
   inset: 0;
   background: #fff;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
 .loader {
@@ -416,9 +418,8 @@ LOADER
 }
 
 /* =========================
-⭐ STAR RATING UI (NEW)
+⭐ STAR RATING
 ========================= */
-
 .star-rating {
   display: flex;
   gap: 5px;
@@ -443,15 +444,90 @@ LOADER
 }
 
 /* =========================
+PRO REVIEW SYSTEM
+========================= */
+
+.review-item {
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 12px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.review-user {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.review-text {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* rating summary bars */
+.rating-summary {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.rating-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.bar {
+  flex: 1;
+  height: 6px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #ffb400;
+}
+
+/* =========================
+TOAST
+========================= */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  opacity: 0;
+  transition: 0.3s;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+/* =========================
 RESPONSIVE
 ========================= */
 @media (max-width: 768px) {
   .filter-grid {
     grid-template-columns: 1fr;
-  }
-
-  .search-box {
-    width: 100%;
   }
 
   .cart-drawer {
