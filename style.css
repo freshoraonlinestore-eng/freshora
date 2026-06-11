@@ -289,29 +289,18 @@ DISCOUNT
 ========================= */
 
 .discount-badge{
-position:absolute;
-
-top:12px;
-left:12px;
-
-z-index:10;
-
-background:
-linear-gradient(
-135deg,
-#ff4d4d,
-#ff2d55
-);
-
-color:#ffffff;
-
-padding:6px 10px;
-
-border-radius:999px;
-
-font-size:11px;
-font-weight:700;
+  position: absolute;
+  top: 8px;           /* 12px සිට 8px දක්වා අඩු කළා */
+  left: 8px;          /* 12px සිට 8px දක්වා අඩු කළා */
+  z-index: 10;
+  background: linear-gradient(135deg, #ff4d4d, #ff2d55);
+  color: #ffffff;
+  padding: 3px 7px;   /* 6px 10px සිට 3px 7px දක්වා අඩු කළා */
+  border-radius: 999px;
+  font-size: 10px;    /* 11px සිට 10px දක්වා කුඩා කළා */
+  font-weight: 700;
 }
+
 
 /* =========================
 CONTENT
@@ -337,22 +326,23 @@ PRICE
 ========================= */
 
 .price-box{
-display:flex;
-align-items:center;
-gap:8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;           /* 8px සිට 6px දක්වා අඩු කළා */
+  margin-bottom: 8px; /* පහළින් ඉඩක් එකතු කළා */
 }
 
 .old-price{
-font-size:13px;
-color:var(--muted);
-
-text-decoration:line-through;
+  font-size: 12px;    /* 13px සිට 12px දක්වා */
+  color: var(--muted);
+  text-decoration: line-through;
 }
 
 .new-price{
-font-size:17px;
-font-weight:800;
+  font-size: 15px;    /* 17px සිට 15px දක්වා */
+  font-weight: 800;
 }
+
 
 /* =========================
 CARD BUTTONS
