@@ -3,7 +3,7 @@ import { db, collection, onSnapshot } from "./firebase.js";
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 
-// --- UTILITIES ---
+// --- UTILITIES & CART LOGIC ---
 
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
@@ -17,13 +17,18 @@ window.updateCartDisplay = () => {
         cartItems.innerHTML = `<div class="empty">Your cart is empty</div>`;
     } else {
         cartItems.innerHTML = cart.map((item, index) => {
-            total += Number(item.price);
+            total += (Number(item.price) * item.qty);
             return `
                 <div class="cart-item">
                     <img src="${item.image}" alt="${item.name}">
                     <div class="cart-details">
                         <h4>${item.name}</h4>
-                        <p>Rs ${item.price}</p>
+                        <p>Rs ${item.price * item.qty}</p>
+                        <div class="qty-box">
+                            <button onclick="changeQty(${index}, -1)">-</button>
+                            <span>${item.qty}</span>
+                            <button onclick="changeQty(${index}, 1)">+</button>
+                        </div>
                     </div>
                     <button class="remove-btn" onclick="removeFromCart(${index})">
                         <i class="fa-solid fa-xmark"></i>
@@ -32,9 +37,37 @@ window.updateCartDisplay = () => {
         }).join("");
     }
     cartTotal.innerText = `Total: Rs ${total}`;
+    localStorage.setItem("cart", JSON.stringify(cart));
 };
 
-// --- FILTERS ---
+window.changeQty = (index, delta) => {
+    cart[index].qty += delta;
+    if (cart[index].qty <= 0) cart.splice(index, 1);
+    updateCartDisplay();
+};
+
+window.addToCart = (id, name, price, image) => {
+    const existing = cart.find(item => item.id === id);
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        cart.push({ id, name, price: Number(price), image, qty: 1 });
+    }
+    updateCartDisplay();
+    alert("Added to cart!");
+};
+
+window.removeFromCart = (index) => {
+    cart.splice(index, 1);
+    updateCartDisplay();
+};
+
+window.clearCart = () => {
+    cart = [];
+    updateCartDisplay();
+};
+
+// --- FILTERS & SEARCH ---
 
 window.filterProducts = () => {
     const searchQuery = document.getElementById("searchInput").value.toLowerCase();
@@ -47,14 +80,12 @@ window.filterProducts = () => {
         const matchesCategory = category === "all" || p.category === category;
         const matchesPrice = priceLimit === "all" || Number(p.price) <= Number(priceLimit);
         const matchesDiscount = discountLimit === "all" || Number(p.discount || 0) >= Number(discountLimit);
-        
         return matchesSearch && matchesCategory && matchesPrice && matchesDiscount;
     });
-
     renderProducts(filtered);
 };
 
-// --- RENDERING ---
+// --- RENDER & MODAL ---
 
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
@@ -62,7 +93,6 @@ window.renderProducts = (products) => {
         const original = Number(p.price);
         const discount = Number(p.discount || 0);
         const final = discount > 0 ? Math.round(original - (original * discount / 100)) : original;
-        
         return `
             <div class="card">
                 ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
@@ -82,39 +112,6 @@ window.renderProducts = (products) => {
     }).join("");
 };
 
-// --- ACTIONS ---
-
-window.addToCart = (id, name, price, image) => {
-    cart.push({ id, name, price, image });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartDisplay();
-    alert("Added to cart!");
-};
-
-window.removeFromCart = (index) => {
-    cart.splice(index, 1);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartDisplay();
-};
-
-window.clearCart = () => {
-    cart = [];
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartDisplay();
-};
-
-window.checkout = () => {
-    const name = document.getElementById("cusName").value;
-    const phone = document.getElementById("cusPhone").value;
-    const address = document.getElementById("cusAddress").value;
-    if (!name || !phone || !address) return alert("Please fill in your details!");
-    
-    let msg = `New Order: %0A------------------%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0AItems:%0A`;
-    cart.forEach(item => { msg += `- ${item.name} (Rs ${item.price})%0A`; });
-    msg += `------------------%0ATotal: ${document.getElementById("cartTotal").innerText}`;
-    window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
-};
-
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
@@ -122,9 +119,7 @@ window.openModal = (id) => {
     document.getElementById("modalImage").src = p.image;
     const finalPrice = Math.round(p.price - (p.price * (p.discount || 0) / 100));
     document.getElementById("modalPrice").innerText = "Rs " + finalPrice;
-    
-    const btn = document.getElementById("modalAddBtn");
-    btn.onclick = () => {
+    document.getElementById("modalAddBtn").onclick = () => {
         addToCart(p.id, p.name, finalPrice, p.image);
         closeModal();
     };
@@ -133,7 +128,6 @@ window.openModal = (id) => {
 
 window.closeModal = () => document.getElementById("productModal").classList.remove("show");
 window.toggleCart = () => document.getElementById("cartDrawer").classList.toggle("open");
-
 window.toggleDarkMode = () => {
     document.body.classList.toggle("dark");
     const icon = document.querySelector("#darkModeBtn i");
@@ -147,6 +141,18 @@ document.getElementById("searchInput").addEventListener("input", filterProducts)
 document.getElementById("categoryFilter").addEventListener("change", filterProducts);
 document.getElementById("priceFilter").addEventListener("change", filterProducts);
 document.getElementById("discountFilter").addEventListener("change", filterProducts);
+
+window.checkout = () => {
+    const name = document.getElementById("cusName").value;
+    const phone = document.getElementById("cusPhone").value;
+    const address = document.getElementById("cusAddress").value;
+    if (!name || !phone || !address) return alert("Please fill in your details!");
+    
+    let msg = `New Order:%0A------------------%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0AItems:%0A`;
+    cart.forEach(item => { msg += `- ${item.name} (x${item.qty}) Rs ${item.price * item.qty}%0A`; });
+    msg += `------------------%0ATotal: ${document.getElementById("cartTotal").innerText}`;
+    window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
+};
 
 onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
