@@ -1,22 +1,14 @@
-/* =========================
-SERVICE WORKER (CACHE FIX)
-========================= */
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js")
         .then(() => console.log("SW Registered"))
         .catch(err => console.log("SW Error", err));
 }
 
-/* =========================
-FIREBASE IMPORT
-========================= */
 import { db, collection, onSnapshot } from "./firebase.js";
 
-/* =========================
-STATE
-========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
+let selectedRating = 5;
 
 /* =========================
 CART SYSTEM
@@ -29,8 +21,7 @@ window.updateCartDisplay = () => {
 
     if (!cartItems || !cartTotal || !floatingCount) return;
 
-    // TOTAL QUANTITY FIX (not just item count)
-    floatingCount.innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+    floatingCount.innerText = cart.length;
 
     let total = 0;
 
@@ -134,7 +125,6 @@ window.renderProducts = (products) => {
     grid.innerHTML = products.map(p => {
         const original = Number(p.price);
         const discount = Number(p.discount || 0);
-
         const final = discount > 0
             ? Math.round(original - (original * discount / 100))
             : original;
@@ -155,9 +145,7 @@ window.renderProducts = (products) => {
 
                     <div class="card-buttons">
                         <button onclick="openModal('${p.id}')">View</button>
-                        <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">
-                            Add
-                        </button>
+                        <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">Add</button>
                     </div>
                 </div>
             </div>
@@ -166,7 +154,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-PRODUCT MODAL + DETAILS
+MODAL + DETAILS
 ========================= */
 
 window.openModal = (id) => {
@@ -179,6 +167,8 @@ window.openModal = (id) => {
     document.getElementById("modalImage").src = p.image;
     document.getElementById("modalPrice").innerText = "Rs " + finalPrice;
 
+    loadReviews(p.id);
+
     document.getElementById("modalAddBtn").onclick = () => {
         addToCart(p.id, p.name, finalPrice, p.image);
         closeModal();
@@ -188,68 +178,111 @@ window.openModal = (id) => {
 };
 
 window.closeModal = () => {
-    const modal = document.getElementById("productModal");
-    if (modal) modal.classList.remove("show");
+    document.getElementById("productModal")?.classList.remove("show");
 };
 
 window.toggleCart = () => {
-    const drawer = document.getElementById("cartDrawer");
-    if (drawer) drawer.classList.toggle("open");
+    document.getElementById("cartDrawer")?.classList.toggle("open");
 };
 
 window.toggleDarkMode = () => {
     document.body.classList.toggle("dark");
-    const icon = document.querySelector("#darkModeBtn i");
 
-    if (icon) {
-        icon.classList.toggle("fa-moon");
-        icon.classList.toggle("fa-sun");
-    }
+    const icon = document.querySelector("#darkModeBtn i");
+    if (!icon) return;
+
+    icon.classList.toggle("fa-moon");
+    icon.classList.toggle("fa-sun");
 };
 
 /* =========================
-CHECKOUT (FIXED)
+⭐ STAR RATING SYSTEM
 ========================= */
 
-window.checkout = () => {
-    const name = document.getElementById("cusName")?.value;
-    const phone = document.getElementById("cusPhone")?.value;
-    const address = document.getElementById("cusAddress")?.value;
+window.addEventListener("DOMContentLoaded", () => {
+    const stars = document.querySelectorAll("#starRating i");
+    const input = document.getElementById("reviewRating");
 
-    if (!name || !phone || !address) {
-        alert("Please fill in your details!");
+    if (!stars.length || !input) return;
+
+    stars.forEach((star, index) => {
+        star.addEventListener("click", () => {
+            selectedRating = index + 1;
+            input.value = selectedRating;
+
+            stars.forEach((s, i) => {
+                if (i <= index) {
+                    s.classList.add("active");
+                    s.classList.remove("fa-regular");
+                    s.classList.add("fa-solid");
+                } else {
+                    s.classList.remove("active");
+                    s.classList.add("fa-regular");
+                    s.classList.remove("fa-solid");
+                }
+            });
+        });
+    });
+});
+
+/* =========================
+REVIEWS SYSTEM
+========================= */
+
+window.loadReviews = (productId) => {
+    const list = document.getElementById("reviewList");
+    if (!list) return;
+
+    const reviews = JSON.parse(localStorage.getItem("reviews_" + productId)) || [];
+
+    if (reviews.length === 0) {
+        list.innerHTML = "<p>No reviews yet</p>";
         return;
     }
 
-    const orderId = "FR-" + Date.now();
-    const date = new Date().toLocaleString();
+    const avg = (reviews.reduce((a, b) => a + b.rating, 0) / reviews.length).toFixed(1);
 
-    let subtotal = 0;
-    cart.forEach(item => subtotal += item.price * item.qty);
-
-    const delivery = 375;
-    const total = subtotal + delivery;
-
-    let msg = `🟢 FRESHORA ORDER%0A%0A`;
-    msg += `Order ID: ${orderId}%0A`;
-    msg += `Date: ${date}%0A%0A`;
-    msg += `Name: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0A`;
-
-    cart.forEach((item, i) => {
-        msg += `${i + 1}) ${item.name} x${item.qty} = Rs ${item.price * item.qty}%0A`;
-    });
-
-    msg += `%0ASubtotal: Rs ${subtotal}%0ADelivery: Rs ${delivery}%0ATotal: Rs ${total}`;
-
-    // IMPORTANT FIX (no WhatsApp break)
-    window.open(
-        `https://wa.me/94752425790?text=${encodeURIComponent(msg)}`,
-        "_blank"
-    );
+    list.innerHTML = `
+        <h4>⭐ ${avg} / 5 (${reviews.length})</h4>
+        ${reviews.map(r => `
+            <div class="review-item">
+                <div class="modal-rating-stars">
+                    ${Array.from({ length: 5 }, (_, i) =>
+                        `<i class="fa${i < r.rating ? 's' : 'r'} fa-star"></i>`
+                    ).join("")}
+                </div>
+                <p>${r.text}</p>
+            </div>
+        `).join("")}
+    `;
 };
 
+document.getElementById("reviewSubmitBtn")?.addEventListener("click", () => {
+    const text = document.getElementById("reviewText")?.value;
+
+    if (!text) return alert("Write review first!");
+
+    const productName = document.getElementById("modalName")?.innerText;
+    const product = allProducts.find(p => p.name === productName);
+
+    if (!product) return;
+
+    const key = "reviews_" + product.id;
+    const reviews = JSON.parse(localStorage.getItem(key)) || [];
+
+    reviews.push({
+        rating: selectedRating,
+        text
+    });
+
+    localStorage.setItem(key, JSON.stringify(reviews));
+
+    document.getElementById("reviewText").value = "";
+    loadReviews(product.id);
+});
+
 /* =========================
-FIREBASE LIVE DATA
+FIREBASE
 ========================= */
 
 onSnapshot(collection(db, "products"), (snapshot) => {
