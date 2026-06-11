@@ -12,7 +12,6 @@ ROOT VARIABLES
   --danger:#ff3b30;
 
   --border:#ececec;
-
   --radius:18px;
 
   --shadow:0 10px 30px rgba(0,0,0,.08);
@@ -27,7 +26,6 @@ body.dark{
   --text:#ffffff;
   --muted:#9d9d9d;
   --border:#2a2a2d;
-
   --shadow:0 10px 30px rgba(0,0,0,.35);
 }
 
@@ -41,8 +39,6 @@ RESET
   font-family:system-ui,-apple-system,sans-serif;
 }
 
-html{scroll-behavior:smooth;}
-
 body{
   background:var(--bg);
   color:var(--text);
@@ -51,18 +47,12 @@ body{
 }
 
 img{width:100%;display:block;}
-
-button,input,textarea,select{
-  border:none;
-  outline:none;
-  font:inherit;
-}
+button,input,textarea,select{font:inherit;border:none;outline:none;}
 
 /* =========================
 TOP BANNER
 ========================= */
 .top-banner{
-  width:100%;
   background:#111;
   color:#fff;
   text-align:center;
@@ -78,26 +68,21 @@ HEADER
   position:sticky;
   top:0;
   z-index:1000;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
-
-  padding:16px 20px;
-
-  background:rgba(255,255,255,.75);
-  backdrop-filter:blur(18px);
-
+  gap:12px;
+  padding:14px 16px;
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(15px);
   border-bottom:1px solid var(--border);
 }
 
 body.dark .header{
-  background:rgba(15,15,16,.75);
+  background:rgba(15,15,16,.85);
 }
 
-/* =========================
-LOGO
-========================= */
+/* LOGO */
 .logo-area{
   display:flex;
   align-items:center;
@@ -105,14 +90,14 @@ LOGO
 }
 
 .logo-img{
-  width:44px;
-  height:44px;
+  width:40px;
+  height:40px;
   border-radius:12px;
   object-fit:cover;
 }
 
 .logo-text{
-  font-size:20px;
+  font-size:18px;
   font-weight:800;
 }
 
@@ -120,16 +105,18 @@ LOGO
 SEARCH
 ========================= */
 .search-box{
+  flex:1;
   display:flex;
   align-items:center;
   gap:10px;
-
-  height:46px;
-  padding:0 14px;
-
+  padding:10px 14px;
   border-radius:999px;
   background:#f1f1f1;
-  border:1px solid var(--border);
+  transition:.2s;
+}
+
+.search-box:focus-within{
+  transform:translateY(-2px);
 }
 
 body.dark .search-box{
@@ -143,31 +130,13 @@ body.dark .search-box{
 }
 
 /* =========================
-FILTERS
-========================= */
-.filter-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  padding:16px;
-}
-
-.filter-grid select{
-  height:46px;
-  border-radius:14px;
-  background:var(--card);
-  border:1px solid var(--border);
-  color:var(--text);
-}
-
-/* =========================
 PRODUCT GRID
 ========================= */
 .products-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:12px;
-  padding:10px 16px 120px;
+  gap:10px;
+  padding:10px 12px 120px;
 }
 
 /* =========================
@@ -180,7 +149,6 @@ CARD
   border:1px solid var(--border);
   box-shadow:var(--shadow);
   transition:.25s;
-  position:relative;
 }
 
 .card:hover{
@@ -192,54 +160,53 @@ CARD
   object-fit:cover;
 }
 
-/* discount */
+/* =========================
+BADGE
+========================= */
 .discount-badge{
   position:absolute;
   top:8px;
   left:8px;
-
   background:linear-gradient(135deg,#ff4d4d,#ff2d55);
   color:#fff;
-
-  padding:4px 8px;
-  border-radius:999px;
+  padding:3px 8px;
   font-size:10px;
-  font-weight:700;
+  border-radius:999px;
 }
 
 /* =========================
-CARD CONTENT
+CONTENT
 ========================= */
 .card-content{
-  padding:12px;
+  padding:10px;
 }
 
 .card-content h3{
-  font-size:14px;
+  font-size:13px;
   margin-bottom:6px;
-
   display:-webkit-box;
   -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
 }
 
-/* price */
+/* =========================
+PRICE
+========================= */
 .price-box{
   display:flex;
-  align-items:center;
   gap:6px;
-  margin-bottom:10px;
+  align-items:center;
 }
 
 .old-price{
-  font-size:12px;
+  font-size:11px;
   color:var(--muted);
   text-decoration:line-through;
 }
 
 .new-price{
-  font-size:16px;
+  font-size:14px;
   font-weight:800;
 }
 
@@ -249,21 +216,22 @@ BUTTONS
 .card-buttons{
   display:flex;
   gap:6px;
+  margin-top:8px;
 }
 
 .view-btn,
 .add-cart-btn{
   flex:1;
-  height:36px;
+  height:34px;
   border-radius:10px;
   font-size:12px;
   font-weight:700;
   cursor:pointer;
+  transition:.2s;
 }
 
 .view-btn{
   background:#f1f1f1;
-  color:#111;
 }
 
 .add-cart-btn{
@@ -271,25 +239,26 @@ BUTTONS
   color:#fff;
 }
 
+.view-btn:hover,
+.add-cart-btn:hover{
+  transform:translateY(-2px);
+}
+
 /* =========================
-FLOATING CART
+FLOAT CART
 ========================= */
 .floating-cart{
   position:fixed;
-  right:16px;
-  bottom:16px;
-
+  right:14px;
+  bottom:14px;
   width:56px;
   height:56px;
   border-radius:50%;
-
   background:#111;
   color:#fff;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   box-shadow:var(--shadow);
   z-index:3000;
 }
@@ -299,20 +268,14 @@ CART DRAWER
 ========================= */
 .cart-drawer{
   position:fixed;
-  top:0;
   right:0;
-
+  top:0;
   width:100%;
   max-width:420px;
   height:100vh;
-
   background:var(--card);
-
   transform:translateX(100%);
   transition:.3s;
-
-  display:flex;
-  flex-direction:column;
   z-index:5000;
 }
 
@@ -326,16 +289,12 @@ MODAL
 .modal{
   position:fixed;
   inset:0;
-
   background:rgba(0,0,0,.6);
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   opacity:0;
   visibility:hidden;
-  transition:.25s;
 }
 
 .modal.show{
@@ -344,44 +303,22 @@ MODAL
 }
 
 .modal-content{
-  width:100%;
+  width:90%;
   max-width:420px;
-
   background:var(--card);
   border-radius:18px;
-  overflow:hidden;
+  padding:16px;
 }
 
 /* =========================
-MOBILE RESPONSIVE
+MOBILE
 ========================= */
 @media(max-width:768px){
-
-  .header{
-    flex-wrap:wrap;
-    gap:10px;
-  }
-
-  .filter-grid{
-    grid-template-columns:1fr;
-  }
-
-  .products-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
+  .search-box{display:none;}
+  .products-grid{grid-template-columns:repeat(2,1fr);}
+  .logo-text{font-size:16px;}
 }
 
 @media(max-width:480px){
-
-  .products-grid{
-    grid-template-columns:1fr;
-  }
-
-  .logo-text{
-    font-size:16px;
-  }
-
-  .search-box{
-    width:100%;
-  }
+  .products-grid{grid-template-columns:1fr;}
 }
