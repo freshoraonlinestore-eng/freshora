@@ -115,45 +115,6 @@ transform:rotate(360deg);
 
 }
 
-/* =========================
-HEADER
-========================= */
-
-.header{
-position:sticky;
-top:0;
-z-index:1000;
-
-display:grid;
-grid-template-columns:
-auto
-1fr
-auto;
-
-align-items:center;
-gap:14px;
-
-padding:14px 18px;
-
-background:
-rgba(255,255,255,.88);
-
-backdrop-filter:blur(14px);
-
-border-bottom:
-1px solid var(--border);
-}
-
-body.dark .header{
-background:
-rgba(18,18,18,.88);
-}
-
-.logo{
-font-size:22px;
-font-weight:800;
-letter-spacing:.5px;
-}
 
 /* =========================
 SEARCH
