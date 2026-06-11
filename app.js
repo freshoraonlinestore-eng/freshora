@@ -3,13 +3,9 @@ import { db, collection, onSnapshot } from "./firebase.js";
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 
-// =====================
-// CART UPDATE SYSTEM
-// =====================
-
-const saveCart = () => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-};
+/* =========================
+CART SYSTEM
+========================= */
 
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
@@ -18,7 +14,7 @@ window.updateCartDisplay = () => {
 
     if (!cartItems || !cartTotal || !floatingCount) return;
 
-    floatingCount.innerText = cart.reduce((sum, i) => sum + i.qty, 0);
+    floatingCount.innerText = cart.length;
 
     let total = 0;
 
@@ -26,16 +22,14 @@ window.updateCartDisplay = () => {
         cartItems.innerHTML = `<div class="empty">Your cart is empty</div>`;
     } else {
         cartItems.innerHTML = cart.map((item, index) => {
-            const itemTotal = item.price * item.qty;
-            total += itemTotal;
+            total += item.price * item.qty;
 
             return `
                 <div class="cart-item">
                     <img src="${item.image}" alt="${item.name}">
-
                     <div class="cart-details">
                         <h4>${item.name}</h4>
-                        <p>Rs ${itemTotal}</p>
+                        <p>Rs ${item.price * item.qty}</p>
 
                         <div class="qty-box">
                             <button onclick="changeQty(${index}, -1)">-</button>
@@ -53,7 +47,7 @@ window.updateCartDisplay = () => {
     }
 
     cartTotal.innerText = `Total: Rs ${total}`;
-    saveCart();
+    localStorage.setItem("cart", JSON.stringify(cart));
 };
 
 window.changeQty = (index, delta) => {
@@ -74,16 +68,11 @@ window.addToCart = (id, name, price, image) => {
     if (existing) {
         existing.qty += 1;
     } else {
-        cart.push({
-            id,
-            name,
-            price: Number(price),
-            image,
-            qty: 1
-        });
+        cart.push({ id, name, price: Number(price), image, qty: 1 });
     }
 
     updateCartDisplay();
+    alert("Added to cart!");
 };
 
 window.removeFromCart = (index) => {
@@ -96,27 +85,18 @@ window.clearCart = () => {
     updateCartDisplay();
 };
 
-// =====================
-// FILTER SYSTEM
-// =====================
+/* =========================
+FILTER SYSTEM
+========================= */
 
 window.filterProducts = () => {
-    const searchInput = document.getElementById("searchInput");
-    const categoryEl = document.getElementById("categoryFilter");
-    const priceEl = document.getElementById("priceFilter");
-    const discountEl = document.getElementById("discountFilter");
-
-    if (!searchInput || !categoryEl || !priceEl || !discountEl) return;
-
-    const searchQuery = searchInput.value.toLowerCase();
-    const category = categoryEl.value;
-    const priceLimit = priceEl.value;
-    const discountLimit = discountEl.value;
+    const searchQuery = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const category = document.getElementById("categoryFilter")?.value || "all";
+    const priceLimit = document.getElementById("priceFilter")?.value || "all";
+    const discountLimit = document.getElementById("discountFilter")?.value || "all";
 
     const filtered = allProducts.filter(p => {
-        const name = (p.name || "").toLowerCase();
-
-        const matchesSearch = name.includes(searchQuery);
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery);
         const matchesCategory = category === "all" || p.category === category;
         const matchesPrice = priceLimit === "all" || Number(p.price) <= Number(priceLimit);
         const matchesDiscount = discountLimit === "all" || Number(p.discount || 0) >= Number(discountLimit);
@@ -127,9 +107,9 @@ window.filterProducts = () => {
     renderProducts(filtered);
 };
 
-// =====================
-// PRODUCT RENDER
-// =====================
+/* =========================
+PRODUCT RENDER
+========================= */
 
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
@@ -138,7 +118,6 @@ window.renderProducts = (products) => {
     grid.innerHTML = products.map(p => {
         const original = Number(p.price);
         const discount = Number(p.discount || 0);
-
         const final = discount > 0
             ? Math.round(original - (original * discount / 100))
             : original;
@@ -159,7 +138,9 @@ window.renderProducts = (products) => {
 
                     <div class="card-buttons">
                         <button onclick="openModal('${p.id}')">View</button>
-                        <button onclick="addToCart('${p.id}', '${p.name}', ${final}, '${p.image}')">Add</button>
+                        <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">
+                            Add
+                        </button>
                     </div>
                 </div>
             </div>
@@ -167,20 +148,21 @@ window.renderProducts = (products) => {
     }).join("");
 };
 
-// =====================
-// MODAL SYSTEM
-// =====================
+/* =========================
+PRODUCT MODAL + DETAILS + REVIEWS
+========================= */
 
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
 
-    const discount = Number(p.discount || 0);
-    const finalPrice = Math.round(p.price - (p.price * discount / 100));
+    const finalPrice = Math.round(p.price - (p.price * (p.discount || 0) / 100));
 
     document.getElementById("modalName").innerText = p.name;
     document.getElementById("modalImage").src = p.image;
     document.getElementById("modalPrice").innerText = "Rs " + finalPrice;
+
+    loadReviews(p.id);
 
     document.getElementById("modalAddBtn").onclick = () => {
         addToCart(p.id, p.name, finalPrice, p.image);
@@ -191,42 +173,28 @@ window.openModal = (id) => {
 };
 
 window.closeModal = () => {
-    document.getElementById("productModal").classList.remove("show");
+    const modal = document.getElementById("productModal");
+    if (modal) modal.classList.remove("show");
 };
-
-// =====================
-// UI TOGGLES
-// =====================
 
 window.toggleCart = () => {
     const drawer = document.getElementById("cartDrawer");
-    if (!drawer) return;
-
-    drawer.classList.toggle("open");
+    if (drawer) drawer.classList.toggle("open");
 };
 
 window.toggleDarkMode = () => {
     document.body.classList.toggle("dark");
-
     const icon = document.querySelector("#darkModeBtn i");
-    if (!icon) return;
 
-    icon.classList.toggle("fa-moon");
-    icon.classList.toggle("fa-sun");
+    if (icon) {
+        icon.classList.toggle("fa-moon");
+        icon.classList.toggle("fa-sun");
+    }
 };
 
-// =====================
-// EVENTS
-// =====================
-
-document.getElementById("searchInput")?.addEventListener("input", filterProducts);
-document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
-document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
-document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
-
-// =====================
-// CHECKOUT (SAFE + CLEAN)
-// =====================
+/* =========================
+CHECKOUT
+========================= */
 
 window.checkout = () => {
     const name = document.getElementById("cusName")?.value;
@@ -241,7 +209,9 @@ window.checkout = () => {
     const orderId = "FR-" + Date.now();
     const date = new Date().toLocaleString();
 
-    const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+    let subtotal = 0;
+    cart.forEach(item => subtotal += item.price * item.qty);
+
     const delivery = 375;
     const total = subtotal + delivery;
 
@@ -259,9 +229,62 @@ window.checkout = () => {
     window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
 };
 
-// =====================
-// FIREBASE LIVE DATA
-// =====================
+/* =========================
+REVIEWS SYSTEM (LOCAL STORAGE)
+========================= */
+
+window.loadReviews = (productId) => {
+    const list = document.getElementById("reviewList");
+    if (!list) return;
+
+    const reviews = JSON.parse(localStorage.getItem("reviews_" + productId)) || [];
+
+    if (reviews.length === 0) {
+        list.innerHTML = "<p>No reviews yet</p>";
+        return;
+    }
+
+    const avg = (
+        reviews.reduce((a, b) => a + b.rating, 0) / reviews.length
+    ).toFixed(1);
+
+    list.innerHTML = `
+        <h4>⭐ ${avg} / 5 (${reviews.length})</h4>
+        ${reviews.map(r => `
+            <div class="review-item">
+                <b>${"⭐".repeat(r.rating)}</b>
+                <p>${r.text}</p>
+            </div>
+        `).join("")}
+    `;
+};
+
+document.getElementById("reviewSubmitBtn")?.addEventListener("click", () => {
+    const rating = Number(document.getElementById("reviewRating")?.value);
+    const text = document.getElementById("reviewText")?.value;
+
+    if (!text) return alert("Write review first!");
+
+    const productName = document.getElementById("modalName")?.innerText;
+    const product = allProducts.find(p => p.name === productName);
+
+    if (!product) return;
+
+    const key = "reviews_" + product.id;
+    const reviews = JSON.parse(localStorage.getItem(key)) || [];
+
+    reviews.push({ rating, text });
+
+    localStorage.setItem(key, JSON.stringify(reviews));
+
+    document.getElementById("reviewText").value = "";
+
+    loadReviews(product.id);
+});
+
+/* =========================
+FIREBASE INIT
+========================= */
 
 onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = snapshot.docs.map(doc => ({
