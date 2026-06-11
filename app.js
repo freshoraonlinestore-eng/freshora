@@ -3,7 +3,8 @@ import { db, collection, onSnapshot } from "./firebase.js";
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 
-// Cart UI Update function
+// --- CORE UTILITIES ---
+
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
     const cartTotal = document.getElementById("cartTotal");
@@ -33,41 +34,27 @@ window.updateCartDisplay = () => {
     cartTotal.innerText = `Total: Rs ${total}`;
 };
 
-window.addToCart = (id, name, price, image) => {
-    cart.push({ id, name, price, image });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartDisplay();
-    alert("Added to cart!");
+// --- PRODUCT FILTERING LOGIC ---
+
+window.filterProducts = () => {
+    const searchQuery = document.getElementById("searchInput").value.toLowerCase();
+    const category = document.getElementById("categoryFilter").value;
+    const priceLimit = document.getElementById("priceFilter").value;
+    const discountLimit = document.getElementById("discountFilter").value;
+
+    const filtered = allProducts.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery);
+        const matchesCategory = category === "all" || p.category === category;
+        const matchesPrice = priceLimit === "all" || Number(p.price) <= Number(priceLimit);
+        const matchesDiscount = discountLimit === "all" || Number(p.discount || 0) >= Number(discountLimit);
+        
+        return matchesSearch && matchesCategory && matchesPrice && matchesDiscount;
+    });
+
+    renderProducts(filtered);
 };
 
-window.removeFromCart = (index) => {
-    cart.splice(index, 1);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartDisplay();
-};
-
-window.clearCart = () => {
-    cart = [];
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartDisplay();
-};
-
-window.checkout = () => {
-    const name = document.getElementById("cusName").value;
-    const phone = document.getElementById("cusPhone").value;
-    const address = document.getElementById("cusAddress").value;
-    
-    if (!name || !phone || !address) {
-        alert("Please fill in your details!");
-        return;
-    }
-
-    let msg = `New Order:%0A------------------%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0AItems:%0A`;
-    cart.forEach(item => { msg += `- ${item.name} (Rs ${item.price})%0A`; });
-    msg += `------------------%0ATotal: ${document.getElementById("cartTotal").innerText}`;
-
-    window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
-};
+// --- RENDER & EVENTS ---
 
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
@@ -95,6 +82,37 @@ window.renderProducts = (products) => {
     }).join("");
 };
 
+window.addToCart = (id, name, price, image) => {
+    cart.push({ id, name, price, image });
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartDisplay();
+    alert("Added to cart!");
+};
+
+window.removeFromCart = (index) => {
+    cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartDisplay();
+};
+
+window.clearCart = () => {
+    cart = [];
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartDisplay();
+};
+
+window.checkout = () => {
+    const name = document.getElementById("cusName").value;
+    const phone = document.getElementById("cusPhone").value;
+    const address = document.getElementById("cusAddress").value;
+    if (!name || !phone || !address) return alert("Please fill in your details!");
+    
+    let msg = `New Order:%0A------------------%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0A%0AItems:%0A`;
+    cart.forEach(item => { msg += `- ${item.name} (Rs ${item.price})%0A`; });
+    msg += `------------------%0ATotal: ${document.getElementById("cartTotal").innerText}`;
+    window.open(`https://wa.me/94752425790?text=${msg}`, "_blank");
+};
+
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
@@ -107,9 +125,20 @@ window.openModal = (id) => {
 
 window.closeModal = () => document.getElementById("productModal").classList.remove("show");
 window.toggleCart = () => document.getElementById("cartDrawer").classList.toggle("open");
-window.toggleDarkMode = () => document.body.classList.toggle("dark");
+window.toggleDarkMode = () => {
+    document.body.classList.toggle("dark");
+    const icon = document.querySelector("#darkModeBtn i");
+    icon.classList.toggle("fa-moon");
+    icon.classList.toggle("fa-sun");
+};
 
-// Initial Load
+// --- INITIALIZATIONS ---
+
+document.getElementById("searchInput").addEventListener("input", filterProducts);
+document.getElementById("categoryFilter").addEventListener("change", filterProducts);
+document.getElementById("priceFilter").addEventListener("change", filterProducts);
+document.getElementById("discountFilter").addEventListener("change", filterProducts);
+
 onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     renderProducts(allProducts);
