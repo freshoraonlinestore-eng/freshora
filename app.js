@@ -1,3 +1,10 @@
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js")
+        .then(() => console.log("SW Registered"))
+        .catch(err => console.log("SW Error", err));
+}
+
+
 import { db, collection, onSnapshot } from "./firebase.js";
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
