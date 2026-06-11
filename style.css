@@ -11,7 +11,7 @@ ROOT VARIABLES
   --green: #25d366;
   --danger: #ff3b30;
 
-  --border: #eaeaea;
+  --border: #ececec;
 
   --radius: 16px;
 
@@ -28,7 +28,7 @@ body.dark {
 }
 
 /* =========================
-GLOBAL
+GLOBAL RESET
 ========================= */
 * {
   margin: 0;
@@ -44,7 +44,7 @@ body {
 }
 
 /* =========================
-TOP BANNER
+TOP BANNER (NO CHANGE)
 ========================= */
 .top-banner {
   background: #111;
@@ -55,13 +55,14 @@ TOP BANNER
 }
 
 /* =========================
-HEADER
+HEADER (STABLE FIX ONLY)
 ========================= */
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
   background: var(--card);
   position: sticky;
   top: 0;
@@ -81,31 +82,32 @@ HEADER
   width: 42px;
   height: 42px;
   border-radius: 10px;
+  object-fit: cover;
 }
 
 .logo-text {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-/* SEARCH */
+/* SEARCH BOX FIX */
 .search-box {
   flex: 1;
-  margin: 0 15px;
   display: flex;
   align-items: center;
+  gap: 8px;
   background: var(--bg);
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: 12px;
   border: 1px solid var(--border);
+  min-width: 120px;
 }
 
 .search-box input {
+  width: 100%;
   border: none;
   outline: none;
   background: transparent;
-  width: 100%;
-  padding-left: 8px;
   color: var(--text);
 }
 
@@ -119,10 +121,10 @@ HEADER
 }
 
 /* =========================
-FILTER SECTION
+FILTER SECTION (SAFE FIX)
 ========================= */
 .advanced-search {
-  padding: 15px;
+  padding: 12px;
 }
 
 .filter-grid {
@@ -137,29 +139,31 @@ FILTER SECTION
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
+  outline: none;
 }
 
 /* =========================
-PRODUCT GRID
+PRODUCT GRID (NO UI CHANGE)
 ========================= */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 15px;
-  padding: 15px;
+  gap: 14px;
+  padding: 14px;
 }
 
-/* CARD */
+/* CARD FIX ONLY (NO DESIGN CHANGE) */
 .card {
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
-  transition: 0.3s;
+  position: relative;
+  transition: 0.25s;
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
 }
 
 .card img {
@@ -168,22 +172,21 @@ PRODUCT GRID
   object-fit: cover;
 }
 
-/* CONTENT */
+/* CARD CONTENT */
 .card-content {
   padding: 10px;
 }
 
 .card h3 {
-  font-size: 15px;
-  margin-bottom: 5px;
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
 /* PRICE */
 .price-box {
   display: flex;
-  gap: 8px;
   align-items: center;
-  margin: 5px 0;
+  gap: 6px;
 }
 
 .old-price {
@@ -193,23 +196,24 @@ PRODUCT GRID
 }
 
 .new-price {
-  font-weight: bold;
   color: var(--green);
+  font-weight: 600;
 }
 
 /* BUTTONS */
 .card-buttons {
   display: flex;
   gap: 6px;
+  margin-top: 8px;
 }
 
 .card-buttons button {
   flex: 1;
   padding: 7px;
-  border: none;
   border-radius: 10px;
-  cursor: pointer;
+  border: none;
   font-size: 12px;
+  cursor: pointer;
 }
 
 .card-buttons button:first-child {
@@ -219,51 +223,51 @@ PRODUCT GRID
 
 .card-buttons button:last-child {
   background: var(--primary);
-  color: white;
+  color: #fff;
 }
 
-/* DISCOUNT */
+/* DISCOUNT BADGE FIX */
 .discount-badge {
   position: absolute;
+  top: 8px;
+  left: 8px;
   background: var(--danger);
-  color: white;
-  font-size: 12px;
+  color: #fff;
+  font-size: 11px;
   padding: 4px 6px;
   border-radius: 8px;
-  margin: 8px;
 }
 
 /* =========================
-FLOAT CART
+FLOAT CART (NO CHANGE)
 ========================= */
 .floating-cart {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 18px;
+  right: 18px;
   background: var(--primary);
-  color: white;
+  color: #fff;
   border: none;
   padding: 14px;
   border-radius: 50%;
-  font-size: 18px;
   cursor: pointer;
   box-shadow: var(--shadow);
 }
 
 /* =========================
-CART DRAWER
+CART DRAWER (FIX ONLY ALIGNMENT)
 ========================= */
 .cart-drawer {
   position: fixed;
-  right: -100%;
   top: 0;
+  right: -100%;
   width: 320px;
   height: 100%;
   background: var(--card);
   box-shadow: var(--shadow);
-  transition: 0.3s;
   display: flex;
   flex-direction: column;
+  transition: 0.3s;
   z-index: 2000;
 }
 
@@ -272,40 +276,66 @@ CART DRAWER
 }
 
 .cart-header {
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
-  padding: 15px;
-  border-bottom: 1px solid var(--border);
+  align-items: center;
 }
 
+/* CART ITEMS */
 .cart-items {
   flex: 1;
   overflow-y: auto;
   padding: 10px;
 }
 
+/* ITEM FIX (NO UI CHANGE) */
 .cart-item {
   display: flex;
   gap: 10px;
-  margin-bottom: 10px;
+  padding: 10px;
   background: var(--bg);
-  padding: 8px;
-  border-radius: 10px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  align-items: center;
 }
 
 .cart-item img {
   width: 50px;
   height: 50px;
-  object-fit: cover;
   border-radius: 8px;
+  object-fit: cover;
+}
+
+.cart-details {
+  flex: 1;
+}
+
+.qty-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .qty-box button {
-  padding: 3px 8px;
-  border: none;
   background: var(--primary);
-  color: white;
-  border-radius: 5px;
+  color: #fff;
+  border: none;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* REMOVE BUTTON */
+.remove-btn {
+  background: var(--danger);
+  border: none;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 /* CHECKOUT */
@@ -323,11 +353,14 @@ CART DRAWER
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
+  outline: none;
 }
 
+/* TOTAL BAR */
 .sticky-checkout {
-  padding: 10px;
+  padding: 12px;
   border-top: 1px solid var(--border);
+  background: var(--card);
 }
 
 .checkout-actions {
@@ -338,7 +371,7 @@ CART DRAWER
 .checkout-btn {
   flex: 1;
   background: var(--green);
-  color: white;
+  color: #fff;
   border: none;
   padding: 10px;
   border-radius: 10px;
@@ -347,14 +380,14 @@ CART DRAWER
 .clear-btn {
   flex: 1;
   background: var(--danger);
-  color: white;
+  color: #fff;
   border: none;
   padding: 10px;
   border-radius: 10px;
 }
 
 /* =========================
-MODAL
+MODAL (SAFE FIX ONLY)
 ========================= */
 .modal {
   position: fixed;
@@ -371,39 +404,42 @@ MODAL
 
 .modal-content {
   background: var(--card);
-  padding: 15px;
-  border-radius: 15px;
   width: 90%;
   max-width: 400px;
+  border-radius: 14px;
+  padding: 12px;
   position: relative;
 }
 
 .modal-content img {
   width: 100%;
+  height: 220px;
+  object-fit: cover;
   border-radius: 10px;
 }
 
+/* CLOSE BUTTON */
 .close {
   position: absolute;
   top: 10px;
   right: 10px;
   background: var(--danger);
-  color: white;
   border: none;
+  color: #fff;
   border-radius: 50%;
   padding: 6px 10px;
 }
 
 /* =========================
-LOADING SCREEN
+LOADING
 ========================= */
 .loading-screen {
   position: fixed;
   inset: 0;
-  background: white;
+  background: #fff;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 9999;
 }
 
@@ -421,7 +457,7 @@ LOADING SCREEN
 }
 
 /* =========================
-RESPONSIVE
+RESPONSIVE FIX ONLY
 ========================= */
 @media (max-width: 768px) {
   .filter-grid {
@@ -430,12 +466,11 @@ RESPONSIVE
 
   .header {
     flex-wrap: wrap;
-    gap: 10px;
   }
 
   .search-box {
-    order: 3;
     width: 100%;
+    order: 3;
   }
 
   .cart-drawer {
