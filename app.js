@@ -16,13 +16,16 @@ function num(v) {
     return isNaN(n) ? 0 : n;
 }
 
+function saveCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
+}
+
 function showToast(msg) {
     const toast = document.getElementById("toast");
     if (!toast) return;
 
     toast.innerText = msg;
     toast.classList.add("show");
-
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
@@ -32,14 +35,12 @@ INIT
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
     bindFilters();
-    setupStarRating();
     bindReviewButton();
-
-    document.getElementById("modalAddBtn")?.addEventListener("click", addToCartFromModal);
+    setupStarRating();
 });
 
 /* =========================
-FILTERS
+FILTER BIND
 ========================= */
 function bindFilters() {
     document.getElementById("searchInput")?.addEventListener("input", filterProducts);
@@ -61,25 +62,28 @@ window.updateCartDisplay = () => {
     if (floating) floating.innerText = cart.length;
 
     if (cart.length === 0) {
-        cartItems.innerHTML = `<p style="text-align:center;padding:10px;">Cart is empty</p>`;
+        cartItems.innerHTML = `<p style="text-align:center;padding:10px;">Cart empty</p>`;
         if (cartTotal) cartTotal.innerText = "Total: Rs 0";
+        saveCart();
         return;
     }
 
     cartItems.innerHTML = cart.map((item, i) => {
         const price = num(item.price);
-        total += price * item.qty;
+        const qty = num(item.qty);
+        total += price * qty;
 
         return `
         <div class="cart-item">
             <img src="${item.image}" />
+
             <div>
                 <h4>${item.name}</h4>
-                <p>Rs ${price * item.qty}</p>
+                <p>Rs ${price * qty}</p>
 
                 <div class="qty-box">
                     <button onclick="changeQty(${i},-1)">-</button>
-                    <span>${item.qty}</span>
+                    <span>${qty}</span>
                     <button onclick="changeQty(${i},1)">+</button>
                 </div>
             </div>
@@ -90,65 +94,34 @@ window.updateCartDisplay = () => {
 
     if (cartTotal) cartTotal.innerText = `Total: Rs ${total}`;
 
-    localStorage.setItem("cart", JSON.stringify(cart));
+    saveCart();
 };
 
 /* =========================
-ADD TO CART (GRID)
+CART ACTIONS FIXED
 ========================= */
 window.addToCart = (id, name, price, image) => {
     const p = num(price);
 
-    const item = cart.find(i => i.id === id);
+    const existing = cart.find(i => i.id === id);
 
-    if (item) item.qty++;
-    else cart.push({ id, name, price: p, image, qty: 1 });
-
-    updateCartDisplay();
-    showToast("Added 🛒");
-};
-
-/* =========================
-ADD TO CART (MODAL FIX)
-========================= */
-window.addToCartFromModal = () => {
-    const p = allProducts.find(x => x.id === currentProductId);
-    if (!p) return;
-
-    const finalPrice = num(
-        p.discount > 0
-            ? p.price - (p.price * p.discount / 100)
-            : p.price
-    );
-
-    const item = cart.find(i => i.id === p.id);
-
-    if (item) item.qty++;
-    else cart.push({
-        id: p.id,
-        name: p.name,
-        price: finalPrice,
-        image: p.image,
-        qty: 1
-    });
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        cart.push({ id, name, price: p, image, qty: 1 });
+    }
 
     updateCartDisplay();
     showToast("Added 🛒");
     closeModal();
 };
 
-/* =========================
-REMOVE ITEM
-========================= */
 window.removeFromCart = (index) => {
     cart.splice(index, 1);
     updateCartDisplay();
-    showToast("Removed ❌");
+    showToast("Removed");
 };
 
-/* =========================
-QTY CHANGE
-========================= */
 window.changeQty = (index, value) => {
     if (!cart[index]) return;
 
@@ -162,7 +135,7 @@ window.changeQty = (index, value) => {
 };
 
 /* =========================
-FILTER + SEARCH
+FILTER
 ========================= */
 window.filterProducts = () => {
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
@@ -182,11 +155,16 @@ window.filterProducts = () => {
 };
 
 /* =========================
-PRODUCT RENDER
+RENDER PRODUCTS
 ========================= */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
     if (!grid) return;
+
+    if (!products.length) {
+        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
+        return;
+    }
 
     grid.innerHTML = products.map(p => {
         const price = num(p.price);
@@ -198,6 +176,7 @@ window.renderProducts = (products) => {
 
         return `
         <div class="card">
+
             ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
             <img src="${p.image || ''}" />
@@ -220,7 +199,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL OPEN
+MODAL + GALLERY FIXED
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -228,21 +207,18 @@ window.openModal = (id) => {
 
     currentProductId = id;
 
-    document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalPrice").innerText =
-        "Rs " + num(p.price);
-    document.getElementById("modalDesc").innerText =
-        p.description || "";
-
     const images = p.images?.length ? p.images : [p.image];
+
+    document.getElementById("modalName").innerText = p.name || "";
+    document.getElementById("modalPrice").innerText = "Rs " + num(p.price);
+    document.getElementById("modalDesc").innerText = p.description || "";
 
     document.getElementById("galleryContainer").innerHTML = `
         <img src="${images[0]}" class="main-img" id="mainModalImg">
 
         <div class="thumbnail-grid">
             ${images.map(img => `
-                <img src="${img}"
-                    class="thumbnail"
+                <img src="${img}" class="thumbnail"
                     onclick="document.getElementById('mainModalImg').src='${img}'">
             `).join("")}
         </div>
@@ -254,9 +230,6 @@ window.openModal = (id) => {
     updateStars(0);
 };
 
-/* =========================
-MODAL CLOSE
-========================= */
 window.closeModal = () => {
     document.getElementById("productModal")?.classList.remove("show");
     currentProductId = null;
@@ -274,7 +247,7 @@ function setupStarRating() {
                 updateStars(selectedRating);
             };
         });
-    }, 400);
+    }, 200);
 }
 
 function updateStars(rating) {
@@ -290,16 +263,15 @@ function updateStars(rating) {
 }
 
 /* =========================
-REVIEWS FIX
+REVIEWS FIXED
 ========================= */
 function bindReviewButton() {
     setTimeout(() => {
         const btn = document.getElementById("reviewSubmitBtn");
-
         if (!btn) return;
 
         btn.onclick = async () => {
-            const text = document.getElementById("reviewText")?.value;
+            const text = document.getElementById("reviewText")?.value.trim();
 
             if (!text || selectedRating === 0) {
                 showToast("Add rating + review");
@@ -323,10 +295,12 @@ function bindReviewButton() {
 
             showToast("Review added ✅");
         };
-    }, 500);
+    }, 200);
 }
 
-
+/* =========================
+CHECKOUT + WHATSAPP
+========================= */
 window.checkout = async () => {
     const name = document.getElementById("cusName")?.value.trim();
     const phone = document.getElementById("cusPhone")?.value.trim();
@@ -350,7 +324,6 @@ window.checkout = async () => {
     const itemsText = cart.map((item, i) => {
         const total = num(item.price) * num(item.qty);
         subtotal += total;
-
         return `${i + 1}) ${item.name} x${item.qty} = LKR ${total}`;
     }).join("\n");
 
@@ -379,14 +352,10 @@ TOTAL: LKR ${total}
 🚚 Payment: Cash on Delivery
 📍 Freshora Online Store`;
 
-    const whatsappNumber = "94752425790";
+    const url = `https://wa.me/94752425790?text=${encodeURIComponent(message)}`;
 
-    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-
-    // Open WhatsApp
     window.open(url, "_blank");
 
-    // Save to Firebase (optional but good)
     await addDoc(collection(db, "orders"), {
         orderId,
         customer: { name, phone, address },
@@ -397,13 +366,11 @@ TOTAL: LKR ${total}
         createdAt: new Date().toISOString()
     });
 
-    // Clear cart
     cart = [];
     updateCartDisplay();
-    localStorage.removeItem("cart");
-
-    showToast("Redirecting WhatsApp 🚀");
+    showToast("Order sent 🚀");
 };
+
 /* =========================
 UI
 ========================= */
