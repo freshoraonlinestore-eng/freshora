@@ -91,7 +91,10 @@ window.addToCart = (id, name, price, image) => {
     updateCartDisplay();
     showToast("Added 🛒");
 
-    pulseButton();
+    // ✅ AUTO CLOSE MODAL (IMPORTANT UX FIX)
+    document.getElementById("productModal")?.classList.remove("show");
+    currentProductId = null;
+    selectedRating = 0;
 };
 
 window.changeQty = (i, d) => {
@@ -116,7 +119,7 @@ window.clearCart = () => {
 };
 
 /* =========================
-SEARCH + FILTER (FIXED)
+SEARCH + FILTER
 ========================= */
 window.filterProducts = () => {
     const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
@@ -177,6 +180,7 @@ window.renderProducts = (products) => {
         return `
         <div class="card">
             <img src="${p.image}" />
+
             <div class="card-content">
                 <h3>${p.name}</h3>
 
@@ -194,7 +198,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL OPEN / CLOSE
+MODAL
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -219,7 +223,7 @@ window.closeModal = () => {
 };
 
 /* =========================
-STAR RATING
+STARS
 ========================= */
 function setupStarRating() {
     document.querySelectorAll("#starRating i").forEach((star, i) => {
@@ -243,7 +247,7 @@ function updateStars(rating) {
 }
 
 /* =========================
-REVIEW SYSTEM FIXED
+REVIEW SYSTEM
 ========================= */
 function bindReviewButton() {
     const btn = document.getElementById("reviewSubmitBtn");
@@ -324,7 +328,7 @@ window.toggleDarkMode = () => {
 };
 
 /* =========================
-FIREBASE PRODUCTS
+FIREBASE LOAD
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -332,15 +336,3 @@ onSnapshot(collection(db, "products"), (snap) => {
 
     document.getElementById("loadingScreen")?.remove();
 });
-
-/* =========================
-UX EFFECT
-========================= */
-function pulseButton() {
-    document.querySelectorAll("button").forEach(b => {
-        if (b.innerText === "Add") {
-            b.style.transform = "scale(0.95)";
-            setTimeout(() => b.style.transform = "scale(1)", 120);
-        }
-    });
-}
