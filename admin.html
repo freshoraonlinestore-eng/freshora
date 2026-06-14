@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="admin-container">
+
+<h2>🟢 Freshora Admin Panel</h2>
+
+<button onclick="logout()">Logout</button>
+
+<hr>
+
+<h3>Add Product</h3>
+
+<input id="pname" placeholder="Product Name">
+<input id="pprice" placeholder="Price">
+<input id="pdiscount" placeholder="Discount %">
+<input id="pcategory" placeholder="Category">
+<textarea id="pdesc" placeholder="Description"></textarea>
+<input id="pimage" placeholder="Image URL">
+
+<button onclick="addProduct()">Add Product</button>
+
+<hr>
+
+<h3>Products</h3>
+<div id="productList"></div>
+
+<hr>
+
+<h3>Orders</h3>
+<div id="orderList"></div>
+
+</div>
+
+<script type="module" src="admin.js"></script>
+
+</body>
+</html>
