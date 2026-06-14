@@ -26,6 +26,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("searchInput")?.addEventListener("input", filterProducts);
     document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
+    document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
+    document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
 
     setupStarRating();
 });
@@ -42,11 +44,11 @@ window.updateCartDisplay = () => {
 
     let total = 0;
 
-    floatingCount && (floatingCount.innerText = cart.length);
+    if (floatingCount) floatingCount.innerText = cart.length;
 
     if (cart.length === 0) {
         cartItems.innerHTML = `<p style="text-align:center;padding:10px;">Cart is empty</p>`;
-        cartTotal && (cartTotal.innerText = "Total: Rs 0");
+        if (cartTotal) cartTotal.innerText = "Total: Rs 0";
         return;
     }
 
@@ -71,10 +73,14 @@ window.updateCartDisplay = () => {
         </div>`;
     }).join("");
 
-    cartTotal.innerText = `Total: Rs ${total}`;
+    if (cartTotal) cartTotal.innerText = `Total: Rs ${total}`;
+
     localStorage.setItem("cart", JSON.stringify(cart));
 };
 
+/* =========================
+CART ACTIONS
+========================= */
 window.addToCart = (id, name, price, image) => {
     const item = cart.find(i => i.id === id);
 
@@ -89,6 +95,7 @@ window.changeQty = (i, d) => {
     if (!cart[i]) return;
 
     cart[i].qty += d;
+
     if (cart[i].qty <= 0) cart.splice(i, 1);
 
     updateCartDisplay();
@@ -105,7 +112,152 @@ window.clearCart = () => {
 };
 
 /* =========================
-CHECKOUT → FIREBASE ORDERS (NEW)
+SEARCH + FILTER (FIXED)
+========================= */
+window.filterProducts = () => {
+    const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const category = document.getElementById("categoryFilter")?.value || "all";
+    const priceFilter = document.getElementById("priceFilter")?.value || "all";
+    const discountFilter = document.getElementById("discountFilter")?.value || "all";
+
+    let filtered = [...allProducts];
+
+    /* SEARCH */
+    filtered = filtered.filter(p =>
+        (p.name || "").toLowerCase().includes(searchTerm)
+    );
+
+    /* CATEGORY */
+    if (category !== "all") {
+        filtered = filtered.filter(p => p.category === category);
+    }
+
+    /* PRICE */
+    if (priceFilter !== "all") {
+        filtered = filtered.filter(p => {
+            const price = Number(p.price || 0);
+            if (priceFilter === "low") return price < 500;
+            if (priceFilter === "mid") return price >= 500 && price <= 2000;
+            if (priceFilter === "high") return price > 2000;
+            return true;
+        });
+    }
+
+    /* DISCOUNT */
+    if (discountFilter !== "all") {
+        filtered = filtered.filter(p => {
+            const d = Number(p.discount || 0);
+            if (discountFilter === "10") return d >= 10;
+            if (discountFilter === "20") return d >= 20;
+            return true;
+        });
+    }
+
+    renderProducts(filtered);
+};
+
+/* =========================
+RENDER PRODUCTS
+========================= */
+window.renderProducts = (products) => {
+    const grid = document.getElementById("products");
+    if (!grid) return;
+
+    if (!products.length) {
+        grid.innerHTML = `<p style="text-align:center;width:100%;">No products found</p>`;
+        return;
+    }
+
+    grid.innerHTML = products.map(p => {
+        const discount = Number(p.discount || 0);
+        const final = discount > 0
+            ? Math.round(p.price - (p.price * discount / 100))
+            : Number(p.price);
+
+        return `
+        <div class="card">
+            <img src="${p.image}" />
+
+            <div class="card-content">
+                <h3>${p.name}</h3>
+
+                <div class="price-box">
+                    <span class="new-price">Rs ${final}</span>
+                </div>
+
+                <div class="card-buttons">
+                    <button onclick="openModal('${p.id}')">View</button>
+                    <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">Add</button>
+                </div>
+            </div>
+        </div>`;
+    }).join("");
+};
+
+/* =========================
+MODAL OPEN
+========================= */
+window.openModal = (id) => {
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+
+    currentProductId = id;
+
+    document.getElementById("modalName").innerText = p.name;
+    document.getElementById("modalPrice").innerText = "Rs " + p.price;
+    document.getElementById("modalDesc").innerText = p.description || "";
+
+    document.getElementById("productModal").classList.add("show");
+
+    setupStars();
+};
+
+/* =========================
+MODAL CLOSE (FIXED)
+========================= */
+window.closeModal = () => {
+    const modal = document.getElementById("productModal");
+    if (!modal) return;
+
+    modal.classList.remove("show");
+    currentProductId = null;
+    selectedRating = 0;
+};
+
+/* =========================
+STARS
+========================= */
+function setupStarRating() {
+    const stars = document.querySelectorAll("#starRating i");
+
+    stars.forEach((star, i) => {
+        star.onclick = () => {
+            selectedRating = i + 1;
+            updateStars(selectedRating);
+        };
+    });
+}
+
+function setupStars() {
+    updateStars(selectedRating);
+}
+
+function updateStars(rating) {
+    const stars = document.querySelectorAll("#starRating i");
+
+    stars.forEach((star, i) => {
+        if (i < rating) {
+            star.classList.add("fa-solid");
+            star.classList.remove("fa-regular");
+        } else {
+            star.classList.add("fa-regular");
+            star.classList.remove("fa-solid");
+        }
+    });
+}
+
+/* =========================
+CHECKOUT (SAFE)
 ========================= */
 window.checkout = async () => {
     const name = document.getElementById("cusName")?.value;
@@ -138,106 +290,6 @@ window.checkout = async () => {
 };
 
 /* =========================
-PRODUCT RENDER
-========================= */
-window.renderProducts = (products) => {
-    const grid = document.getElementById("products");
-    if (!grid) return;
-
-    if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;width:100%;">No products</p>`;
-        return;
-    }
-
-    grid.innerHTML = products.map(p => {
-        const discount = Number(p.discount || 0);
-        const final = discount
-            ? Math.round(p.price - (p.price * discount / 100))
-            : Number(p.price);
-
-        return `
-        <div class="card">
-            <img src="${p.image}" />
-            <div class="card-content">
-                <h3>${p.name}</h3>
-
-                <div class="price-box">
-                    <span class="new-price">Rs ${final}</span>
-                </div>
-
-                <div class="card-buttons">
-                    <button onclick="openModal('${p.id}')">View</button>
-                    <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">Add</button>
-                </div>
-            </div>
-        </div>`;
-    }).join("");
-};
-
-/* =========================
-MODAL + REVIEWS (NEW)
-========================= */
-window.openModal = (id) => {
-    const p = allProducts.find(x => x.id === id);
-    if (!p) return;
-
-    currentProductId = id;
-
-    document.getElementById("modalName").innerText = p.name;
-
-    document.getElementById("productModal").classList.add("show");
-
-    loadReviews(id);
-};
-
-/* =========================
-REVIEWS SAVE (NEW)
-========================= */
-window.submitReview = async () => {
-    const text = document.getElementById("reviewText")?.value;
-
-    if (!text || selectedRating === 0) {
-        showToast("Add rating + review");
-        return;
-    }
-
-    await addDoc(collection(db, "reviews"), {
-        productId: currentProductId,
-        rating: selectedRating,
-        text,
-        createdAt: new Date().toISOString()
-    });
-
-    document.getElementById("reviewText").value = "";
-    selectedRating = 0;
-
-    showToast("Review added ✅");
-    loadReviews(currentProductId);
-};
-
-/* LOAD REVIEWS */
-async function loadReviews(pid) {
-    const box = document.getElementById("reviewList");
-    if (!box) return;
-
-    const snap = await onSnapshot(collection(db, "reviews"), () => {});
-
-    // simple render (basic safe version)
-    box.innerHTML = `<p>Reviews loaded via realtime (Firebase)</p>`;
-}
-
-/* =========================
-STAR RATING
-========================= */
-function setupStarRating() {
-    document.querySelectorAll("#starRating i").forEach((star, i) => {
-        star.onclick = () => {
-            selectedRating = i + 1;
-        };
-    });
-}
-
-/* =========================
 UI TOGGLES
 ========================= */
 window.toggleCart = () => {
@@ -256,10 +308,11 @@ window.toggleDarkMode = () => {
 };
 
 /* =========================
-FIREBASE PRODUCTS
+FIREBASE LOAD
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderProducts(allProducts);
+
     document.getElementById("loadingScreen")?.remove();
 });
