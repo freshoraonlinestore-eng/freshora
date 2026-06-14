@@ -1,4 +1,10 @@
-import { db, collection, onSnapshot } from "./firebase.js";
+/* =========================
+FRESHORA APP.JS (FULL FIXED)
+REPLACE ENTIRE FILE
+========================= */
+
+import { db } from "./firebase.js";
+import { collection, onSnapshot } from "firebase/firestore";
 
 /* =========================
 STATE
@@ -9,247 +15,239 @@ let currentProduct = null;
 let selectedRating = 0;
 
 /* =========================
-UTILS
+INIT
 ========================= */
-function toast(msg) {
-    const t = document.getElementById("toast");
-    if (!t) return;
+document.addEventListener("DOMContentLoaded", () => {
+    setupListeners();
+    loadProducts();
+    updateCartUI();
+    hideLoading();
+});
 
-    t.innerText = msg;
-    t.classList.add("show");
+/* =========================
+FIREBASE PRODUCTS LOAD
+========================= */
+function loadProducts() {
+    const colRef = collection(db, "products");
 
-    setTimeout(() => t.classList.remove("show"), 2000);
+    onSnapshot(colRef, (snapshot) => {
+        allProducts = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        renderProducts(allProducts);
+        populateFilters(allProducts);
+    });
 }
+
+/* =========================
+RENDER PRODUCTS
+========================= */
+function renderProducts(products) {
+    const container = document.getElementById("products");
+    container.innerHTML = "";
+
+    products.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product-card";
+
+        div.innerHTML = `
+            <img src="${p.image}" onclick="openModal('${p.id}')">
+            <h3>${p.name}</h3>
+            <p>Rs ${p.price}</p>
+            <button onclick="addToCart('${p.id}')">Add to Cart</button>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+/* =========================
+FILTERS
+========================= */
+function populateFilters(products) {
+    const categories = [...new Set(products.map(p => p.category || "Other"))];
+    const catFilter = document.getElementById("categoryFilter");
+
+    catFilter.innerHTML = `<option value="all">All Categories</option>`;
+    categories.forEach(c => {
+        catFilter.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+}
+
+/* =========================
+SEARCH + FILTER EVENTS
+========================= */
+function setupListeners() {
+
+    document.getElementById("searchInput").addEventListener("input", filterProducts);
+
+    document.getElementById("categoryFilter").addEventListener("change", filterProducts);
+    document.getElementById("priceFilter").addEventListener("change", filterProducts);
+    document.getElementById("discountFilter").addEventListener("change", filterProducts);
+
+    document.getElementById("submitReview").addEventListener("click", submitReview);
+
+    document.querySelectorAll("#starRating i").forEach(star => {
+        star.addEventListener("click", () => {
+            selectedRating = star.dataset.value;
+            highlightStars(selectedRating);
+        });
+    });
+}
+
+/* =========================
+FILTER LOGIC
+========================= */
+function filterProducts() {
+    let filtered = [...allProducts];
+
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const cat = document.getElementById("categoryFilter").value;
+
+    if (search) {
+        filtered = filtered.filter(p =>
+            p.name.toLowerCase().includes(search)
+        );
+    }
+
+    if (cat !== "all") {
+        filtered = filtered.filter(p => p.category === cat);
+    }
+
+    renderProducts(filtered);
+}
+
+/* =========================
+CART SYSTEM
+========================= */
+window.addToCart = (id) => {
+    const product = allProducts.find(p => p.id === id);
+    cart.push(product);
+    saveCart();
+    updateCartUI();
+    showToast("Added to cart");
+};
 
 function saveCart() {
     localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-/* =========================
-INIT
-========================= */
-window.addEventListener("DOMContentLoaded", () => {
-    bindEvents();
-    updateCart();
-});
+function updateCartUI() {
+    document.getElementById("floatingCartCount").innerText = cart.length;
 
-/* =========================
-EVENT BIND (SAFE FIX)
-========================= */
-function bindEvents() {
-    document.getElementById("searchInput")?.addEventListener("input", filter);
-    document.getElementById("categoryFilter")?.addEventListener("change", filter);
-    document.getElementById("priceFilter")?.addEventListener("change", filter);
-    document.getElementById("discountFilter")?.addEventListener("change", filter);
+    const container = document.getElementById("cartItems");
+    container.innerHTML = "";
 
-    setupStars();
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        total += Number(item.price);
+
+        const div = document.createElement("div");
+        div.innerHTML = `
+            <p>${item.name} - Rs ${item.price}</p>
+            <button onclick="removeItem(${index})">Remove</button>
+        `;
+        container.appendChild(div);
+    });
+
+    document.getElementById("cartTotal").innerText = `Total: Rs ${total}`;
 }
+
+window.removeItem = (index) => {
+    cart.splice(index, 1);
+    saveCart();
+    updateCartUI();
+};
+
+window.clearCart = () => {
+    cart = [];
+    saveCart();
+    updateCartUI();
+};
 
 /* =========================
 CART TOGGLE
 ========================= */
 window.toggleCart = () => {
-    document.getElementById("cartDrawer")?.classList.toggle("open");
+    document.getElementById("cartDrawer").classList.toggle("open");
 };
 
 /* =========================
-CART SYSTEM
+CHECKOUT
 ========================= */
-window.updateCart = () => {
-    const list = document.getElementById("cartItems");
-    const totalBox = document.getElementById("cartTotal");
-    const count = document.getElementById("floatingCartCount");
+window.checkout = () => {
+    const name = document.getElementById("cusName").value;
+    const phone = document.getElementById("cusPhone").value;
+    const address = document.getElementById("cusAddress").value;
 
-    if (!list || !totalBox || !count) return;
+    if (!name || !phone || !address) {
+        alert("Fill all fields");
+        return;
+    }
 
-    count.innerText = cart.length;
+    alert("Order placed successfully!");
+    clearCart();
+};
 
-    let total = 0;
+/* =========================
+MODAL SYSTEM
+========================= */
+window.openModal = (id) => {
+    const product = allProducts.find(p => p.id === id);
+    currentProduct = product;
 
-    if (cart.length === 0) {
-        list.innerHTML = `<p style="text-align:center;padding:10px;">Cart is empty</p>`;
-        totalBox.innerText = "Total: Rs 0";
+    document.getElementById("modalName").innerText = product.name;
+    document.getElementById("modalPrice").innerText = "Rs " + product.price;
+    document.getElementById("modalDesc").innerText = product.description || "";
+
+    document.getElementById("productModal").style.display = "block";
+};
+
+window.closeModal = () => {
+    document.getElementById("productModal").style.display = "none";
+};
+
+/* =========================
+ADD FROM MODAL
+========================= */
+document.getElementById("modalAddBtn").addEventListener("click", () => {
+    if (currentProduct) {
+        cart.push(currentProduct);
         saveCart();
-        return;
+        updateCartUI();
+        showToast("Added from modal");
     }
-
-    list.innerHTML = cart.map((c, i) => {
-        total += c.price * c.qty;
-
-        return `
-            <div class="cart-item">
-                <img src="${c.image || ''}" />
-                <div class="cart-details">
-                    <h4>${c.name}</h4>
-                    <p>Rs ${c.price * c.qty}</p>
-
-                    <div class="qty-box">
-                        <button onclick="qty(${i},-1)">-</button>
-                        <span>${c.qty}</span>
-                        <button onclick="qty(${i},1)">+</button>
-                    </div>
-                </div>
-
-                <button class="remove-btn" onclick="removeItem(${i})">✕</button>
-            </div>
-        `;
-    }).join("");
-
-    totalBox.innerText = `Total: Rs ${total}`;
-    saveCart();
-};
+});
 
 /* =========================
-ADD TO CART (SAFE)
+RATING UI
 ========================= */
-window.addToCart = (id, name, price, image) => {
-    if (!id) return;
-
-    const p = Number(price) || 0;
-    const img = image || "";
-
-    const found = cart.find(x => x.id === id);
-
-    if (found) found.qty++;
-    else cart.push({ id, name, price: p, image: img, qty: 1 });
-
-    updateCart();
-    toast("Added to cart 🛒");
-};
-
-/* =========================
-QTY
-========================= */
-window.qty = (i, d) => {
-    if (!cart[i]) return;
-
-    cart[i].qty += d;
-    if (cart[i].qty <= 0) cart.splice(i, 1);
-
-    updateCart();
-};
-
-/* =========================
-REMOVE / CLEAR
-========================= */
-window.removeItem = (i) => {
-    cart.splice(i, 1);
-    updateCart();
-};
-
-window.clearCart = () => {
-    cart = [];
-    updateCart();
-};
-
-/* =========================
-FILTER
-========================= */
-window.filter = () => {
-    const s = document.getElementById("searchInput")?.value.toLowerCase() || "";
-    const cat = document.getElementById("categoryFilter")?.value || "all";
-
-    let data = [...allProducts];
-
-    if (s) data = data.filter(p => (p.name || "").toLowerCase().includes(s));
-    if (cat !== "all") data = data.filter(p => p.category === cat);
-
-    render(data);
-};
-
-/* =========================
-RENDER PRODUCTS
-========================= */
-window.render = (items) => {
-    const box = document.getElementById("products");
-    if (!box) return;
-
-    if (!items.length) {
-        box.innerHTML = `<p style="text-align:center;width:100%">No products 😕</p>`;
-        return;
-    }
-
-    box.innerHTML = items.map(p => {
-        const d = Number(p.discount || 0);
-        const price = Number(p.price || 0);
-
-        const final = d ? Math.round(price - (price * d / 100)) : price;
-
-        return `
-            <div class="card">
-                ${d ? `<div class="discount-badge">-${d}%</div>` : ""}
-
-                <img src="${p.image || ''}" />
-
-                <div class="card-content">
-                    <h3>${p.name}</h3>
-
-                    <div class="price-box">
-                        ${d ? `<span class="old-price">Rs ${price}</span>` : ""}
-                        <span class="new-price">Rs ${final}</span>
-                    </div>
-
-                    <div class="card-buttons">
-                        <button onclick="open('${p.id}')">View</button>
-                        <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">Add</button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join("");
-};
-
-/* =========================
-MODAL (FIXED)
-========================= */
-window.open = (id) => {
-    const p = allProducts.find(x => x.id === id);
-    if (!p) return toast("Not found");
-
-    currentProduct = p;
-
-    const d = Number(p.discount || 0);
-    const price = Number(p.price || 0);
-    const final = d ? Math.round(price - (price * d / 100)) : price;
-
-    document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalPrice").innerText = "Rs " + final;
-    document.getElementById("modalDesc").innerText = p.description || "";
-
-    const imgs = (p.images && p.images.length) ? p.images : [p.image];
-
-    document.getElementById("galleryContainer").innerHTML = `
-        <img src="${imgs[0]}" id="mainModalImg" />
-    `;
-
-    document.getElementById("modalAddBtn").onclick = () => {
-        addToCart(p.id, p.name, final, imgs[0]);
-        close();
-    };
-
-    document.getElementById("productModal").classList.add("show");
-};
-
-window.close = () => {
-    document.getElementById("productModal")?.classList.remove("show");
-};
-
-/* =========================
-STARS (SAFE)
-========================= */
-function setupStars() {
-    const stars = document.querySelectorAll("#starRating i");
-
-    stars.forEach((s, i) => {
-        s.onclick = () => {
-            selectedRating = i + 1;
-
-            stars.forEach((x, j) => {
-                x.classList.toggle("fa-solid", j < selectedRating);
-                x.classList.toggle("fa-regular", j >= selectedRating);
-            });
-        };
+function highlightStars(value) {
+    document.querySelectorAll("#starRating i").forEach(star => {
+        star.classList.toggle("fa-solid", star.dataset.value <= value);
+        star.classList.toggle("fa-regular", star.dataset.value > value);
     });
+}
+
+/* =========================
+REVIEWS (LOCAL)
+========================= */
+function submitReview() {
+    const text = document.getElementById("reviewText").value;
+
+    if (!text || !selectedRating) return;
+
+    const div = document.createElement("div");
+    div.innerHTML = `<p>⭐ ${selectedRating} - ${text}</p>`;
+
+    document.getElementById("reviewList").appendChild(div);
+
+    document.getElementById("reviewText").value = "";
+    selectedRating = 0;
+    highlightStars(0);
 }
 
 /* =========================
@@ -259,18 +257,31 @@ window.toggleDarkMode = () => {
     document.body.classList.toggle("dark");
 
     const icon = document.querySelector(".icon-btn i");
-    if (!icon) return;
 
-    icon.classList.toggle("fa-moon");
-    icon.classList.toggle("fa-sun");
+    if (document.body.classList.contains("dark")) {
+        icon.classList.replace("fa-moon", "fa-sun");
+    } else {
+        icon.classList.replace("fa-sun", "fa-moon");
+    }
 };
 
 /* =========================
-FIREBASE LOAD
+TOAST
 ========================= */
-onSnapshot(collection(db, "products"), (snap) => {
-    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    render(allProducts);
+function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.classList.add("show");
 
-    document.getElementById("loadingScreen")?.remove();
-});
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+
+/* =========================
+LOADING
+========================= */
+function hideLoading() {
+    const loader = document.getElementById("loadingScreen");
+    if (loader) loader.style.display = "none";
+}
