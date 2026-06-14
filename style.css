@@ -1,9 +1,9 @@
 /* =========================
-FRESHORA FULL UI STYLE.CSS
-COMPLETE SAFE VERSION
+FRESHORA FINAL UI - LEVEL 2
+FULL CLEAN + FIXED + UPGRADED
 ========================= */
 
-/* ROOT VARIABLES */
+/* ROOT */
 :root {
   --primary: #1f8f4d;
   --primary-dark: #15803d;
@@ -19,7 +19,7 @@ COMPLETE SAFE VERSION
   --border: #e6e6e6;
 
   --shadow: 0 10px 25px rgba(0,0,0,0.08);
-  --radius: 14px;
+  --radius: 16px;
 }
 
 /* DARK MODE */
@@ -94,7 +94,7 @@ body {
   align-items: center;
   background: var(--bg);
   padding: 8px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--border);
 }
 
@@ -136,41 +136,71 @@ body {
   color: var(--text);
 }
 
-/* PRODUCTS GRID */
+/* =========================
+PRODUCT GRID (GALAXY UPGRADE)
+========================= */
+
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  gap: 14px;
   padding: 12px;
 }
 
 /* CARD */
 .card {
   background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
   overflow: hidden;
   position: relative;
-  transition: 0.2s;
+  transition: 0.25s ease;
+  border: 1px solid var(--border);
 }
 
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
 }
 
+/* GALAXY GLOW EFFECT */
+.card::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(37,211,102,0.08), transparent 60%);
+  opacity: 0;
+  transition: 0.4s;
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+/* IMAGE */
 .card img {
   width: 100%;
-  height: 140px;
+  height: 150px;
   object-fit: cover;
+  transition: 0.4s ease;
 }
 
+.card:hover img {
+  transform: scale(1.08);
+  filter: brightness(1.05);
+}
+
+/* TEXT */
 .card-content {
   padding: 10px;
 }
 
 .card h3 {
   font-size: 14px;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 /* PRICE */
@@ -192,7 +222,7 @@ body {
   font-weight: bold;
 }
 
-/* CARD BUTTONS */
+/* BUTTONS */
 .card-buttons {
   display: flex;
   gap: 5px;
@@ -205,6 +235,11 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
+  transition: 0.2s;
+}
+
+.card-buttons button:hover {
+  transform: scale(1.05);
 }
 
 .card-buttons button:first-child {
@@ -218,7 +253,7 @@ body {
   color: white;
 }
 
-/* DISCOUNT BADGE */
+/* DISCOUNT */
 .discount-badge {
   position: absolute;
   top: 8px;
@@ -260,7 +295,10 @@ body {
   justify-content: center;
 }
 
-/* CART DRAWER */
+/* =========================
+CART UI (PREMIUM FIX)
+========================= */
+
 .cart-drawer {
   position: fixed;
   top: 0;
@@ -279,52 +317,87 @@ body {
   right: 0;
 }
 
+/* CART HEADER */
 .cart-header {
   display: flex;
   justify-content: space-between;
-  padding: 12px;
-  border-bottom: 1px solid var(--border);
+  align-items: center;
+  padding: 15px;
+  background: var(--primary);
+  color: white;
 }
 
+.cart-header h2 {
+  font-size: 16px;
+}
+
+/* CART ITEM */
 .cart-item {
   display: flex;
   gap: 10px;
-  padding: 10px;
+  padding: 12px;
   border-bottom: 1px solid var(--border);
+  align-items: center;
 }
 
 .cart-item img {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
+  width: 55px;
+  height: 55px;
+  border-radius: 10px;
   object-fit: cover;
 }
 
+.cart-details h4 {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.cart-details p {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+/* QTY */
 .qty-box {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  margin-top: 5px;
 }
 
 .qty-box button {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
   border: none;
   background: var(--primary);
   color: white;
-  border-radius: 5px;
 }
 
+/* REMOVE */
 .remove-btn {
   margin-left: auto;
   background: var(--danger);
   border: none;
   color: white;
-  padding: 5px;
-  border-radius: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
 }
 
-/* CART FOOTER */
+/* TOTAL */
+#cartTotal {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--primary);
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(37,211,102,0.1);
+  border-radius: 10px;
+  text-align: center;
+}
+
+/* FOOTER */
 .cart-footer {
   margin-top: auto;
   padding: 12px;
@@ -342,6 +415,7 @@ body {
   color: var(--text);
 }
 
+/* BUTTONS */
 .checkout-actions {
   display: flex;
   gap: 6px;
@@ -350,23 +424,27 @@ body {
 
 .checkout-btn {
   flex: 1;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
   border: none;
   padding: 8px;
   border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(37,211,102,0.3);
 }
 
 .clear-btn {
   flex: 1;
-  background: var(--danger);
+  background: #ff3b30;
   color: white;
   border: none;
   padding: 8px;
   border-radius: 8px;
 }
 
-/* MODAL */
+/* =========================
+MODAL
+========================= */
+
 .modal {
   position: fixed;
   top: 0;
@@ -393,7 +471,6 @@ body {
   position: relative;
 }
 
-/* CLOSE BTN */
 .close {
   position: absolute;
   top: 10px;
@@ -426,21 +503,9 @@ body {
 }
 
 /* RATING */
-.rating-ui {
-  margin: 10px 0;
-}
-
 #starRating i {
   color: #ffb400;
   cursor: pointer;
-}
-
-/* REVIEW */
-#reviewText {
-  width: 100%;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
 }
 
 /* TOAST */
