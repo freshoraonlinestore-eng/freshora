@@ -6,8 +6,13 @@ let selectedRating = 0;
 let currentProductId = null;
 
 /* =========================
-TOAST
+UTIL
 ========================= */
+function num(v) {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
+}
+
 function showToast(msg) {
     const toast = document.getElementById("toast");
     if (!toast) return;
@@ -19,24 +24,22 @@ function showToast(msg) {
 }
 
 /* =========================
-INIT
+INIT (IMPORTANT FIX ORDER)
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
 
-    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
-    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
-
+    bindFilters();
     bindReviewButton();
     setupStarRating();
 });
 
 /* =========================
-SAFE NUMBER HELPER (IMPORTANT FIX)
+FILTER BIND
 ========================= */
-function num(v) {
-    const n = Number(v);
-    return isNaN(n) ? 0 : n;
+function bindFilters() {
+    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
+    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
 }
 
 /* =========================
@@ -45,16 +48,16 @@ CART
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
     const cartTotal = document.getElementById("cartTotal");
-    const floatingCount = document.getElementById("floatingCartCount");
+    const floating = document.getElementById("floatingCartCount");
 
     if (!cartItems) return;
 
     let total = 0;
 
-    if (floatingCount) floatingCount.innerText = cart.length;
+    if (floating) floating.innerText = cart.length;
 
-    if (cart.length === 0) {
-        cartItems.innerHTML = `<p style="text-align:center;padding:10px;">Cart is empty</p>`;
+    if (!cart.length) {
+        cartItems.innerHTML = `<p style="text-align:center">Cart empty</p>`;
         if (cartTotal) cartTotal.innerText = "Total: Rs 0";
         return;
     }
@@ -88,7 +91,7 @@ window.updateCartDisplay = () => {
 };
 
 /* =========================
-ADD TO CART (SAFE FIX)
+ADD TO CART
 ========================= */
 window.addToCart = (id, name, price, image) => {
     const p = num(price);
@@ -125,14 +128,14 @@ window.filterProducts = () => {
 };
 
 /* =========================
-PRODUCT RENDER (FIXED DISCOUNT + PRICE)
+RENDER (FIXED DISCOUNT + PRICE)
 ========================= */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
     if (!grid) return;
 
     if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;width:100%;">No products found</p>`;
+        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
         return;
     }
 
@@ -177,7 +180,7 @@ window.openModal = (id) => {
 
     currentProductId = id;
 
-    document.getElementById("modalName").innerText = p.name || '';
+    document.getElementById("modalName").innerText = p.name;
     document.getElementById("modalPrice").innerText = "Rs " + num(p.price);
     document.getElementById("modalDesc").innerText = p.description || "";
 
@@ -187,6 +190,9 @@ window.openModal = (id) => {
     updateStars(0);
 };
 
+/* =========================
+CLOSE MODAL
+========================= */
 window.closeModal = () => {
     document.getElementById("productModal")?.classList.remove("show");
     currentProductId = null;
@@ -197,12 +203,14 @@ window.closeModal = () => {
 STARS
 ========================= */
 function setupStarRating() {
-    document.querySelectorAll("#starRating i").forEach((star, i) => {
-        star.onclick = () => {
-            selectedRating = i + 1;
-            updateStars(selectedRating);
-        };
-    });
+    setTimeout(() => {
+        document.querySelectorAll("#starRating i").forEach((star, i) => {
+            star.onclick = () => {
+                selectedRating = i + 1;
+                updateStars(selectedRating);
+            };
+        });
+    }, 300);
 }
 
 function updateStars(rating) {
@@ -218,37 +226,40 @@ function updateStars(rating) {
 }
 
 /* =========================
-REVIEWS
+REVIEWS FIXED (REAL ISSUE FIX)
 ========================= */
 function bindReviewButton() {
-    const btn = document.getElementById("reviewSubmitBtn");
-    if (!btn) return;
+    setTimeout(() => {
+        const btn = document.getElementById("reviewSubmitBtn");
 
-    btn.onclick = async () => {
-        const text = document.getElementById("reviewText")?.value;
+        if (!btn) return;
 
-        if (!text || selectedRating === 0) {
-            showToast("Add rating + review");
-            return;
-        }
+        btn.onclick = async () => {
+            const text = document.getElementById("reviewText")?.value;
 
-        if (!currentProductId) {
-            showToast("Open product first");
-            return;
-        }
+            if (!text || selectedRating === 0) {
+                showToast("Add rating + review");
+                return;
+            }
 
-        await addDoc(collection(db, "reviews"), {
-            productId: currentProductId,
-            rating: selectedRating,
-            text,
-            createdAt: new Date().toISOString()
-        });
+            if (!currentProductId) {
+                showToast("Open product first");
+                return;
+            }
 
-        document.getElementById("reviewText").value = "";
-        selectedRating = 0;
+            await addDoc(collection(db, "reviews"), {
+                productId: currentProductId,
+                rating: selectedRating,
+                text,
+                createdAt: new Date().toISOString()
+            });
 
-        showToast("Review added ✅");
-    };
+            document.getElementById("reviewText").value = "";
+            selectedRating = 0;
+
+            showToast("Review added ✅");
+        };
+    }, 300);
 }
 
 /* =========================
@@ -264,7 +275,7 @@ window.checkout = async () => {
         return;
     }
 
-    if (cart.length === 0) {
+    if (!cart.length) {
         showToast("Cart empty");
         return;
     }
@@ -278,7 +289,6 @@ window.checkout = async () => {
 
     cart = [];
     updateCartDisplay();
-
     showToast("Order placed ✅");
 };
 
