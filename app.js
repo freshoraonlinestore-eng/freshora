@@ -29,6 +29,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
     document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
 
+    bindReviewButton();
     setupStarRating();
 });
 
@@ -89,6 +90,8 @@ window.addToCart = (id, name, price, image) => {
 
     updateCartDisplay();
     showToast("Added 🛒");
+
+    pulseButton();
 };
 
 window.changeQty = (i, d) => {
@@ -109,6 +112,7 @@ window.removeFromCart = (i) => {
 window.clearCart = () => {
     cart = [];
     updateCartDisplay();
+    showToast("Cart cleared");
 };
 
 /* =========================
@@ -122,17 +126,14 @@ window.filterProducts = () => {
 
     let filtered = [...allProducts];
 
-    /* SEARCH */
     filtered = filtered.filter(p =>
         (p.name || "").toLowerCase().includes(searchTerm)
     );
 
-    /* CATEGORY */
     if (category !== "all") {
         filtered = filtered.filter(p => p.category === category);
     }
 
-    /* PRICE */
     if (priceFilter !== "all") {
         filtered = filtered.filter(p => {
             const price = Number(p.price || 0);
@@ -143,7 +144,6 @@ window.filterProducts = () => {
         });
     }
 
-    /* DISCOUNT */
     if (discountFilter !== "all") {
         filtered = filtered.filter(p => {
             const d = Number(p.discount || 0);
@@ -157,7 +157,7 @@ window.filterProducts = () => {
 };
 
 /* =========================
-RENDER PRODUCTS
+PRODUCT RENDER
 ========================= */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
@@ -177,7 +177,6 @@ window.renderProducts = (products) => {
         return `
         <div class="card">
             <img src="${p.image}" />
-
             <div class="card-content">
                 <h3>${p.name}</h3>
 
@@ -195,7 +194,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL OPEN
+MODAL OPEN / CLOSE
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -209,28 +208,21 @@ window.openModal = (id) => {
 
     document.getElementById("productModal").classList.add("show");
 
-    setupStars();
+    selectedRating = 0;
+    updateStars(0);
 };
 
-/* =========================
-MODAL CLOSE (FIXED)
-========================= */
 window.closeModal = () => {
-    const modal = document.getElementById("productModal");
-    if (!modal) return;
-
-    modal.classList.remove("show");
+    document.getElementById("productModal")?.classList.remove("show");
     currentProductId = null;
     selectedRating = 0;
 };
 
 /* =========================
-STARS
+STAR RATING
 ========================= */
 function setupStarRating() {
-    const stars = document.querySelectorAll("#starRating i");
-
-    stars.forEach((star, i) => {
+    document.querySelectorAll("#starRating i").forEach((star, i) => {
         star.onclick = () => {
             selectedRating = i + 1;
             updateStars(selectedRating);
@@ -238,14 +230,8 @@ function setupStarRating() {
     });
 }
 
-function setupStars() {
-    updateStars(selectedRating);
-}
-
 function updateStars(rating) {
-    const stars = document.querySelectorAll("#starRating i");
-
-    stars.forEach((star, i) => {
+    document.querySelectorAll("#starRating i").forEach((star, i) => {
         if (i < rating) {
             star.classList.add("fa-solid");
             star.classList.remove("fa-regular");
@@ -257,7 +243,37 @@ function updateStars(rating) {
 }
 
 /* =========================
-CHECKOUT (SAFE)
+REVIEW SYSTEM FIXED
+========================= */
+function bindReviewButton() {
+    const btn = document.getElementById("reviewSubmitBtn");
+
+    if (btn) {
+        btn.addEventListener("click", async () => {
+            const text = document.getElementById("reviewText")?.value;
+
+            if (!text || selectedRating === 0) {
+                showToast("Add rating + review");
+                return;
+            }
+
+            await addDoc(collection(db, "reviews"), {
+                productId: currentProductId,
+                rating: selectedRating,
+                text,
+                createdAt: new Date().toISOString()
+            });
+
+            document.getElementById("reviewText").value = "";
+            selectedRating = 0;
+
+            showToast("Review added ✅");
+        });
+    }
+}
+
+/* =========================
+CHECKOUT
 ========================= */
 window.checkout = async () => {
     const name = document.getElementById("cusName")?.value;
@@ -308,7 +324,7 @@ window.toggleDarkMode = () => {
 };
 
 /* =========================
-FIREBASE LOAD
+FIREBASE PRODUCTS
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -316,3 +332,15 @@ onSnapshot(collection(db, "products"), (snap) => {
 
     document.getElementById("loadingScreen")?.remove();
 });
+
+/* =========================
+UX EFFECT
+========================= */
+function pulseButton() {
+    document.querySelectorAll("button").forEach(b => {
+        if (b.innerText === "Add") {
+            b.style.transform = "scale(0.95)";
+            setTimeout(() => b.style.transform = "scale(1)", 120);
+        }
+    });
+}
