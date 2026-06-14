@@ -181,15 +181,35 @@ window.openModal = (id) => {
     currentProductId = id;
 
     document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalPrice").innerText = "Rs " + num(p.price);
-    document.getElementById("modalDesc").innerText = p.description || "";
+
+    document.getElementById("modalPrice").innerText =
+        "Rs " + num(p.price);
+
+    document.getElementById("modalDesc").innerText =
+        p.description || "";
+
+    /* PRODUCT GALLERY FIX */
+    const images = p.images?.length ? p.images : [p.image];
+
+    document.getElementById("galleryContainer").innerHTML = `
+        <img src="${images[0]}" class="main-img" id="mainModalImg">
+
+        <div class="thumbnail-grid">
+            ${images.map(img => `
+                <img 
+                    src="${img}" 
+                    class="thumbnail"
+                    onclick="document.getElementById('mainModalImg').src='${img}'"
+                >
+            `).join("")}
+        </div>
+    `;
 
     document.getElementById("productModal").classList.add("show");
 
     selectedRating = 0;
     updateStars(0);
 };
-
 /* =========================
 CLOSE MODAL
 ========================= */
