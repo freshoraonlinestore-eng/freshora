@@ -1,124 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Freshora Online Store</title>
-
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freshora Online Store</title>
+    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-
 <body>
 
-<div class="top-banner">
-Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products
-</div>
+    <div class="top-banner">Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</div>
 
-<header class="header">
+    <header class="header">
+        <div class="logo-area" ondblclick="window.location='login.html'">
+            <img src="logo.png" class="logo-img" alt="logo" />
+            <div class="logo-text">Freshora</div>
+        </div>
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Search products..." />
+        </div>
+        <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+    </header>
 
-<div class="logo-area" ondblclick="window.location='login.html'">
-<img src="logo.png" class="logo-img">
-<div class="logo-text">Freshora</div>
-</div>
+    <section class="advanced-search">
+        <div class="filter-grid">
+            <select id="categoryFilter"><option value="all">All Categories</option></select>
+            <select id="priceFilter"><option value="all">All Prices</option></select>
+            <select id="discountFilter"><option value="all">All Discounts</option></select>
+        </div>
+    </section>
 
-<div class="search-box">
-<i class="fa-solid fa-magnifying-glass"></i>
-<input id="searchInput" type="text" placeholder="Search products...">
-</div>
+    <main id="products" class="products-grid"></main>
 
-<button class="icon-btn" onclick="toggleDarkMode()">
-<i class="fa-solid fa-moon"></i>
-</button>
+    <button class="floating-cart" onclick="toggleCart()">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="floatingCartCount">0</span>
+    </button>
 
-</header>
+    <div id="cartDrawer" class="cart-drawer">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button onclick="toggleCart()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="cartItems"></div>
+        <div class="sticky-checkout">
+            <h3 id="cartTotal">Total: Rs 0</h3>
+            <div class="checkout-form">
+                <input type="text" id="cusName" placeholder="Your Name" />
+                <input type="tel" id="cusPhone" placeholder="Phone Number" />
+                <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
+            </div>
+            <div class="checkout-actions">
+                <button class="checkout-btn" onclick="checkout()">Order Now</button>
+                <button class="clear-btn" onclick="clearCart()">Clear Cart</button>
+            </div>
+        </div>
+    </div>
 
-<section class="advanced-search">
-<div class="filter-grid">
-<select id="categoryFilter"><option value="all">All Categories</option></select>
-<select id="priceFilter"><option value="all">All Prices</option></select>
-<select id="discountFilter"><option value="all">All Discounts</option></select>
-</div>
-</section>
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <button class="close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div id="galleryContainer" class="gallery-container"></div>
+            
+            <h2 id="modalName"></h2>
+            <p id="modalPrice" style="font-weight:bold; font-size:18px;"></p>
+            <p id="modalDesc" style="color:var(--muted); font-size:14px;"></p>
 
-<main id="products" class="products-grid"></main>
+            <div class="rating-ui">
+                <span>Rate:</span>
+                <div class="stars-display" id="starRating">
+                    <i class="fa-regular fa-star" data-value="1"></i>
+                    <i class="fa-regular fa-star" data-value="2"></i>
+                    <i class="fa-regular fa-star" data-value="3"></i>
+                    <i class="fa-regular fa-star" data-value="4"></i>
+                    <i class="fa-regular fa-star" data-value="5"></i>
+                </div>
+            </div>
 
-<button class="floating-cart" onclick="toggleCart()">
-<i class="fa-solid fa-cart-shopping"></i>
-<span id="floatingCartCount">0</span>
-</button>
+            <textarea id="reviewText" placeholder="Write your review..."></textarea>
+            <button id="reviewSubmitBtn">Submit Review</button>
+            <div id="reviewList"></div>
+            <button id="modalAddBtn" style="margin-top:15px; padding:12px; width:100%; border-radius:10px; border:none; background:var(--primary); color:#fff; cursor:pointer;">Add to Cart</button>
+        </div>
+    </div>
 
-<!-- CART -->
-<div id="cartDrawer" class="cart-drawer">
+    <div id="loadingScreen" class="loading-screen"><div class="loader"></div></div>
+    <div id="toast" class="toast"></div>
 
-<div class="cart-header">
-<h2>Your Cart</h2>
-<button onclick="toggleCart()">
-<i class="fa-solid fa-xmark"></i>
-</button>
-</div>
-
-<div id="cartItems"></div>
-
-<div class="cart-footer">
-
-<h3 id="cartTotal">Total: Rs 0</h3>
-
-<div class="checkout-form">
-<input id="cusName" placeholder="Your Name">
-<input id="cusPhone" placeholder="Phone Number">
-<textarea id="cusAddress" placeholder="Delivery Address"></textarea>
-</div>
-
-<div class="checkout-actions">
-<button class="checkout-btn" onclick="checkout()">Order Now</button>
-<button class="clear-btn" onclick="clearCart()">Clear Cart</button>
-</div>
-
-</div>
-
-</div>
-
-<!-- MODAL -->
-<div id="productModal" class="modal">
-
-<div class="modal-content">
-
-<button class="close" onclick="closeModal()">
-<i class="fa-solid fa-xmark"></i>
-</button>
-
-<div id="galleryContainer"></div>
-
-<h2 id="modalName"></h2>
-<p id="modalPrice"></p>
-<p id="modalDesc"></p>
-
-<div class="rating-ui">
-<div class="stars-display" id="starRating">
-<i class="fa-regular fa-star" data-value="1"></i>
-<i class="fa-regular fa-star" data-value="2"></i>
-<i class="fa-regular fa-star" data-value="3"></i>
-<i class="fa-regular fa-star" data-value="4"></i>
-<i class="fa-regular fa-star" data-value="5"></i>
-</div>
-</div>
-
-<textarea id="reviewText" placeholder="Write review..."></textarea>
-
-<button id="submitReview">Submit Review</button>
-
-<div id="reviewList"></div>
-
-<button id="modalAddBtn">Add to Cart</button>
-
-</div>
-</div>
-
-<div id="loadingScreen" class="loading-screen"></div>
-<div id="toast" class="toast"></div>
-
-<script type="module" src="app.js"></script>
-
+    <script type="module" src="app.js?v=9"></script>
 </body>
 </html>
