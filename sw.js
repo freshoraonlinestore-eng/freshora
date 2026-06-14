@@ -3,7 +3,7 @@ FRESHORA SERVICE WORKER
 CACHE-FREE AUTO UPDATE SYSTEM
 ========================= */
 
-const CACHE_NAME = "freshora-cache-v1";
+const CACHE_NAME = "freshora-cache-v5";
 
 /* Files to cache (ONLY essential shell) */
 const urlsToCache = [
