@@ -42,16 +42,14 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* =========================
-CART UI TOGGLE
+CART TOGGLE
 ========================= */
 window.toggleCart = () => {
-    const drawer = document.getElementById("cartDrawer");
-    if (!drawer) return;
-    drawer.classList.toggle("open");
+    document.getElementById("cartDrawer")?.classList.toggle("open");
 };
 
 /* =========================
-CART SYSTEM (SAFE)
+CART SYSTEM
 ========================= */
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
@@ -145,7 +143,7 @@ window.clearCart = () => {
 };
 
 /* =========================
-FILTER SYSTEM (SAFE FIXED)
+FILTER SYSTEM
 ========================= */
 window.filterProducts = () => {
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
@@ -167,7 +165,7 @@ window.filterProducts = () => {
 };
 
 /* =========================
-PRODUCT RENDER
+RENDER PRODUCTS
 ========================= */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
@@ -223,7 +221,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL (SAFE FIXED)
+MODAL SYSTEM
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -262,7 +260,7 @@ window.openModal = (id) => {
     updateStars(0);
 
     document.getElementById("modalAddBtn").onclick = () => {
-        window.addToCart(p.id, p.name, final, images[0]);
+        addToCart(p.id, p.name, final, images[0]);
         closeModal();
     };
 
@@ -274,7 +272,7 @@ window.closeModal = () => {
 };
 
 /* =========================
-STAR RATING
+RATING SYSTEM
 ========================= */
 function setupStarRating() {
     const stars = document.querySelectorAll("#starRating i");
@@ -302,7 +300,7 @@ function updateStars(rating) {
 }
 
 /* =========================
-DARK MODE (SAFE)
+DARK MODE
 ========================= */
 window.toggleDarkMode = () => {
     document.body.classList.toggle("dark");
@@ -329,16 +327,4 @@ onSnapshot(collection(db, "products"), (snapshot) => {
     renderProducts(allProducts);
 
     document.getElementById("loadingScreen")?.remove();
-});
-
-window.addEventListener("load", () => {
-    window.openModal = openModal;
-    window.addToCart = addToCart;
-    window.changeQty = changeQty;
-    window.removeFromCart = removeFromCart;
-    window.clearCart = clearCart;
-    window.filterProducts = filterProducts;
-    window.toggleDarkMode = toggleDarkMode;
-    window.toggleCart = toggleCart;
-    window.closeModal = closeModal;
 });
