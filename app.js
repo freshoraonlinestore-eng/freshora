@@ -9,7 +9,7 @@ let selectedRating = 0;
 let currentProductId = null;
 
 /* =========================
-UTILS
+UTIL
 ========================= */
 function num(v) {
     const n = Number(v);
@@ -23,7 +23,6 @@ function saveCart() {
 function showToast(msg) {
     const toast = document.getElementById("toast");
     if (!toast) return;
-
     toast.innerText = msg;
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2000);
@@ -34,18 +33,24 @@ INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
-    bindFilters();
-    bindReviewButton();
-    setupStarRating();
-});
 
-/* =========================
-FILTER BIND
-========================= */
-function bindFilters() {
     document.getElementById("searchInput")?.addEventListener("input", filterProducts);
     document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
-}
+
+    bindReviewButton();
+    setupStarRating();
+
+    // modal add button FIX
+    document.getElementById("modalAddBtn")?.addEventListener("click", () => {
+        if (!currentProductId) return;
+        const p = allProducts.find(x => x.id === currentProductId);
+        if (!p) return;
+
+        const price = num(p.price);
+
+        addToCart(p.id, p.name, price, p.image);
+    });
+});
 
 /* =========================
 CART DISPLAY
@@ -62,7 +67,7 @@ window.updateCartDisplay = () => {
     if (floating) floating.innerText = cart.length;
 
     if (cart.length === 0) {
-        cartItems.innerHTML = `<p style="text-align:center;padding:10px;">Cart empty</p>`;
+        cartItems.innerHTML = `<p style="text-align:center;padding:10px;">Cart is empty</p>`;
         if (cartTotal) cartTotal.innerText = "Total: Rs 0";
         saveCart();
         return;
@@ -76,7 +81,6 @@ window.updateCartDisplay = () => {
         return `
         <div class="cart-item">
             <img src="${item.image}" />
-
             <div>
                 <h4>${item.name}</h4>
                 <p>Rs ${price * qty}</p>
@@ -98,44 +102,41 @@ window.updateCartDisplay = () => {
 };
 
 /* =========================
-CART ACTIONS FIXED
+CART ACTIONS FIX
 ========================= */
 window.addToCart = (id, name, price, image) => {
-    const p = num(price);
+    const item = cart.find(i => i.id === id);
 
-    const existing = cart.find(i => i.id === id);
-
-    if (existing) {
-        existing.qty += 1;
-    } else {
-        cart.push({ id, name, price: p, image, qty: 1 });
-    }
+    if (item) item.qty += 1;
+    else cart.push({ id, name, price: num(price), image, qty: 1 });
 
     updateCartDisplay();
     showToast("Added 🛒");
-    closeModal();
+};
+
+window.changeQty = (index, change) => {
+    if (!cart[index]) return;
+
+    cart[index].qty += change;
+
+    if (cart[index].qty <= 0) cart.splice(index, 1);
+
+    updateCartDisplay();
 };
 
 window.removeFromCart = (index) => {
     cart.splice(index, 1);
     updateCartDisplay();
-    showToast("Removed");
 };
 
-window.changeQty = (index, value) => {
-    if (!cart[index]) return;
-
-    cart[index].qty += value;
-
-    if (cart[index].qty <= 0) {
-        cart.splice(index, 1);
-    }
-
+window.clearCart = () => {
+    cart = [];
     updateCartDisplay();
+    showToast("Cart cleared");
 };
 
 /* =========================
-FILTER
+FILTERS
 ========================= */
 window.filterProducts = () => {
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
@@ -155,7 +156,7 @@ window.filterProducts = () => {
 };
 
 /* =========================
-RENDER PRODUCTS
+PRODUCT RENDER
 ========================= */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
@@ -176,7 +177,6 @@ window.renderProducts = (products) => {
 
         return `
         <div class="card">
-
             ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
             <img src="${p.image || ''}" />
@@ -199,7 +199,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL + GALLERY FIXED
+MODAL + GALLERY FIX
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -219,7 +219,7 @@ window.openModal = (id) => {
         <div class="thumbnail-grid">
             ${images.map(img => `
                 <img src="${img}" class="thumbnail"
-                    onclick="document.getElementById('mainModalImg').src='${img}'">
+                onclick="document.getElementById('mainModalImg').src='${img}'">
             `).join("")}
         </div>
     `;
@@ -237,7 +237,7 @@ window.closeModal = () => {
 };
 
 /* =========================
-STARS
+STARS FIX
 ========================= */
 function setupStarRating() {
     setTimeout(() => {
@@ -247,7 +247,7 @@ function setupStarRating() {
                 updateStars(selectedRating);
             };
         });
-    }, 200);
+    }, 300);
 }
 
 function updateStars(rating) {
@@ -263,15 +263,16 @@ function updateStars(rating) {
 }
 
 /* =========================
-REVIEWS FIXED
+REVIEWS FIX
 ========================= */
 function bindReviewButton() {
     setTimeout(() => {
         const btn = document.getElementById("reviewSubmitBtn");
+
         if (!btn) return;
 
         btn.onclick = async () => {
-            const text = document.getElementById("reviewText")?.value.trim();
+            const text = document.getElementById("reviewText")?.value;
 
             if (!text || selectedRating === 0) {
                 showToast("Add rating + review");
@@ -295,7 +296,7 @@ function bindReviewButton() {
 
             showToast("Review added ✅");
         };
-    }, 200);
+    }, 300);
 }
 
 /* =========================
@@ -368,7 +369,7 @@ TOTAL: LKR ${total}
 
     cart = [];
     updateCartDisplay();
-    showToast("Order sent 🚀");
+    showToast("Redirecting WhatsApp 🚀");
 };
 
 /* =========================
