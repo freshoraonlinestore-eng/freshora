@@ -19,28 +19,28 @@ function showToast(msg) {
 }
 
 /* =========================
-INIT (IMPORTANT FIX ORDER)
+INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
 
-    bindSearchFilters();
-    bindReviewButton();   // ✅ FIX: always bind here
+    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
+    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
+
+    bindReviewButton();
     setupStarRating();
 });
 
 /* =========================
-BIND SEARCH + FILTERS
+SAFE NUMBER HELPER (IMPORTANT FIX)
 ========================= */
-function bindSearchFilters() {
-    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
-    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
-    document.getElementById("priceFilter")?.addEventListener("change", filterProducts);
-    document.getElementById("discountFilter")?.addEventListener("change", filterProducts);
+function num(v) {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
 }
 
 /* =========================
-CART SYSTEM
+CART
 ========================= */
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
@@ -60,18 +60,20 @@ window.updateCartDisplay = () => {
     }
 
     cartItems.innerHTML = cart.map((item, i) => {
-        total += item.price * item.qty;
+        const price = num(item.price);
+        const qty = num(item.qty);
+        total += price * qty;
 
         return `
         <div class="cart-item">
             <img src="${item.image}" />
             <div>
                 <h4>${item.name}</h4>
-                <p>Rs ${item.price * item.qty}</p>
+                <p>Rs ${price * qty}</p>
 
                 <div class="qty-box">
                     <button onclick="changeQty(${i},-1)">-</button>
-                    <span>${item.qty}</span>
+                    <span>${qty}</span>
                     <button onclick="changeQty(${i},1)">+</button>
                 </div>
             </div>
@@ -86,43 +88,24 @@ window.updateCartDisplay = () => {
 };
 
 /* =========================
-CART ACTIONS
+ADD TO CART (SAFE FIX)
 ========================= */
 window.addToCart = (id, name, price, image) => {
+    const p = num(price);
+
     const item = cart.find(i => i.id === id);
 
     if (item) item.qty++;
-    else cart.push({ id, name, price: Number(price), image, qty: 1 });
+    else cart.push({ id, name, price: p, image, qty: 1 });
 
     updateCartDisplay();
     showToast("Added 🛒");
 
-    // ✅ AUTO CLOSE MODAL
     closeModal();
 };
 
-window.changeQty = (i, d) => {
-    if (!cart[i]) return;
-
-    cart[i].qty += d;
-    if (cart[i].qty <= 0) cart.splice(i, 1);
-
-    updateCartDisplay();
-};
-
-window.removeFromCart = (i) => {
-    cart.splice(i, 1);
-    updateCartDisplay();
-};
-
-window.clearCart = () => {
-    cart = [];
-    updateCartDisplay();
-    showToast("Cart cleared");
-};
-
 /* =========================
-FILTERS + SEARCH
+FILTER + SEARCH
 ========================= */
 window.filterProducts = () => {
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
@@ -142,7 +125,7 @@ window.filterProducts = () => {
 };
 
 /* =========================
-RENDER PRODUCTS
+PRODUCT RENDER (FIXED DISCOUNT + PRICE)
 ========================= */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
@@ -154,25 +137,31 @@ window.renderProducts = (products) => {
     }
 
     grid.innerHTML = products.map(p => {
-        const discount = Number(p.discount || 0);
-        const final = discount
-            ? Math.round(p.price - (p.price * discount / 100))
-            : Number(p.price);
+        const price = num(p.price);
+        const discount = num(p.discount);
+
+        const finalPrice = discount > 0
+            ? Math.round(price - (price * discount / 100))
+            : price;
 
         return `
         <div class="card">
-            <img src="${p.image}" />
+
+            ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
+
+            <img src="${p.image || ''}" />
 
             <div class="card-content">
-                <h3>${p.name}</h3>
+                <h3>${p.name || ''}</h3>
 
                 <div class="price-box">
-                    <span class="new-price">Rs ${final}</span>
+                    ${discount > 0 ? `<span class="old-price">Rs ${price}</span>` : ""}
+                    <span class="new-price">Rs ${finalPrice}</span>
                 </div>
 
                 <div class="card-buttons">
                     <button onclick="openModal('${p.id}')">View</button>
-                    <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">Add</button>
+                    <button onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">Add</button>
                 </div>
             </div>
         </div>`;
@@ -180,7 +169,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL FIXED
+MODAL
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -188,8 +177,8 @@ window.openModal = (id) => {
 
     currentProductId = id;
 
-    document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalPrice").innerText = "Rs " + p.price;
+    document.getElementById("modalName").innerText = p.name || '';
+    document.getElementById("modalPrice").innerText = "Rs " + num(p.price);
     document.getElementById("modalDesc").innerText = p.description || "";
 
     document.getElementById("productModal").classList.add("show");
@@ -229,11 +218,10 @@ function updateStars(rating) {
 }
 
 /* =========================
-REVIEW FIXED (MAIN ISSUE FIX)
+REVIEWS
 ========================= */
 function bindReviewButton() {
     const btn = document.getElementById("reviewSubmitBtn");
-
     if (!btn) return;
 
     btn.onclick = async () => {
@@ -284,7 +272,7 @@ window.checkout = async () => {
     await addDoc(collection(db, "orders"), {
         customer: { name, phone, address },
         items: cart,
-        total: cart.reduce((t, i) => t + i.price * i.qty, 0),
+        total: cart.reduce((t, i) => t + num(i.price) * num(i.qty), 0),
         createdAt: new Date().toISOString()
     });
 
@@ -312,7 +300,7 @@ window.toggleDarkMode = () => {
 };
 
 /* =========================
-FIREBASE LOAD
+FIREBASE
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
