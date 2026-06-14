@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Login - Freshora</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div style="max-width:350px;margin:100px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1)">
+  <h2>Admin Login</h2>
+
+  <input id="email" placeholder="Email" style="width:100%;padding:10px;margin:10px 0">
+  <input id="password" type="password" placeholder="Password" style="width:100%;padding:10px;margin:10px 0">
+
+  <button onclick="login()" style="width:100%;padding:10px;background:#1f8f4d;color:#fff;border:none;border-radius:8px">
+    Login
+  </button>
+
+  <p id="msg" style="color:red;margin-top:10px"></p>
+</div>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+window.login = async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "admin.html";
+  } catch (e) {
+    document.getElementById("msg").innerText = "Login Failed";
+  }
+};
+</script>
+
+</body>
+</html>
