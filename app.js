@@ -330,12 +330,14 @@ onSnapshot(collection(db, "products"), (snapshot) => {
 });
 
 
-window.openModal = openModal;
-window.addToCart = addToCart;
-window.changeQty = changeQty;
-window.removeFromCart = removeFromCart;
-window.clearCart = clearCart;
-window.filterProducts = filterProducts;
-window.toggleDarkMode = toggleDarkMode;
-window.toggleCart = toggleCart;
-window.closeModal = closeModal;
+window.addEventListener("load", () => {
+    window.openModal = (id) => openModal(id);
+    window.addToCart = (id, name, price, image) => addToCart(id, name, price, image);
+    window.changeQty = (i, d) => changeQty(i, d);
+    window.removeFromCart = (i) => removeFromCart(i);
+    window.clearCart = () => clearCart();
+    window.filterProducts = () => filterProducts();
+    window.toggleDarkMode = () => toggleDarkMode();
+    window.toggleCart = () => toggleCart();
+    window.closeModal = () => closeModal();
+});
