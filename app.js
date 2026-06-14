@@ -328,3 +328,14 @@ onSnapshot(collection(db, "products"), (snapshot) => {
 
     document.getElementById("loadingScreen")?.remove();
 });
+
+
+window.openModal = openModal;
+window.addToCart = addToCart;
+window.changeQty = changeQty;
+window.removeFromCart = removeFromCart;
+window.clearCart = clearCart;
+window.filterProducts = filterProducts;
+window.toggleDarkMode = toggleDarkMode;
+window.toggleCart = toggleCart;
+window.closeModal = closeModal;
