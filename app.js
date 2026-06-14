@@ -326,13 +326,11 @@ function bindReviewButton() {
     }, 500);
 }
 
-/* =========================
-CHECKOUT
-========================= */
+
 window.checkout = async () => {
-    const name = document.getElementById("cusName")?.value;
-    const phone = document.getElementById("cusPhone")?.value;
-    const address = document.getElementById("cusAddress")?.value;
+    const name = document.getElementById("cusName")?.value.trim();
+    const phone = document.getElementById("cusPhone")?.value.trim();
+    const address = document.getElementById("cusAddress")?.value.trim();
 
     if (!name || !phone || !address) {
         showToast("Fill all details");
@@ -344,18 +342,68 @@ window.checkout = async () => {
         return;
     }
 
+    const orderId = "FR-" + Date.now();
+    const date = new Date().toLocaleString();
+
+    let subtotal = 0;
+
+    const itemsText = cart.map((item, i) => {
+        const total = num(item.price) * num(item.qty);
+        subtotal += total;
+
+        return `${i + 1}) ${item.name} x${item.qty} = LKR ${total}`;
+    }).join("\n");
+
+    const delivery = subtotal > 5000 ? 0 : 375;
+    const total = subtotal + delivery;
+
+    const message =
+`🟢 FRESHORA NEW ORDER 🟢
+
+📦 Order ID: ${orderId}
+📅 Date: ${date}
+
+👤 CUSTOMER DETAILS
+Name: ${name}
+Phone: ${phone}
+Address: ${address}
+
+🛒 ITEMS
+${itemsText}
+
+💰 BILL SUMMARY
+Subtotal: LKR ${subtotal}
+Delivery: LKR ${delivery}
+TOTAL: LKR ${total}
+
+🚚 Payment: Cash on Delivery
+📍 Freshora Online Store`;
+
+    const whatsappNumber = "94752425790";
+
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+    // Open WhatsApp
+    window.open(url, "_blank");
+
+    // Save to Firebase (optional but good)
     await addDoc(collection(db, "orders"), {
+        orderId,
         customer: { name, phone, address },
         items: cart,
-        total: cart.reduce((t, i) => t + num(i.price) * i.qty, 0),
+        subtotal,
+        delivery,
+        total,
         createdAt: new Date().toISOString()
     });
 
+    // Clear cart
     cart = [];
     updateCartDisplay();
-    showToast("Order placed ✅");
-};
+    localStorage.removeItem("cart");
 
+    showToast("Redirecting WhatsApp 🚀");
+};
 /* =========================
 UI
 ========================= */
