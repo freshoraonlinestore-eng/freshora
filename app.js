@@ -1,12 +1,15 @@
 import { db, collection, onSnapshot, addDoc } from "./firebase.js";
 
+/* =========================
+STATE
+========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 let selectedRating = 0;
 let currentProductId = null;
 
 /* =========================
-UTIL
+UTILS
 ========================= */
 function num(v) {
     const n = Number(v);
@@ -24,18 +27,19 @@ function showToast(msg) {
 }
 
 /* =========================
-INIT (IMPORTANT FIX ORDER)
+INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
-
     bindFilters();
-    bindReviewButton();
     setupStarRating();
+    bindReviewButton();
+
+    document.getElementById("modalAddBtn")?.addEventListener("click", addToCartFromModal);
 });
 
 /* =========================
-FILTER BIND
+FILTERS
 ========================= */
 function bindFilters() {
     document.getElementById("searchInput")?.addEventListener("input", filterProducts);
@@ -43,7 +47,7 @@ function bindFilters() {
 }
 
 /* =========================
-CART
+CART DISPLAY
 ========================= */
 window.updateCartDisplay = () => {
     const cartItems = document.getElementById("cartItems");
@@ -56,27 +60,26 @@ window.updateCartDisplay = () => {
 
     if (floating) floating.innerText = cart.length;
 
-    if (!cart.length) {
-        cartItems.innerHTML = `<p style="text-align:center">Cart empty</p>`;
+    if (cart.length === 0) {
+        cartItems.innerHTML = `<p style="text-align:center;padding:10px;">Cart is empty</p>`;
         if (cartTotal) cartTotal.innerText = "Total: Rs 0";
         return;
     }
 
     cartItems.innerHTML = cart.map((item, i) => {
         const price = num(item.price);
-        const qty = num(item.qty);
-        total += price * qty;
+        total += price * item.qty;
 
         return `
         <div class="cart-item">
             <img src="${item.image}" />
             <div>
                 <h4>${item.name}</h4>
-                <p>Rs ${price * qty}</p>
+                <p>Rs ${price * item.qty}</p>
 
                 <div class="qty-box">
                     <button onclick="changeQty(${i},-1)">-</button>
-                    <span>${qty}</span>
+                    <span>${item.qty}</span>
                     <button onclick="changeQty(${i},1)">+</button>
                 </div>
             </div>
@@ -91,7 +94,7 @@ window.updateCartDisplay = () => {
 };
 
 /* =========================
-ADD TO CART
+ADD TO CART (GRID)
 ========================= */
 window.addToCart = (id, name, price, image) => {
     const p = num(price);
@@ -103,8 +106,59 @@ window.addToCart = (id, name, price, image) => {
 
     updateCartDisplay();
     showToast("Added 🛒");
+};
 
+/* =========================
+ADD TO CART (MODAL FIX)
+========================= */
+window.addToCartFromModal = () => {
+    const p = allProducts.find(x => x.id === currentProductId);
+    if (!p) return;
+
+    const finalPrice = num(
+        p.discount > 0
+            ? p.price - (p.price * p.discount / 100)
+            : p.price
+    );
+
+    const item = cart.find(i => i.id === p.id);
+
+    if (item) item.qty++;
+    else cart.push({
+        id: p.id,
+        name: p.name,
+        price: finalPrice,
+        image: p.image,
+        qty: 1
+    });
+
+    updateCartDisplay();
+    showToast("Added 🛒");
     closeModal();
+};
+
+/* =========================
+REMOVE ITEM
+========================= */
+window.removeFromCart = (index) => {
+    cart.splice(index, 1);
+    updateCartDisplay();
+    showToast("Removed ❌");
+};
+
+/* =========================
+QTY CHANGE
+========================= */
+window.changeQty = (index, value) => {
+    if (!cart[index]) return;
+
+    cart[index].qty += value;
+
+    if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+    }
+
+    updateCartDisplay();
 };
 
 /* =========================
@@ -128,16 +182,11 @@ window.filterProducts = () => {
 };
 
 /* =========================
-RENDER (FIXED DISCOUNT + PRICE)
+PRODUCT RENDER
 ========================= */
 window.renderProducts = (products) => {
     const grid = document.getElementById("products");
     if (!grid) return;
-
-    if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
-        return;
-    }
 
     grid.innerHTML = products.map(p => {
         const price = num(p.price);
@@ -149,7 +198,6 @@ window.renderProducts = (products) => {
 
         return `
         <div class="card">
-
             ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
             <img src="${p.image || ''}" />
@@ -172,7 +220,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL
+MODAL OPEN
 ========================= */
 window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
@@ -181,14 +229,11 @@ window.openModal = (id) => {
     currentProductId = id;
 
     document.getElementById("modalName").innerText = p.name;
-
     document.getElementById("modalPrice").innerText =
         "Rs " + num(p.price);
-
     document.getElementById("modalDesc").innerText =
         p.description || "";
 
-    /* PRODUCT GALLERY FIX */
     const images = p.images?.length ? p.images : [p.image];
 
     document.getElementById("galleryContainer").innerHTML = `
@@ -196,11 +241,9 @@ window.openModal = (id) => {
 
         <div class="thumbnail-grid">
             ${images.map(img => `
-                <img 
-                    src="${img}" 
+                <img src="${img}"
                     class="thumbnail"
-                    onclick="document.getElementById('mainModalImg').src='${img}'"
-                >
+                    onclick="document.getElementById('mainModalImg').src='${img}'">
             `).join("")}
         </div>
     `;
@@ -210,8 +253,9 @@ window.openModal = (id) => {
     selectedRating = 0;
     updateStars(0);
 };
+
 /* =========================
-CLOSE MODAL
+MODAL CLOSE
 ========================= */
 window.closeModal = () => {
     document.getElementById("productModal")?.classList.remove("show");
@@ -230,7 +274,7 @@ function setupStarRating() {
                 updateStars(selectedRating);
             };
         });
-    }, 300);
+    }, 400);
 }
 
 function updateStars(rating) {
@@ -246,7 +290,7 @@ function updateStars(rating) {
 }
 
 /* =========================
-REVIEWS FIXED (REAL ISSUE FIX)
+REVIEWS FIX
 ========================= */
 function bindReviewButton() {
     setTimeout(() => {
@@ -279,7 +323,7 @@ function bindReviewButton() {
 
             showToast("Review added ✅");
         };
-    }, 300);
+    }, 500);
 }
 
 /* =========================
@@ -303,7 +347,7 @@ window.checkout = async () => {
     await addDoc(collection(db, "orders"), {
         customer: { name, phone, address },
         items: cart,
-        total: cart.reduce((t, i) => t + num(i.price) * num(i.qty), 0),
+        total: cart.reduce((t, i) => t + num(i.price) * i.qty, 0),
         createdAt: new Date().toISOString()
     });
 
