@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
-<link rel="stylesheet" href="style.css">
+<title>Freshora Admin Pro</title>
+<link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
 <div class="admin-container">
 
-<h2>🟢 Freshora Admin Panel</h2>
+<h2>🟢 Freshora Admin PRO</h2>
 
 <button onclick="logout()">Logout</button>
 
@@ -22,9 +22,10 @@
 <input id="pdiscount" placeholder="Discount %">
 <input id="pcategory" placeholder="Category">
 <textarea id="pdesc" placeholder="Description"></textarea>
-<input id="pimage" placeholder="Image URL">
 
-<button onclick="addProduct()">Add Product</button>
+<input type="file" id="pimageFile">
+
+<button onclick="uploadAndAddProduct()">Upload & Add Product</button>
 
 <hr>
 
