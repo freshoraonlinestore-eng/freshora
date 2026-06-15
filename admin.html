@@ -5,8 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Freshora Admin V4</title>
 
-<link rel="stylesheet" href="admin.css?v=4">
+<!-- CSS -->
+<link rel="stylesheet" href="admin.css?v=3">
+
+<!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Chart.js (IMPORTANT for analytics) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
@@ -22,7 +29,7 @@
     <!-- =========================
     ADD PRODUCT
     ========================== -->
-    <h3>📦 Add Product</h3>
+    <h3>📦 Add / Update Product</h3>
 
     <input id="pname" placeholder="Product Name">
     <input id="pprice" placeholder="Price">
@@ -31,11 +38,10 @@
     <textarea id="pdesc" placeholder="Description"></textarea>
 
     <!-- IMAGE OPTIONS -->
-    <input id="pimage" placeholder="Image URL (optional)">
-    <input type="file" id="pimageFile">
+    <input id="pimageFile" type="file">
 
     <button onclick="uploadAndAddProduct()">
-        Add Product
+        Save Product
     </button>
 
     <hr>
@@ -45,23 +51,15 @@
     ========================== -->
     <h3>📊 Analytics Dashboard</h3>
 
-    <div id="chartBox"></div>
+    <div class="analytics-box">
 
-    <hr>
+        <p>Products: <span id="totalProducts">0</span></p>
+        <p>Orders: <span id="totalOrders">0</span></p>
+        <p>Revenue: <span id="totalRevenue">0</span></p>
 
-    <!-- =========================
-    EDIT PRODUCT
-    ========================== -->
-    <h3>✏️ Edit Product</h3>
+        <canvas id="analyticsChart"></canvas>
 
-    <input id="editId" placeholder="Product ID (auto fill)">
-    <input id="editName" placeholder="New Name">
-    <input id="editPrice" placeholder="New Price">
-    <input id="editDiscount" placeholder="New Discount %">
-
-    <button onclick="updateProduct()">
-        Update Product
-    </button>
+    </div>
 
     <hr>
 
@@ -81,7 +79,8 @@
 
 </div>
 
-<script type="module" src="admin.js"></script>
+<!-- ADMIN SCRIPT -->
+<script type="module" src="admin.js?v=4"></script>
 
 </body>
 </html>
