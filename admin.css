@@ -1,158 +1,148 @@
 /* =========================
-FRESHORA ADMIN PRO UI
+ADMIN V3 UI UPGRADE
+FRESHORA
 ========================= */
 
-:root {
-  --bg: #f4f6f8;
-  --card: #ffffff;
-  --text: #111;
-  --muted: #666;
-  --primary: #1f8f4d;
-  --danger: #ff3b30;
-  --border: #e6e6e6;
-  --radius: 14px;
-  --shadow: 0 10px 25px rgba(0,0,0,0.08);
+:root{
+  --bg:#f4f8f4;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#666;
+  --primary:#1f8f4d;
+  --danger:#ff3b30;
+  --border:#e6eee8;
+  --shadow:0 10px 25px rgba(0,0,0,0.08);
+  --radius:14px;
 }
 
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: var(--bg);
-  color: var(--text);
+body{
+  margin:0;
+  font-family:Segoe UI, sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
 
 /* CONTAINER */
-.admin-container {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
+.admin-container{
+  max-width:1000px;
+  margin:30px auto;
+  padding:20px;
 }
 
-/* TITLE */
-h2 {
-  text-align: center;
-  color: var(--primary);
-  margin-bottom: 20px;
+/* HEADER */
+h2{
+  text-align:center;
+  margin-bottom:20px;
+  color:var(--primary);
 }
 
-h3 {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  color: var(--text);
+h3{
+  margin-top:25px;
 }
 
 /* INPUTS */
-input,
-textarea {
-  width: 100%;
-  padding: 12px;
-  margin: 6px 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  outline: none;
-  font-size: 14px;
-  background: var(--card);
-  transition: 0.2s;
+input, textarea{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:1px solid var(--border);
+  outline:none;
+  background:var(--card);
+  transition:0.2s;
 }
 
-input:focus,
-textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(31,143,77,0.15);
+input:focus, textarea:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(31,143,77,0.12);
 }
 
 /* BUTTONS */
-button {
-  padding: 10px 14px;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.25s;
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  transition:0.2s;
 }
 
-/* PRIMARY BUTTON */
-button {
-  background: var(--primary);
-  color: white;
+button:hover{
+  transform:translateY(-2px);
 }
 
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
+button[onclick*="logout"]{
+  background:var(--danger);
+  color:#fff;
 }
 
-/* LOGOUT */
-button[onclick="logout()"] {
-  background: var(--danger);
-  width: 100%;
-  margin-bottom: 10px;
+/* ADD BUTTON */
+button[onclick*="addProduct"]{
+  background:var(--primary);
+  color:#fff;
+  width:100%;
+  margin-top:10px;
 }
 
-/* SECTION CARDS */
-#productList,
-#orderList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
+/* LIST GRID */
+#productList, #orderList{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+  gap:12px;
+  margin-top:15px;
 }
 
 /* PRODUCT CARD */
-.admin-card {
-  background: var(--card);
-  padding: 12px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.admin-card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:12px;
+  transition:0.2s;
 }
 
-.admin-card img {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  object-fit: cover;
+.admin-card:hover{
+  transform:translateY(-3px);
+}
+
+.admin-card img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.admin-card h4{
+  margin:10px 0 5px;
+}
+
+.admin-card p{
+  color:var(--muted);
 }
 
 /* DELETE BUTTON */
-.admin-card button {
-  background: var(--danger);
-  padding: 6px 10px;
-  font-size: 12px;
+.delete-btn{
+  background:var(--danger);
+  color:#fff;
+  width:100%;
+  margin-top:10px;
 }
 
 /* ORDER CARD */
-.order-card {
-  background: var(--card);
-  padding: 12px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border-left: 4px solid var(--primary);
+.order-card{
+  background:var(--card);
+  padding:12px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
 }
 
-/* HR */
-hr {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 20px 0;
-}
-
-/* FILE INPUT */
-input[type="file"] {
-  padding: 10px;
-  background: var(--card);
-}
-
-/* MOBILE */
-@media (max-width: 768px) {
-  .admin-container {
-    padding: 12px;
+/* RESPONSIVE */
+@media(max-width:768px){
+  .admin-container{
+    padding:12px;
   }
 
-  .admin-card {
-    flex-direction: column;
-    align-items: flex-start;
+  #productList, #orderList{
+    grid-template-columns:1fr;
   }
 }
