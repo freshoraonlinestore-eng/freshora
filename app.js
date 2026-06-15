@@ -20,14 +20,25 @@ function saveCart() {
     localStorage.setItem("cart", JSON.stringify(cart));
 }
 
+
 function showToast(msg) {
     const toast = document.getElementById("toast");
-    if (!toast) return;
-    toast.innerText = msg;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2000);
-}
 
+    if (!toast) return;
+
+    toast.innerHTML = `
+        <i class="fa-solid fa-circle-check"></i>
+        <span>${msg}</span>
+    `;
+
+    toast.classList.add("show");
+
+    clearTimeout(window.toastTimeout);
+
+    window.toastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2200);
+}
 /* =========================
 INIT
 ========================= */
@@ -112,6 +123,17 @@ window.addToCart = (id, name, price, image) => {
 
     updateCartDisplay();
     showToast("Added 🛒");
+    const cartBtn = document.querySelector(".floating-cart");
+
+if(cartBtn){
+    cartBtn.animate([
+        { transform:"scale(1)" },
+        { transform:"scale(1.18)" },
+        { transform:"scale(1)" }
+    ],{
+        duration:450
+    });
+}
 };
 
 window.changeQty = (index, change) => {
