@@ -1,4 +1,11 @@
-import { db, collection, addDoc, onSnapshot, deleteDoc, doc } from "./firebase.js";
+import {
+    db,
+    collection,
+    addDoc,
+    onSnapshot,
+    deleteDoc,
+    doc
+} from "./firebase.js";
 
 /* =========================
 CLOUDINARY CONFIG
@@ -7,22 +14,33 @@ const CLOUD_NAME = "dayvblw7g";
 const UPLOAD_PRESET = "freshora_upload";
 
 /* =========================
-UPLOAD IMAGE
+UPLOAD IMAGE (Cloudinary)
 ========================= */
 async function uploadImage(file) {
+
+    if (!file) return "";
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", UPLOAD_PRESET);
     formData.append("folder", "freshora/products");
 
-    const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        { method: "POST", body: formData }
-    );
+    try {
+        const res = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+            {
+                method: "POST",
+                body: formData
+            }
+        );
 
-    const data = await res.json();
-    return data.secure_url;
+        const data = await res.json();
+        return data.secure_url || "";
+
+    } catch (err) {
+        console.error("Upload error:", err);
+        return "";
+    }
 }
 
 /* =========================
@@ -30,15 +48,16 @@ ADD PRODUCT
 ========================= */
 window.uploadAndAddProduct = async () => {
 
-    const name = pname.value;
-    const price = pprice.value;
-    const discount = pdiscount.value;
-    const category = pcategory.value;
-    const desc = pdesc.value;
-    const file = pimageFile.files[0];
+    const name = document.getElementById("pname")?.value.trim();
+    const price = document.getElementById("pprice")?.value;
+    const discount = document.getElementById("pdiscount")?.value || 0;
+    const category = document.getElementById("pcategory")?.value;
+    const desc = document.getElementById("pdesc")?.value;
+
+    const file = document.getElementById("pimageFile")?.files?.[0];
 
     if (!name || !price) {
-        alert("Fill required fields");
+        alert("Please fill required fields");
         return;
     }
 
@@ -46,38 +65,58 @@ window.uploadAndAddProduct = async () => {
 
     if (file) {
         imageUrl = await uploadImage(file);
+    } else {
+        imageUrl = document.getElementById("pimage")?.value || "";
     }
 
-    await addDoc(collection(db, "products"), {
-        name,
-        price: Number(price),
-        discount: Number(discount || 0),
-        category,
-        description: desc,
-        image: imageUrl,
-        createdAt: new Date().toISOString()
-    });
+    try {
+        await addDoc(collection(db, "products"), {
+            name,
+            price: Number(price),
+            discount: Number(discount),
+            category,
+            description: desc,
+            image: imageUrl,
+            createdAt: new Date().toISOString()
+        });
 
-    alert("Product Added ✅");
+        alert("Product Added ✅");
 
-    // clear form
-    pname.value = "";
-    pprice.value = "";
-    pdiscount.value = "";
-    pcategory.value = "";
-    pdesc.value = "";
-    pimageFile.value = "";
+        // clear inputs
+        document.getElementById("pname").value = "";
+        document.getElementById("pprice").value = "";
+        document.getElementById("pdiscount").value = "";
+        document.getElementById("pcategory").value = "";
+        document.getElementById("pdesc").value = "";
+        if (document.getElementById("pimageFile")) {
+            document.getElementById("pimageFile").value = "";
+        }
+        document.getElementById("pimage").value = "";
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to add product");
+    }
 };
 
 /* =========================
 DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
-    await deleteDoc(doc(db, "products", id));
+
+    if (!confirm("Delete this product?")) return;
+
+    try {
+        await deleteDoc(doc(db, "products", id));
+        alert("Deleted ✅");
+    } catch (err) {
+        console.error(err);
+        alert("Delete failed");
+    }
 };
 
 /* =========================
-LOAD PRODUCTS (FIXED SAFE)
+LOAD PRODUCTS (LIVE)
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
 
@@ -85,38 +124,38 @@ onSnapshot(collection(db, "products"), (snap) => {
 
     if (!list) return;
 
-    const products = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-    }));
-
-    if (products.length === 0) {
+    if (snap.empty) {
         list.innerHTML = "<p>No products found</p>";
         return;
     }
 
-    list.innerHTML = products.map(p => `
-        <div style="padding:10px;background:#fff;margin:8px;border-radius:10px;display:flex;gap:10px;align-items:center">
+    list.innerHTML = snap.docs.map(d => {
 
-            <img src="${p.image || ''}" width="60" height="60" style="object-fit:cover;border-radius:8px">
+        const p = d.data();
 
-            <div style="flex:1">
+        return `
+        <div class="admin-card">
 
-                <h4>${p.name || ''}</h4>
-                <p>Rs ${p.price || 0}</p>
+            <img src="${p.image || ''}" alt="product">
 
-            </div>
+            <h4>${p.name || 'No name'}</h4>
 
-            <button onclick="deleteProduct('${p.id}')">
+            <p>Rs ${p.price || 0}</p>
+
+            <small>${p.category || ''}</small>
+
+            <button class="delete-btn"
+                onclick="deleteProduct('${d.id}')">
                 Delete
             </button>
 
         </div>
-    `).join("");
+        `;
+    }).join("");
 });
 
 /* =========================
-LOAD ORDERS (SAFE)
+LOAD ORDERS (LIVE)
 ========================= */
 onSnapshot(collection(db, "orders"), (snap) => {
 
@@ -124,31 +163,37 @@ onSnapshot(collection(db, "orders"), (snap) => {
 
     if (!list) return;
 
-    const orders = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-    }));
-
-    if (orders.length === 0) {
+    if (snap.empty) {
         list.innerHTML = "<p>No orders yet</p>";
         return;
     }
 
-    list.innerHTML = orders.map(o => `
-        <div style="padding:10px;background:#fff;margin:8px;border-radius:10px">
+    list.innerHTML = snap.docs.map(d => {
 
-            <h4>${o.orderId}</h4>
-            <p>${o.customer?.name || ''}</p>
-            <p>Rs ${o.total || 0}</p>
+        const o = d.data();
+
+        return `
+        <div class="order-card">
+
+            <h4>📦 ${o.orderId || 'Order'}</h4>
+
+            <p>👤 ${o.customer?.name || 'No name'}</p>
+
+            <p>📞 ${o.customer?.phone || ''}</p>
+
+            <p>💰 ${o.total || 0} LKR</p>
 
         </div>
-    `).join("");
+        `;
+    }).join("");
 });
 
 /* =========================
 LOGOUT
 ========================= */
 window.logout = () => {
+
     localStorage.removeItem("admin");
+
     window.location.href = "login.html";
 };
