@@ -1,10 +1,16 @@
-import { db, collection, addDoc, onSnapshot, deleteDoc, doc } from "./firebase.js";
+import { db, collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from "./firebase.js";
 
 /* =========================
-CLOUDINARY CONFIG
+CLOUDINARY
 ========================= */
 const CLOUD_NAME = "dayvblw7g";
 const UPLOAD_PRESET = "freshora_upload";
+
+/* =========================
+STATE
+========================= */
+let productsCache = [];
+let editId = null;
 
 /* =========================
 UPLOAD IMAGE
@@ -29,89 +35,176 @@ async function uploadImage(file) {
 }
 
 /* =========================
-ADD PRODUCT
+ADD / UPDATE PRODUCT
 ========================= */
-window.uploadAndAddProduct = async () => {
+window.uploadOrUpdateProduct = async () => {
 
-    const name = document.getElementById("pname").value;
-    const price = document.getElementById("pprice").value;
-    const discount = document.getElementById("pdiscount").value;
-    const category = document.getElementById("pcategory").value;
-    const desc = document.getElementById("pdesc").value;
-    const file = document.getElementById("pimageFile").files[0];
+    const name = pname.value;
+    const price = Number(pprice.value);
+    const discount = Number(pdiscount.value || 0);
+    const category = pcategory.value;
+    const desc = pdesc.value;
+    const file = pimageFile.files[0];
 
-    if (!name || !price || !file) {
+    if (!name || !price) {
         alert("Fill required fields");
         return;
     }
 
-    const imageUrl = await uploadImage(file);
+    let imageUrl = "";
 
-    await addDoc(collection(db, "products"), {
+    if (file) {
+        imageUrl = await uploadImage(file);
+    }
+
+    const data = {
         name,
-        price: Number(price),
-        discount: Number(discount || 0),
+        price,
+        discount,
         category,
         description: desc,
-        image: imageUrl,
-        createdAt: new Date().toISOString()
-    });
+        updatedAt: new Date().toISOString()
+    };
 
-    alert("Product Added ✅");
+    if (imageUrl) data.image = imageUrl;
+
+    if (editId) {
+        await updateDoc(doc(db, "products", editId), data);
+        editId = null;
+        alert("Product Updated ✅");
+    } else {
+        await addDoc(collection(db, "products"), {
+            ...data,
+            createdAt: new Date().toISOString()
+        });
+        alert("Product Added ✅");
+    }
+
+    clearForm();
 };
 
 /* =========================
-DELETE PRODUCT
+CLEAR FORM
+========================= */
+function clearForm() {
+    pname.value = "";
+    pprice.value = "";
+    pdiscount.value = "";
+    pcategory.value = "";
+    pdesc.value = "";
+    pimageFile.value = "";
+}
+
+/* =========================
+EDIT PRODUCT
+========================= */
+window.editProduct = (p) => {
+
+    editId = p.id;
+
+    pname.value = p.name;
+    pprice.value = p.price;
+    pdiscount.value = p.discount;
+    pcategory.value = p.category;
+    pdesc.value = p.description;
+};
+
+/* =========================
+DELETE
 ========================= */
 window.deleteProduct = async (id) => {
     await deleteDoc(doc(db, "products", id));
 };
 
 /* =========================
-LOAD PRODUCTS
+SEARCH
 ========================= */
-onSnapshot(collection(db, "products"), (snap) => {
+window.searchProducts = () => {
 
-    const list = document.getElementById("productList");
+    const q = searchBox.value.toLowerCase();
 
-    list.innerHTML = snap.docs.map(d => {
-
-        const p = d.data();
-
-        return `
-        <div style="padding:10px;background:#fff;margin:8px;border-radius:10px">
-
-            <img src="${p.image}" width="60">
-
-            <h4>${p.name}</h4>
-            <p>Rs ${p.price}</p>
-
-            <button onclick="deleteProduct('${d.id}')">
-                Delete
-            </button>
-
-        </div>
-        `;
-    }).join("");
-});
+    renderProducts(
+        productsCache.filter(p =>
+            (p.name || "").toLowerCase().includes(q)
+        )
+    );
+};
 
 /* =========================
-LOAD ORDERS
+RENDER PRODUCTS
 ========================= */
+function renderProducts(list) {
+
+    const el = document.getElementById("productList");
+
+    el.innerHTML = list.map(p => `
+        <div class="admin-card">
+
+            <img src="${p.image}">
+
+            <div style="flex:1">
+
+                <b>${p.name}</b><br>
+                Rs ${p.price}
+
+                <div style="margin-top:5px">
+
+                    <button onclick='editProduct(${JSON.stringify(p)})'>
+                        Edit
+                    </button>
+
+                    <button onclick="deleteProduct('${p.id}')">
+                        Delete
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    `).join("");
+}
+
+/* =========================
+ORDERS + STATUS
+========================= */
+window.updateOrderStatus = async (id, status) => {
+
+    await updateDoc(doc(db, "orders", id), {
+        status
+    });
+};
+
+onSnapshot(collection(db, "products"), (snap) => {
+
+    productsCache = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+    }));
+
+    renderProducts(productsCache);
+});
+
 onSnapshot(collection(db, "orders"), (snap) => {
 
-    const list = document.getElementById("orderList");
+    const el = document.getElementById("orderList");
 
-    list.innerHTML = snap.docs.map(d => {
+    el.innerHTML = snap.docs.map(d => {
 
         const o = d.data();
 
         return `
-        <div style="padding:10px;background:#fff;margin:8px;border-radius:10px">
+        <div class="order-card">
 
-            <h4>${o.orderId}</h4>
-            <p>${o.customer?.name}</p>
-            <p>${o.total} LKR</p>
+            <b>Order:</b> ${o.orderId}<br>
+            <b>Name:</b> ${o.customer?.name}<br>
+            <b>Total:</b> Rs ${o.total}<br>
+            <b>Status:</b> ${o.status || "Pending"}
+
+            <br><br>
+
+            <button onclick="updateOrderStatus('${d.id}','Pending')">Pending</button>
+            <button onclick="updateOrderStatus('${d.id}','Delivered')">Delivered</button>
 
         </div>
         `;
@@ -119,7 +212,7 @@ onSnapshot(collection(db, "orders"), (snap) => {
 });
 
 /* =========================
-LOGOUT (simple)
+LOGOUT
 ========================= */
 window.logout = () => {
     localStorage.removeItem("admin");
