@@ -1,3 +1,8 @@
+document.body.insertAdjacentHTML(
+  "beforeend",
+  "<div style='position:fixed;bottom:50px;right:10px;background:blue;color:white;padding:8px;z-index:9999'>JS OK</div>"
+);
+
 import {
     db,
     collection,
