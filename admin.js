@@ -1,16 +1,10 @@
-import { db, collection, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from "./firebase.js";
+import { db, collection, addDoc, onSnapshot, deleteDoc, doc } from "./firebase.js";
 
 /* =========================
-CLOUDINARY
+CLOUDINARY CONFIG
 ========================= */
 const CLOUD_NAME = "dayvblw7g";
 const UPLOAD_PRESET = "freshora_upload";
-
-/* =========================
-STATE
-========================= */
-let productsCache = [];
-let editId = null;
 
 /* =========================
 UPLOAD IMAGE
@@ -24,10 +18,7 @@ async function uploadImage(file) {
 
     const res = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        {
-            method: "POST",
-            body: formData
-        }
+        { method: "POST", body: formData }
     );
 
     const data = await res.json();
@@ -35,13 +26,13 @@ async function uploadImage(file) {
 }
 
 /* =========================
-ADD / UPDATE PRODUCT
+ADD PRODUCT
 ========================= */
-window.uploadOrUpdateProduct = async () => {
+window.uploadAndAddProduct = async () => {
 
     const name = pname.value;
-    const price = Number(pprice.value);
-    const discount = Number(pdiscount.value || 0);
+    const price = pprice.value;
+    const discount = pdiscount.value;
     const category = pcategory.value;
     const desc = pdesc.value;
     const file = pimageFile.files[0];
@@ -57,158 +48,101 @@ window.uploadOrUpdateProduct = async () => {
         imageUrl = await uploadImage(file);
     }
 
-    const data = {
+    await addDoc(collection(db, "products"), {
         name,
-        price,
-        discount,
+        price: Number(price),
+        discount: Number(discount || 0),
         category,
         description: desc,
-        updatedAt: new Date().toISOString()
-    };
+        image: imageUrl,
+        createdAt: new Date().toISOString()
+    });
 
-    if (imageUrl) data.image = imageUrl;
+    alert("Product Added ✅");
 
-    if (editId) {
-        await updateDoc(doc(db, "products", editId), data);
-        editId = null;
-        alert("Product Updated ✅");
-    } else {
-        await addDoc(collection(db, "products"), {
-            ...data,
-            createdAt: new Date().toISOString()
-        });
-        alert("Product Added ✅");
-    }
-
-    clearForm();
-};
-
-/* =========================
-CLEAR FORM
-========================= */
-function clearForm() {
+    // clear form
     pname.value = "";
     pprice.value = "";
     pdiscount.value = "";
     pcategory.value = "";
     pdesc.value = "";
     pimageFile.value = "";
-}
-
-/* =========================
-EDIT PRODUCT
-========================= */
-window.editProduct = (p) => {
-
-    editId = p.id;
-
-    pname.value = p.name;
-    pprice.value = p.price;
-    pdiscount.value = p.discount;
-    pcategory.value = p.category;
-    pdesc.value = p.description;
 };
 
 /* =========================
-DELETE
+DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
     await deleteDoc(doc(db, "products", id));
 };
 
 /* =========================
-SEARCH
+LOAD PRODUCTS (FIXED SAFE)
 ========================= */
-window.searchProducts = () => {
-
-    const q = searchBox.value.toLowerCase();
-
-    renderProducts(
-        productsCache.filter(p =>
-            (p.name || "").toLowerCase().includes(q)
-        )
-    );
-};
-
-/* =========================
-RENDER PRODUCTS
-========================= */
-function renderProducts(list) {
-
-    const el = document.getElementById("productList");
-
-    el.innerHTML = list.map(p => `
-        <div class="admin-card">
-
-            <img src="${p.image}">
-
-            <div style="flex:1">
-
-                <b>${p.name}</b><br>
-                Rs ${p.price}
-
-                <div style="margin-top:5px">
-
-                    <button onclick='editProduct(${JSON.stringify(p)})'>
-                        Edit
-                    </button>
-
-                    <button onclick="deleteProduct('${p.id}')">
-                        Delete
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
-    `).join("");
-}
-
-/* =========================
-ORDERS + STATUS
-========================= */
-window.updateOrderStatus = async (id, status) => {
-
-    await updateDoc(doc(db, "orders", id), {
-        status
-    });
-};
-
 onSnapshot(collection(db, "products"), (snap) => {
 
-    productsCache = snap.docs.map(d => ({
+    const list = document.getElementById("productList");
+
+    if (!list) return;
+
+    const products = snap.docs.map(d => ({
         id: d.id,
         ...d.data()
     }));
 
-    renderProducts(productsCache);
-});
+    if (products.length === 0) {
+        list.innerHTML = "<p>No products found</p>";
+        return;
+    }
 
-onSnapshot(collection(db, "orders"), (snap) => {
+    list.innerHTML = products.map(p => `
+        <div style="padding:10px;background:#fff;margin:8px;border-radius:10px;display:flex;gap:10px;align-items:center">
 
-    const el = document.getElementById("orderList");
+            <img src="${p.image || ''}" width="60" height="60" style="object-fit:cover;border-radius:8px">
 
-    el.innerHTML = snap.docs.map(d => {
+            <div style="flex:1">
 
-        const o = d.data();
+                <h4>${p.name || ''}</h4>
+                <p>Rs ${p.price || 0}</p>
 
-        return `
-        <div class="order-card">
+            </div>
 
-            <b>Order:</b> ${o.orderId}<br>
-            <b>Name:</b> ${o.customer?.name}<br>
-            <b>Total:</b> Rs ${o.total}<br>
-            <b>Status:</b> ${o.status || "Pending"}
-
-            <br><br>
-
-            <button onclick="updateOrderStatus('${d.id}','Pending')">Pending</button>
-            <button onclick="updateOrderStatus('${d.id}','Delivered')">Delivered</button>
+            <button onclick="deleteProduct('${p.id}')">
+                Delete
+            </button>
 
         </div>
-        `;
-    }).join("");
+    `).join("");
+});
+
+/* =========================
+LOAD ORDERS (SAFE)
+========================= */
+onSnapshot(collection(db, "orders"), (snap) => {
+
+    const list = document.getElementById("orderList");
+
+    if (!list) return;
+
+    const orders = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+    }));
+
+    if (orders.length === 0) {
+        list.innerHTML = "<p>No orders yet</p>";
+        return;
+    }
+
+    list.innerHTML = orders.map(o => `
+        <div style="padding:10px;background:#fff;margin:8px;border-radius:10px">
+
+            <h4>${o.orderId}</h4>
+            <p>${o.customer?.name || ''}</p>
+            <p>Rs ${o.total || 0}</p>
+
+        </div>
+    `).join("");
 });
 
 /* =========================
