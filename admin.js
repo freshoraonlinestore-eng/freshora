@@ -1,12 +1,25 @@
-import { db, collection, onSnapshot, addDoc, deleteDoc, doc } from "./firebase.js";
+import {
+    db,
+    collection,
+    onSnapshot,
+    addDoc,
+    deleteDoc,
+    doc
+} from "./firebase.js";
 
 /* =========================
-UPLOAD IMAGE (simple fallback - URL only)
+STATE CACHE (NEW - SAFE ADD)
+========================= */
+let productsCache = [];
+let ordersCache = [];
+let chartInstance = null;
+
+/* =========================
+IMAGE HANDLING (SAFE)
 ========================= */
 async function getImageUrl(file) {
     if (!file) return "";
 
-    // Simple base64 fallback (ANDROID SAFE)
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
@@ -15,7 +28,7 @@ async function getImageUrl(file) {
 }
 
 /* =========================
-ADD PRODUCT
+ADD PRODUCT (UNCHANGED LOGIC + SAFE FIX)
 ========================= */
 window.uploadAndAddProduct = async () => {
 
@@ -29,7 +42,7 @@ window.uploadAndAddProduct = async () => {
         const file = document.getElementById("pimageFile").files[0];
 
         if (!name || !price) {
-            alert("Name + Price required");
+            alert("Name & Price required");
             return;
         }
 
@@ -61,6 +74,54 @@ window.deleteProduct = async (id) => {
 };
 
 /* =========================
+ANALYTICS UPDATE (NEW FIX)
+========================= */
+function updateAnalytics() {
+
+    const p = document.getElementById("totalProducts");
+    const o = document.getElementById("totalOrders");
+    const r = document.getElementById("totalRevenue");
+
+    const productCount = productsCache.length;
+    const orderCount = ordersCache.length;
+
+    let revenue = 0;
+    ordersCache.forEach(o => {
+        revenue += Number(o.total || 0);
+    });
+
+    if (p) p.innerText = productCount;
+    if (o) o.innerText = orderCount;
+    if (r) r.innerText = "Rs " + revenue;
+
+    renderChart(productCount, orderCount, revenue);
+}
+
+/* =========================
+CHART (SAFE INIT)
+========================= */
+function renderChart(products, orders, revenue) {
+
+    const ctx = document.getElementById("analyticsChart");
+
+    if (!ctx || typeof Chart === "undefined") return;
+
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["Products", "Orders", "Revenue"],
+            datasets: [{
+                label: "Analytics",
+                data: [products, orders, revenue],
+                backgroundColor: ["#1f8f4d", "#15803d", "#25d366"]
+            }]
+        }
+    });
+}
+
+/* =========================
 LOAD PRODUCTS (FIXED)
 ========================= */
 function loadProducts() {
@@ -71,30 +132,27 @@ function loadProducts() {
 
     onSnapshot(collection(db, "products"), (snap) => {
 
-        if (snap.empty) {
-            list.innerHTML = "<p>No products</p>";
-            return;
-        }
+        productsCache = snap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        }));
 
-        list.innerHTML = snap.docs.map(d => {
+        updateAnalytics();
 
-            const p = d.data();
-
-            return `
+        list.innerHTML = productsCache.map(p => `
             <div style="padding:10px;margin:10px;background:#fff;border-radius:10px">
 
-                <img src="${p.image}" width="60" />
+                <img src="${p.image}" width="60">
 
                 <h4>${p.name}</h4>
                 <p>Rs ${p.price}</p>
 
-                <button onclick="deleteProduct('${d.id}')">
+                <button onclick="deleteProduct('${p.id}')">
                     Delete
                 </button>
 
             </div>
-            `;
-        }).join("");
+        `).join("");
     });
 }
 
@@ -105,15 +163,18 @@ function loadOrders() {
 
     const list = document.getElementById("orderList");
 
+    if (!list) return;
+
     onSnapshot(collection(db, "orders"), (snap) => {
 
-        if (!list) return;
+        ordersCache = snap.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        }));
 
-        list.innerHTML = snap.docs.map(d => {
+        updateAnalytics();
 
-            const o = d.data();
-
-            return `
+        list.innerHTML = ordersCache.map(o => `
             <div style="padding:10px;margin:10px;background:#fff;border-radius:10px">
 
                 <h4>${o.orderId}</h4>
@@ -121,13 +182,12 @@ function loadOrders() {
                 <p>Rs ${o.total || 0}</p>
 
             </div>
-            `;
-        }).join("");
+        `).join("");
     });
 }
 
 /* =========================
-INIT (IMPORTANT FIX)
+INIT (IMPORTANT)
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
     loadProducts();
