@@ -2,20 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Freshora Admin Pro</title>
+<title>Freshora Admin V2</title>
 <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
 <div class="admin-container">
 
-<h2>🟢 Freshora Admin PRO</h2>
+<h2>🟢 Freshora Admin V2</h2>
 
 <button onclick="logout()">Logout</button>
 
 <hr>
 
-<h3>Add Product</h3>
+<h3>Add / Edit Product</h3>
+
+<input id="searchBox" placeholder="Search products..." oninput="searchProducts()">
 
 <input id="pname" placeholder="Product Name">
 <input id="pprice" placeholder="Price">
@@ -25,7 +27,7 @@
 
 <input type="file" id="pimageFile">
 
-<button onclick="uploadAndAddProduct()">Upload & Add Product</button>
+<button onclick="uploadOrUpdateProduct()">Save Product</button>
 
 <hr>
 
@@ -40,6 +42,5 @@
 </div>
 
 <script type="module" src="admin.js"></script>
-
 </body>
 </html>
