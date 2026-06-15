@@ -435,3 +435,293 @@ CHECKOUT + REVIEW UI FIX
   padding:15px;
   border-top:1px solid var(--border);
 }
+
+/* ========================================
+PREMIUM UI UPGRADE
+======================================== */
+
+/* SMOOTH */
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  overflow-x:hidden;
+}
+
+/* GLASS HEADER */
+
+.header{
+  background:rgba(255,255,255,0.75);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+body.dark .header{
+  background:rgba(20,25,22,0.75);
+}
+
+/* PRODUCT CARD PREMIUM */
+
+.card{
+  overflow:hidden;
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.08),
+    transparent
+  );
+  pointer-events:none;
+}
+
+.card img{
+  transition:0.45s ease;
+}
+
+.card:hover img{
+  transform:scale(1.06);
+}
+
+.card-content{
+  position:relative;
+  z-index:2;
+}
+
+.card-buttons button{
+  position:relative;
+  overflow:hidden;
+}
+
+.card-buttons button::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-120%;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.25);
+  transform:skewX(-25deg);
+  transition:0.45s;
+}
+
+.card-buttons button:hover::after{
+  left:120%;
+}
+
+/* FLOATING CART PREMIUM */
+
+.floating-cart{
+  animation:floatCart 3s ease-in-out infinite;
+}
+
+@keyframes floatCart{
+  0%{transform:translateY(0);}
+  50%{transform:translateY(-5px);}
+  100%{transform:translateY(0);}
+}
+
+/* CART DRAWER */
+
+.cart-drawer{
+  backdrop-filter:blur(10px);
+}
+
+.cart-item{
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.cart-item img{
+  transition:0.3s;
+}
+
+.cart-item:hover img{
+  transform:scale(1.05);
+}
+
+/* PREMIUM BUTTONS */
+
+.checkout-btn,
+.clear-btn,
+.card-buttons button,
+.icon-btn,
+.qty-box button{
+  transition:
+  transform .25s,
+  box-shadow .25s,
+  opacity .25s;
+}
+
+.checkout-btn:hover,
+.card-buttons button:hover{
+  box-shadow:0 10px 20px rgba(34,197,94,0.22);
+}
+
+.clear-btn:hover{
+  box-shadow:0 10px 20px rgba(255,59,48,0.18);
+}
+
+/* MODAL PREMIUM */
+
+.modal{
+  animation:fadeBg .25s ease;
+}
+
+@keyframes fadeBg{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+.modal-content{
+  animation:popup .28s ease;
+}
+
+@keyframes popup{
+  from{
+    opacity:0;
+    transform:translateY(20px) scale(.96);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+/* GALLERY */
+
+.main-img{
+  transition:.35s;
+}
+
+.main-img:hover{
+  transform:scale(1.03);
+}
+
+.thumbnail{
+  transition:.25s;
+}
+
+.thumbnail:hover{
+  transform:translateY(-3px);
+}
+
+/* REVIEW BOX */
+
+#reviewText{
+  resize:none;
+  min-height:110px;
+}
+
+/* INPUT PREMIUM */
+
+input,
+textarea,
+select{
+  transition:.25s;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  transform:translateY(-1px);
+}
+
+/* TOAST PREMIUM */
+
+.toast{
+  backdrop-filter:blur(10px);
+  background:rgba(17,17,17,0.88);
+  box-shadow:0 12px 25px rgba(0,0,0,0.18);
+}
+
+/* LOADER */
+
+.loader{
+  border-top-color:#22c55e;
+}
+
+/* PREMIUM SCROLLBAR */
+
+::-webkit-scrollbar{
+  width:8px;
+}
+
+::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+::-webkit-scrollbar-thumb{
+  background:linear-gradient(
+    to bottom,
+    #22c55e,
+    #15803d
+  );
+}
+
+/* MOBILE APP FEEL */
+
+@media(max-width:768px){
+
+  .header{
+    padding:10px;
+    border-radius:0 0 18px 18px;
+  }
+
+  .products-grid{
+    padding-bottom:110px;
+  }
+
+  .floating-cart{
+    width:60px;
+    height:60px;
+    bottom:18px;
+    right:18px;
+  }
+
+  .cart-drawer{
+    width:100%;
+    border-radius:20px 20px 0 0;
+  }
+
+  .modal-content{
+    border-radius:24px;
+  }
+
+  .card{
+    border-radius:20px;
+  }
+
+}
+
+/* SHIMMER EFFECT */
+
+.loading-shimmer{
+  position:relative;
+  overflow:hidden;
+}
+
+.loading-shimmer::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-150%;
+  width:120%;
+  height:100%;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.28),
+    transparent
+  );
+  animation:shimmer 1.6s infinite;
+}
+
+@keyframes shimmer{
+  100%{
+    left:150%;
+  }
+}
