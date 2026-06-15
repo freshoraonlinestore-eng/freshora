@@ -2,45 +2,86 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Freshora Admin V2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freshora Admin V4</title>
+
 <link rel="stylesheet" href="admin.css?v=4">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
 
 <div class="admin-container">
 
-<h2>🟢 Freshora Admin V2</h2>
+    <h2>🟢 Freshora Admin V4 Dashboard</h2>
 
-<button onclick="logout()">Logout</button>
+    <button onclick="logout()">Logout</button>
 
-<hr>
+    <hr>
 
-<h3>Add / Edit Product</h3>
+    <!-- =========================
+    ADD PRODUCT
+    ========================== -->
+    <h3>📦 Add Product</h3>
 
-<input id="searchBox" placeholder="Search products..." oninput="searchProducts()">
+    <input id="pname" placeholder="Product Name">
+    <input id="pprice" placeholder="Price">
+    <input id="pdiscount" placeholder="Discount %">
+    <input id="pcategory" placeholder="Category">
+    <textarea id="pdesc" placeholder="Description"></textarea>
 
-<input id="pname" placeholder="Product Name">
-<input id="pprice" placeholder="Price">
-<input id="pdiscount" placeholder="Discount %">
-<input id="pcategory" placeholder="Category">
-<textarea id="pdesc" placeholder="Description"></textarea>
+    <!-- IMAGE OPTIONS -->
+    <input id="pimage" placeholder="Image URL (optional)">
+    <input type="file" id="pimageFile">
 
-<input type="file" id="pimageFile">
+    <button onclick="uploadAndAddProduct()">
+        Add Product
+    </button>
 
-<button onclick="uploadOrUpdateProduct()">Save Product</button>
+    <hr>
 
-<hr>
+    <!-- =========================
+    ANALYTICS
+    ========================== -->
+    <h3>📊 Analytics Dashboard</h3>
 
-<h3>Products</h3>
-<div id="productList"></div>
+    <div id="chartBox"></div>
 
-<hr>
+    <hr>
 
-<h3>Orders</h3>
-<div id="orderList"></div>
+    <!-- =========================
+    EDIT PRODUCT
+    ========================== -->
+    <h3>✏️ Edit Product</h3>
+
+    <input id="editId" placeholder="Product ID (auto fill)">
+    <input id="editName" placeholder="New Name">
+    <input id="editPrice" placeholder="New Price">
+    <input id="editDiscount" placeholder="New Discount %">
+
+    <button onclick="updateProduct()">
+        Update Product
+    </button>
+
+    <hr>
+
+    <!-- =========================
+    PRODUCTS
+    ========================== -->
+    <h3>🛍 Products</h3>
+    <div id="productList"></div>
+
+    <hr>
+
+    <!-- =========================
+    ORDERS
+    ========================== -->
+    <h3>📦 Orders</h3>
+    <div id="orderList"></div>
 
 </div>
 
-<script type="module" src="admin.js?v=4"></script>
+<script type="module" src="admin.js"></script>
+
 </body>
 </html>
