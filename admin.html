@@ -4,130 +4,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Freshora Admin Dashboard V4</title>
+<title>Freshora Admin FIXED</title>
 
-<!-- CSS -->
-<link rel="stylesheet" href="admin.css?v=10">
+<link rel="stylesheet" href="admin.css">
 
-<!-- Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body>
-    <div style="position:fixed;bottom:10px;right:10px;background:black;color:white;padding:8px;z-index:9999">
+
+<div id="debug" style="position:fixed;bottom:10px;right:10px;background:black;color:white;padding:6px;z-index:9999">
 HTML OK
 </div>
 
-<!-- =========================
-ADMIN WRAPPER
-========================= -->
 <div class="admin-container">
 
-    <h2>🟢 Freshora Admin Dashboard</h2>
+<h2>🟢 Freshora Admin FIX</h2>
 
-    <button onclick="logout()" class="logout-btn">
-        Logout
-    </button>
+<button onclick="logout()">Logout</button>
 
-    <hr>
+<hr>
 
-    <!-- =========================
-    ADD / UPDATE PRODUCT
-    ========================== -->
-    <section>
+<h3>📦 Add Product</h3>
 
-        <h3>📦 Add / Update Product</h3>
+<input id="pname" placeholder="Name">
+<input id="pprice" placeholder="Price">
+<input id="pdiscount" placeholder="Discount">
+<input id="pcategory" placeholder="Category">
+<textarea id="pdesc" placeholder="Description"></textarea>
 
-        <div class="form-grid">
+<input id="pimageFile" type="file">
 
-            <input id="pname" placeholder="Product Name">
-            <input id="pprice" type="number" placeholder="Price">
-            <input id="pdiscount" type="number" placeholder="Discount %">
-            <input id="pcategory" placeholder="Category">
+<button onclick="uploadAndAddProduct()">Save Product</button>
 
-            <textarea id="pdesc" placeholder="Description"></textarea>
+<hr>
 
-            <input id="pimageFile" type="file">
+<h3>📊 Analytics</h3>
 
-        </div>
+<p>Products: <span id="totalProducts">0</span></p>
+<p>Orders: <span id="totalOrders">0</span></p>
+<p>Revenue: <span id="totalRevenue">0</span></p>
 
-        <button onclick="uploadAndAddProduct()" class="primary-btn">
-            Save Product
-        </button>
+<canvas id="analyticsChart"></canvas>
 
-    </section>
+<hr>
 
-    <hr>
+<h3>🛍 Products</h3>
+<div id="productList"></div>
 
-    <!-- =========================
-    ANALYTICS
-    ========================== -->
-    <section>
+<hr>
 
-        <h3>📊 Analytics Dashboard</h3>
-
-        <div class="analytics-box">
-
-            <div class="stats">
-
-                <div>
-                    <h4>Products</h4>
-                    <span id="totalProducts">0</span>
-                </div>
-
-                <div>
-                    <h4>Orders</h4>
-                    <span id="totalOrders">0</span>
-                </div>
-
-                <div>
-                    <h4>Revenue</h4>
-                    <span id="totalRevenue">0</span>
-                </div>
-
-            </div>
-
-            <canvas id="analyticsChart"></canvas>
-
-        </div>
-
-    </section>
-
-    <hr>
-
-    <!-- =========================
-    PRODUCTS LIST
-    ========================== -->
-    <section>
-
-        <h3>🛍 Products</h3>
-
-        <div id="productList" class="list-box"></div>
-
-    </section>
-
-    <hr>
-
-    <!-- =========================
-    ORDERS LIST
-    ========================== -->
-    <section>
-
-        <h3>📦 Orders</h3>
-
-        <div id="orderList" class="list-box"></div>
-
-    </section>
+<h3>📦 Orders</h3>
+<div id="orderList"></div>
 
 </div>
 
-<!-- =========================
-SCRIPT
-========================= -->
 <script type="module" src="admin.js"></script>
 
 </body>
