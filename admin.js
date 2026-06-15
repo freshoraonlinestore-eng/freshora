@@ -9,12 +9,6 @@ import {
 } from "./firebase.js";
 
 /* =========================
-CLOUDINARY CONFIG
-========================= */
-const CLOUD_NAME = "dayvblw7g";
-const UPLOAD_PRESET = "freshora_upload";
-
-/* =========================
 STATE
 ========================= */
 let editId = null;
@@ -22,8 +16,11 @@ let productsCache = [];
 let ordersCache = [];
 
 /* =========================
-UPLOAD IMAGE
+UPLOAD IMAGE (Cloudinary)
 ========================= */
+const CLOUD_NAME = "dayvblw7g";
+const UPLOAD_PRESET = "freshora_upload";
+
 async function uploadImage(file) {
     const formData = new FormData();
     formData.append("file", file);
@@ -40,7 +37,7 @@ async function uploadImage(file) {
 }
 
 /* =========================
-ADD / UPDATE PRODUCT
+ADD / UPDATE PRODUCT (FIXED)
 ========================= */
 window.uploadAndAddProduct = async () => {
 
@@ -51,7 +48,7 @@ window.uploadAndAddProduct = async () => {
     const desc = document.getElementById("pdesc").value;
     const file = document.getElementById("pimageFile").files[0];
 
-    if (!name || !price) {
+    if (!name || !price || !category) {
         alert("Fill required fields");
         return;
     }
@@ -71,17 +68,20 @@ window.uploadAndAddProduct = async () => {
         createdAt: new Date().toISOString()
     };
 
-    if (imageUrl) {
-        productData.image = imageUrl;
-    }
+    if (imageUrl) productData.image = imageUrl;
 
-    /* ================= EDIT MODE ================= */
+    /* UPDATE MODE */
     if (editId) {
+
         await updateDoc(doc(db, "products", editId), productData);
-        editId = null;
+
         alert("Product Updated ✅");
+        editId = null;
+
     } else {
+
         await addDoc(collection(db, "products"), productData);
+
         alert("Product Added ✅");
     }
 
@@ -101,21 +101,22 @@ function clearForm() {
 }
 
 /* =========================
-EDIT PRODUCT
+EDIT PRODUCT (ONE CLICK)
 ========================= */
 window.editProduct = (id) => {
+
     const p = productsCache.find(x => x.id === id);
     if (!p) return;
 
     editId = id;
 
-    document.getElementById("pname").value = p.name || "";
-    document.getElementById("pprice").value = p.price || "";
-    document.getElementById("pdiscount").value = p.discount || "";
-    document.getElementById("pcategory").value = p.category || "";
-    document.getElementById("pdesc").value = p.description || "";
+    document.getElementById("pname").value = p.name;
+    document.getElementById("pprice").value = p.price;
+    document.getElementById("pdiscount").value = p.discount;
+    document.getElementById("pcategory").value = p.category;
+    document.getElementById("pdesc").value = p.description;
 
-    alert("Edit mode enabled ✏️");
+    alert("Edit mode ON ✏️ Update then click Save");
 };
 
 /* =========================
@@ -126,7 +127,7 @@ window.deleteProduct = async (id) => {
 };
 
 /* =========================
-LOAD PRODUCTS
+LOAD PRODUCTS (FIXED UI + CATEGORY)
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
 
@@ -137,30 +138,74 @@ onSnapshot(collection(db, "products"), (snap) => {
         ...d.data()
     }));
 
-    list.innerHTML = productsCache.map(p => `
+    /* CATEGORY UNIQUE LIST (AUTO) */
+    const categories = [...new Set(productsCache.map(p => p.category))];
+
+    let html = `
+        <div class="category-bar">
+            <button onclick="filterCategory('all')">All</button>
+            ${categories.map(c =>
+                `<button onclick="filterCategory('${c}')">${c}</button>`
+            ).join("")}
+        </div>
+    `;
+
+    html += productsCache.map(p => `
         <div class="admin-card">
 
-            <img src="${p.image || ''}" />
+            <img src="${p.image || ''}">
 
             <div>
                 <h4>${p.name}</h4>
                 <p>Rs ${p.price}</p>
-                <p>${p.category || ''}</p>
+                <small>${p.category}</small>
             </div>
 
             <div class="admin-actions">
-
                 <button onclick="editProduct('${p.id}')">Edit</button>
-
                 <button onclick="deleteProduct('${p.id}')">Delete</button>
-
             </div>
 
         </div>
     `).join("");
 
+    list.innerHTML = html;
+
     updateAnalytics();
 });
+
+/* =========================
+CATEGORY FILTER (NEW)
+========================= */
+window.filterCategory = (cat) => {
+
+    const list = document.getElementById("productList");
+
+    let filtered = productsCache;
+
+    if (cat !== "all") {
+        filtered = productsCache.filter(p => p.category === cat);
+    }
+
+    list.innerHTML = filtered.map(p => `
+        <div class="admin-card">
+
+            <img src="${p.image || ''}">
+
+            <div>
+                <h4>${p.name}</h4>
+                <p>Rs ${p.price}</p>
+                <small>${p.category}</small>
+            </div>
+
+            <div class="admin-actions">
+                <button onclick="editProduct('${p.id}')">Edit</button>
+                <button onclick="deleteProduct('${p.id}')">Delete</button>
+            </div>
+
+        </div>
+    `).join("");
+};
 
 /* =========================
 LOAD ORDERS
@@ -206,33 +251,26 @@ function updateAnalytics() {
 }
 
 /* =========================
-CHART (Chart.js)
+CHART
 ========================= */
 function drawChart(products, orders) {
 
     const ctx = document.getElementById("analyticsChart");
-
     if (!ctx || typeof Chart === "undefined") return;
 
-    if (window.adminChart) {
-        window.adminChart.destroy();
-    }
+    if (window.adminChart) window.adminChart.destroy();
 
     window.adminChart = new Chart(ctx, {
         type: "bar",
         data: {
             labels: ["Products", "Orders"],
             datasets: [{
-                label: "Overview",
                 data: [products, orders],
                 backgroundColor: ["#22c55e", "#15803d"]
             }]
         },
         options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
+            plugins: { legend: { display: false } }
         }
     });
 }
