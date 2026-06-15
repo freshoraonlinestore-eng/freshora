@@ -1,0 +1,158 @@
+/* =========================
+FRESHORA ADMIN PRO UI
+========================= */
+
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #111;
+  --muted: #666;
+  --primary: #1f8f4d;
+  --danger: #ff3b30;
+  --border: #e6e6e6;
+  --radius: 14px;
+  --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* CONTAINER */
+.admin-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* TITLE */
+h2 {
+  text-align: center;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+
+h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+/* INPUTS */
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  font-size: 14px;
+  background: var(--card);
+  transition: 0.2s;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(31,143,77,0.15);
+}
+
+/* BUTTONS */
+button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.25s;
+}
+
+/* PRIMARY BUTTON */
+button {
+  background: var(--primary);
+  color: white;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* LOGOUT */
+button[onclick="logout()"] {
+  background: var(--danger);
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* SECTION CARDS */
+#productList,
+#orderList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* PRODUCT CARD */
+.admin-card {
+  background: var(--card);
+  padding: 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-card img {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* DELETE BUTTON */
+.admin-card button {
+  background: var(--danger);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* ORDER CARD */
+.order-card {
+  background: var(--card);
+  padding: 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+}
+
+/* HR */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* FILE INPUT */
+input[type="file"] {
+  padding: 10px;
+  background: var(--card);
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 12px;
+  }
+
+  .admin-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
