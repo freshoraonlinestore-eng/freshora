@@ -1,49 +1,17 @@
-console.log("ADMIN JS LOADED");
-
-document.body.insertAdjacentHTML(
-  "beforeend",
-  "<div style='position:fixed;bottom:40px;right:10px;background:green;color:white;padding:6px;z-index:9999'>JS OK</div>"
-);
+import { db, collection, onSnapshot, addDoc, deleteDoc, doc } from "./firebase.js";
 
 /* =========================
-IMPORT FIREBASE
+UPLOAD IMAGE (simple fallback - URL only)
 ========================= */
-import {
-  db,
-  collection,
-  addDoc,
-  onSnapshot
-} from "./firebase.js";
+async function getImageUrl(file) {
+    if (!file) return "";
 
-/* =========================
-STATE
-========================= */
-let products = [];
-let orders = [];
-
-/* =========================
-UPLOAD IMAGE (SAFE OPTIONAL)
-========================= */
-async function uploadImage(file) {
-  if (!file) return "";
-
-  const CLOUD_NAME = "dayvblw7g";
-  const UPLOAD_PRESET = "freshora_upload";
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", UPLOAD_PRESET);
-
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    {
-      method: "POST",
-      body: formData
-    }
-  );
-
-  const data = await res.json();
-  return data.secure_url || "";
+    // Simple base64 fallback (ANDROID SAFE)
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+    });
 }
 
 /* =========================
@@ -51,110 +19,125 @@ ADD PRODUCT
 ========================= */
 window.uploadAndAddProduct = async () => {
 
-  const name = document.getElementById("pname").value;
-  const price = Number(document.getElementById("pprice").value || 0);
-  const discount = Number(document.getElementById("pdiscount").value || 0);
-  const category = document.getElementById("pcategory").value;
-  const desc = document.getElementById("pdesc").value;
-  const file = document.getElementById("pimageFile").files[0];
+    try {
 
-  if (!name || !price) {
-    alert("Fill required fields");
-    return;
-  }
+        const name = document.getElementById("pname").value;
+        const price = document.getElementById("pprice").value;
+        const discount = document.getElementById("pdiscount").value;
+        const category = document.getElementById("pcategory").value;
+        const desc = document.getElementById("pdesc").value;
+        const file = document.getElementById("pimageFile").files[0];
 
-  let image = await uploadImage(file);
+        if (!name || !price) {
+            alert("Name + Price required");
+            return;
+        }
 
-  await addDoc(collection(db, "products"), {
-    name,
-    price,
-    discount,
-    category,
-    description: desc,
-    image,
-    createdAt: new Date().toISOString()
-  });
+        const imageUrl = await getImageUrl(file);
 
-  alert("Added ✔");
+        await addDoc(collection(db, "products"), {
+            name,
+            price: Number(price),
+            discount: Number(discount || 0),
+            category,
+            description: desc,
+            image: imageUrl,
+            createdAt: new Date().toISOString()
+        });
+
+        alert("Product Saved ✅");
+
+    } catch (err) {
+        console.error(err);
+        alert("Error saving product");
+    }
 };
 
 /* =========================
-LOAD PRODUCTS
+DELETE PRODUCT
 ========================= */
-onSnapshot(collection(db, "products"), (snap) => {
-
-  products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-  document.getElementById("productList").innerHTML =
-    products.map(p => `
-      <div style="background:#fff;padding:10px;margin:10px;border-radius:10px">
-        <img src="${p.image}" width="60">
-        <h4>${p.name}</h4>
-        <p>Rs ${p.price}</p>
-      </div>
-    `).join("");
-
-  document.getElementById("totalProducts").innerText = products.length;
-
-  drawChart();
-});
+window.deleteProduct = async (id) => {
+    await deleteDoc(doc(db, "products", id));
+};
 
 /* =========================
-LOAD ORDERS
+LOAD PRODUCTS (FIXED)
 ========================= */
-onSnapshot(collection(db, "orders"), (snap) => {
+function loadProducts() {
 
-  orders = snap.docs.map(d => d.data());
+    const list = document.getElementById("productList");
 
-  document.getElementById("orderList").innerHTML =
-    orders.map(o => `
-      <div style="background:#fff;padding:10px;margin:10px;border-radius:10px">
-        <h4>${o.orderId}</h4>
-        <p>${o.customer?.name}</p>
-        <p>Rs ${o.total}</p>
-      </div>
-    `).join("");
+    if (!list) return;
 
-  document.getElementById("totalOrders").innerText = orders.length;
+    onSnapshot(collection(db, "products"), (snap) => {
 
-  let revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+        if (snap.empty) {
+            list.innerHTML = "<p>No products</p>";
+            return;
+        }
 
-  document.getElementById("totalRevenue").innerText = revenue;
+        list.innerHTML = snap.docs.map(d => {
 
-  drawChart();
-});
+            const p = d.data();
 
-/* =========================
-CHART
-========================= */
-function drawChart() {
+            return `
+            <div style="padding:10px;margin:10px;background:#fff;border-radius:10px">
 
-  const ctx = document.getElementById("analyticsChart");
+                <img src="${p.image}" width="60" />
 
-  if (!ctx) return;
+                <h4>${p.name}</h4>
+                <p>Rs ${p.price}</p>
 
-  if (window.chart) window.chart.destroy();
+                <button onclick="deleteProduct('${d.id}')">
+                    Delete
+                </button>
 
-  window.chart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["Products", "Orders", "Revenue"],
-      datasets: [{
-        data: [
-          products.length,
-          orders.length,
-          orders.reduce((s, o) => s + (o.total || 0), 0)
-        ],
-        backgroundColor: ["green", "blue", "orange"]
-      }]
-    }
-  });
+            </div>
+            `;
+        }).join("");
+    });
 }
+
+/* =========================
+LOAD ORDERS (FIXED)
+========================= */
+function loadOrders() {
+
+    const list = document.getElementById("orderList");
+
+    onSnapshot(collection(db, "orders"), (snap) => {
+
+        if (!list) return;
+
+        list.innerHTML = snap.docs.map(d => {
+
+            const o = d.data();
+
+            return `
+            <div style="padding:10px;margin:10px;background:#fff;border-radius:10px">
+
+                <h4>${o.orderId}</h4>
+                <p>${o.customer?.name || ""}</p>
+                <p>Rs ${o.total || 0}</p>
+
+            </div>
+            `;
+        }).join("");
+    });
+}
+
+/* =========================
+INIT (IMPORTANT FIX)
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+    loadProducts();
+    loadOrders();
+});
 
 /* =========================
 LOGOUT
 ========================= */
 window.logout = () => {
-  localStorage.removeItem("admin");
-  location.href = "login.html";
+    localStorage.removeItem("admin");
+    window.location.href = "login.html";
 };
