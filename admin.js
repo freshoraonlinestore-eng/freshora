@@ -1,11 +1,11 @@
 import {
-db,
-collection,
-onSnapshot,
-addDoc,
-deleteDoc,
-doc,
-updateDoc
+  db,
+  collection,
+  onSnapshot,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc
 } from "./firebase.js";
 
 /* =========================
@@ -14,251 +14,218 @@ STATE
 let products = [];
 let orders = [];
 let categories = [];
+let chartInstance = null;
 
 /* =========================
-CLOUDINARY
+SAFE LOG
 ========================= */
-const CLOUD = "dayvblw7g";
-const PRESET = "freshora_upload";
+console.log("ADMIN V8 LOADED");
 
+/* =========================
+INIT
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+  loadProducts();
+  loadOrders();
+  loadAnalytics();
+});
+
+/* =========================
+UPLOAD IMAGE (MULTI SAFE)
+========================= */
 async function uploadImages(files) {
-let urls = [];
+  const urls = [];
 
-if (!files) return urls;
+  if (!files) return urls;
 
-for (let i = 0; i < Math.min(files.length, 3); i++) {
-const form = new FormData();
-form.append("file", files[i]);
-form.append("upload_preset", PRESET);
+  for (let i = 0; i < Math.min(files.length, 3); i++) {
+    const formData = new FormData();
+    formData.append("file", files[i]);
+    formData.append("upload_preset", "freshora_upload");
 
-const res = await fetch(
-`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,
-{
-method: "POST",
-body: form
-}
-);
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dayvblw7g/image/upload",
+      { method: "POST", body: formData }
+    );
 
-const data = await res.json();
-urls.push(data.secure_url);
-}
+    const data = await res.json();
+    if (data.secure_url) urls.push(data.secure_url);
+  }
 
-return urls;
+  return urls;
 }
 
 /* =========================
-ADD / UPDATE PRODUCT
+ADD PRODUCT
 ========================= */
 window.uploadAndAddProduct = async () => {
+  try {
+    const name = document.getElementById("pname").value;
+    const price = Number(document.getElementById("pprice").value);
+    const discount = Number(document.getElementById("pdiscount").value || 0);
+    const category = document.getElementById("pcategory").value;
+    const stock = Number(document.getElementById("pstock").value || 0);
+    const desc = document.getElementById("pdesc").value;
+    const files = document.getElementById("pimageFile").files;
 
-const name = pname.value;
-const price = Number(pprice.value);
-const discount = Number(pdiscount.value || 0);
-const category = pcategory.value;
-const desc = pdesc.value;
-const files = pimageFile.files;
+    if (!name || !price) {
+      alert("Fill required fields");
+      return;
+    }
 
-if (!name || !price) return alert("Fill required fields");
+    const images = await uploadImages(files);
 
-const images = await uploadImages(files);
+    await addDoc(collection(db, "products"), {
+      name,
+      price,
+      discount,
+      category,
+      stock,
+      description: desc,
+      images,
+      image: images[0] || "",
+      createdAt: new Date().toISOString()
+    });
 
-await addDoc(collection(db, "products"), {
-name,
-price,
-discount,
-category,
-description: desc,
-stock: 10,
-images,
-image: images[0] || "",
-createdAt: new Date().toISOString()
-});
+    alert("Saved ✅");
 
-alert("Saved ✅");
-};
-
-/* =========================
-DELETE PRODUCT
-========================= */
-window.deleteProduct = async (id) => {
-await deleteDoc(doc(db, "products", id));
-};
-
-/* =========================
-EDIT MODAL STYLE UPDATE
-========================= */
-window.editProduct = (p) => {
-pname.value = p.name;
-pprice.value = p.price;
-pdiscount.value = p.discount;
-pcategory.value = p.category;
-pdesc.value = p.description;
-
-window.editId = p.id;
-};
-
-/* =========================
-UPDATE PRODUCT
-========================= */
-window.updateProduct = async () => {
-if (!window.editId) return alert("Select product first");
-
-await updateDoc(doc(db, "products", window.editId), {
-name: pname.value,
-price: Number(pprice.value),
-discount: Number(pdiscount.value),
-category: pcategory.value,
-description: pdesc.value
-});
-
-alert("Updated ✅");
+  } catch (e) {
+    console.error("ADD PRODUCT ERROR:", e);
+  }
 };
 
 /* =========================
 LOAD PRODUCTS
 ========================= */
-onSnapshot(collection(db, "products"), (snap) => {
+function loadProducts() {
+  onSnapshot(collection(db, "products"), (snap) => {
+    products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const list = document.getElementById("productList");
+    if (!list) return;
 
-productList.innerHTML = products.map(p => `
-<div class="card">
+    list.innerHTML = products.map(p => `
+      <div class="admin-card">
+        <img src="${p.image}" width="60">
+        <div>
+          <h4>${p.name}</h4>
+          <p>Rs ${p.price}</p>
+          <p>Stock: ${p.stock || 0}</p>
+          <p>${p.category || ""}</p>
+        </div>
 
-<img src="${p.image}" width="60">
+        <button onclick="editProduct('${p.id}')">Edit</button>
+        <button onclick="deleteProduct('${p.id}')">Delete</button>
+        <button onclick="updateStock('${p.id}',1)">+</button>
+        <button onclick="updateStock('${p.id}',-1)">-</button>
+      </div>
+    `).join("");
 
-<div>
-<b>${p.name}</b><br>
-Rs ${p.price}<br>
-Stock:
-<button onclick="changeStock('${p.id}',-1)">-</button>
-${p.stock || 0}
-<button onclick="changeStock('${p.id}',1)">+</button>
-<br>
-${p.category}
-</div>
-
-<button onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
-<button onclick="deleteProduct('${p.id}')">Del</button>
-
-</div>
-`).join("");
-
-updateAnalytics();
-});
-
-/* =========================
-STOCK SYSTEM
-========================= */
-window.changeStock = async (id, val) => {
-
-const p = products.find(x => x.id === id);
-if (!p) return;
-
-await updateDoc(doc(db,"products",id), {
-stock: (p.stock || 0) + val
-});
-};
-
-/* =========================
-CATEGORIES CRUD
-========================= */
-window.addCategory = async () => {
-await addDoc(collection(db,"categories"), {
-name: catInput.value
-});
-catInput.value = "";
-};
-
-window.deleteCategory = async (id) => {
-await deleteDoc(doc(db,"categories",id));
-};
-
-function loadCategories() {
-onSnapshot(collection(db,"categories"), snap => {
-
-categories = snap.docs.map(d => ({id:d.id,...d.data()}));
-
-pcategory.innerHTML =
-categories.map(c=>`<option value="${c.name}">${c.name}</option>`).join("");
-
-catList.innerHTML =
-categories.map(c=>`
-<div>
-${c.name}
-<button onclick="deleteCategory('${c.id}')">X</button>
-</div>
-`).join("");
-});
-}
-loadCategories();
-
-/* =========================
-ORDERS + STATUS
-========================= */
-onSnapshot(collection(db,"orders"), snap => {
-
-orders = snap.docs.map(d => ({id:d.id,...d.data()}));
-
-orderList.innerHTML = orders.map(o=>`
-<div>
-<b>${o.orderId}</b>
-<p>${o.customer?.name}</p>
-
-<span class="${o.status}">
-${o.status || "Pending"}
-</span>
-
-<select onchange="updateStatus('${o.id}',this.value)">
-<option>Pending</option>
-<option>Delivered</option>
-</select>
-</div>
-`).join("");
-
-updateAnalytics();
-});
-
-window.updateStatus = async (id,status)=>{
-await updateDoc(doc(db,"orders",id),{status});
-};
-
-/* =========================
-ANALYTICS + CHART
-========================= */
-function updateAnalytics(){
-
-totalProducts.innerText = products.length;
-totalOrders.innerText = orders.length;
-
-let revenue = 0;
-orders.forEach(o => revenue += Number(o.total||0));
-
-totalRevenue.innerText = "Rs " + revenue;
-
-renderChart(products.length, orders.length, revenue);
+    loadAnalytics();
+  });
 }
 
-function renderChart(p,o,r){
+/* =========================
+DELETE
+========================= */
+window.deleteProduct = async (id) => {
+  await deleteDoc(doc(db, "products", id));
+};
 
-if(window.chart) window.chart.destroy();
+/* =========================
+EDIT PRODUCT
+========================= */
+window.editProduct = (id) => {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
 
-window.chart = new Chart(analyticsChart,{
-type:"line",
-data:{
-labels:["Products","Orders","Revenue"],
-datasets:[{
-data:[p,o,r],
-borderColor:"#1f8f4d",
-tension:0.3
-}]
+  document.getElementById("pname").value = p.name;
+  document.getElementById("pprice").value = p.price;
+  document.getElementById("pdiscount").value = p.discount;
+  document.getElementById("pcategory").value = p.category;
+  document.getElementById("pstock").value = p.stock;
+
+  window.currentEditId = id;
+};
+
+/* =========================
+UPDATE STOCK
+========================= */
+window.updateStock = async (id, val) => {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+
+  await updateDoc(doc(db, "products", id), {
+    stock: (p.stock || 0) + val
+  });
+};
+
+/* =========================
+LOAD ORDERS
+========================= */
+function loadOrders() {
+  onSnapshot(collection(db, "orders"), (snap) => {
+    orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const list = document.getElementById("orderList");
+    if (!list) return;
+
+    list.innerHTML = orders.map(o => `
+      <div class="admin-card">
+        <h4>${o.orderId}</h4>
+        <p>${o.customer?.name}</p>
+        <p>Rs ${o.total}</p>
+
+        <span>${o.status || "Pending"}</span>
+      </div>
+    `).join("");
+
+    loadAnalytics();
+  });
 }
-});
+
+/* =========================
+ANALYTICS FIX
+========================= */
+function loadAnalytics() {
+  const totalProducts = products.length;
+  const totalOrders = orders.length;
+
+  let revenue = 0;
+  orders.forEach(o => revenue += Number(o.total || 0));
+
+  document.getElementById("totalProducts").innerText = totalProducts;
+  document.getElementById("totalOrders").innerText = totalOrders;
+  document.getElementById("totalRevenue").innerText = "Rs " + revenue;
+
+  renderChart(totalProducts, totalOrders, revenue);
+}
+
+/* =========================
+REAL CHART FIX
+========================= */
+function renderChart(p, o, r) {
+  const ctx = document.getElementById("analyticsChart");
+  if (!ctx) return;
+
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Products", "Orders", "Revenue"],
+      datasets: [{
+        data: [p, o, r],
+        backgroundColor: ["#22c55e", "#3b82f6", "#f59e0b"]
+      }]
+    }
+  });
 }
 
 /* =========================
 LOGOUT
 ========================= */
-window.logout = ()=>{
-localStorage.removeItem("admin");
-location.href="login.html";
+window.logout = () => {
+  localStorage.removeItem("admin");
+  window.location.href = "login.html";
 };
