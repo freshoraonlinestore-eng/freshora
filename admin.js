@@ -1,5 +1,3 @@
-console.log("ADMIN LOADED OK");
-
 import {
   db,
   collection,
@@ -11,17 +9,23 @@ import {
 } from "./firebase.js";
 
 /* =========================
+SAFE START LOG
+========================= */
+console.log("🔥 APP JS V8 PRO LOADED");
+
+/* =========================
 STATE
 ========================= */
 let products = [];
 let orders = [];
-let categories = [];
 let chartInstance = null;
 
 /* =========================
-SAFE LOG
+SAFE GET ELEMENT
 ========================= */
-console.log("ADMIN V8 LOADED");
+function el(id) {
+  return document.getElementById(id);
+}
 
 /* =========================
 INIT
@@ -29,11 +33,10 @@ INIT
 window.addEventListener("DOMContentLoaded", () => {
   loadProducts();
   loadOrders();
-  loadAnalytics();
 });
 
 /* =========================
-UPLOAD IMAGE (MULTI SAFE)
+UPLOAD IMAGES (SAFE)
 ========================= */
 async function uploadImages(files) {
   const urls = [];
@@ -41,36 +44,42 @@ async function uploadImages(files) {
   if (!files) return urls;
 
   for (let i = 0; i < Math.min(files.length, 3); i++) {
-    const formData = new FormData();
-    formData.append("file", files[i]);
-    formData.append("upload_preset", "freshora_upload");
+    try {
+      const formData = new FormData();
+      formData.append("file", files[i]);
+      formData.append("upload_preset", "freshora_upload");
 
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dayvblw7g/image/upload",
-      { method: "POST", body: formData }
-    );
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dayvblw7g/image/upload",
+        { method: "POST", body: formData }
+      );
 
-    const data = await res.json();
-    if (data.secure_url) urls.push(data.secure_url);
+      const data = await res.json();
+      if (data.secure_url) urls.push(data.secure_url);
+
+    } catch (err) {
+      console.error("Image upload error:", err);
+    }
   }
 
   return urls;
 }
 
 /* =========================
-ADD PRODUCT
+ADD / UPDATE PRODUCT
 ========================= */
 window.uploadAndAddProduct = async () => {
   try {
-    const name = document.getElementById("pname").value;
-    const price = Number(document.getElementById("pprice").value);
-    const discount = Number(document.getElementById("pdiscount").value || 0);
-    const category = document.getElementById("pcategory").value;
-    const stock = Number(document.getElementById("pstock").value || 0);
-    const desc = document.getElementById("pdesc").value;
-    const files = document.getElementById("pimageFile").files;
+    const name = el("pname")?.value;
+    const price = Number(el("pprice")?.value || 0);
+    const discount = Number(el("pdiscount")?.value || 0);
+    const category = el("pcategory")?.value || "General";
+    const stock = Number(el("pstock")?.value || 0);
+    const desc = el("pdesc")?.value;
 
-    if (!name || !price) {
+    const files = el("pimageFile")?.files;
+
+    if (!name || price <= 0) {
       alert("Fill required fields");
       return;
     }
@@ -89,10 +98,10 @@ window.uploadAndAddProduct = async () => {
       createdAt: new Date().toISOString()
     });
 
-    alert("Saved ✅");
+    alert("Product Saved ✅");
 
-  } catch (e) {
-    console.error("ADD PRODUCT ERROR:", e);
+  } catch (err) {
+    console.error("ADD ERROR:", err);
   }
 };
 
@@ -101,19 +110,29 @@ LOAD PRODUCTS
 ========================= */
 function loadProducts() {
   onSnapshot(collection(db, "products"), (snap) => {
-    products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const list = document.getElementById("productList");
+    products = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
+
+    const list = el("productList");
     if (!list) return;
+
+    if (products.length === 0) {
+      list.innerHTML = "<p>No products</p>";
+      return;
+    }
 
     list.innerHTML = products.map(p => `
       <div class="admin-card">
-        <img src="${p.image}" width="60">
+        <img src="${p.image || ''}" width="60">
+
         <div>
-          <h4>${p.name}</h4>
-          <p>Rs ${p.price}</p>
+          <h4>${p.name || ''}</h4>
+          <p>Rs ${p.price || 0}</p>
           <p>Stock: ${p.stock || 0}</p>
-          <p>${p.category || ""}</p>
+          <p>Category: ${p.category || '-'}</p>
         </div>
 
         <button onclick="editProduct('${p.id}')">Edit</button>
@@ -128,38 +147,44 @@ function loadProducts() {
 }
 
 /* =========================
-DELETE
+DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
-  await deleteDoc(doc(db, "products", id));
+  try {
+    await deleteDoc(doc(db, "products", id));
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 /* =========================
-EDIT PRODUCT
+EDIT PRODUCT (AUTO FILL)
 ========================= */
 window.editProduct = (id) => {
   const p = products.find(x => x.id === id);
   if (!p) return;
 
-  document.getElementById("pname").value = p.name;
-  document.getElementById("pprice").value = p.price;
-  document.getElementById("pdiscount").value = p.discount;
-  document.getElementById("pcategory").value = p.category;
-  document.getElementById("pstock").value = p.stock;
-
-  window.currentEditId = id;
+  if (el("pname")) el("pname").value = p.name;
+  if (el("pprice")) el("pprice").value = p.price;
+  if (el("pdiscount")) el("pdiscount").value = p.discount;
+  if (el("pcategory")) el("pcategory").value = p.category;
+  if (el("pstock")) el("pstock").value = p.stock;
 };
 
 /* =========================
-UPDATE STOCK
+STOCK UPDATE
 ========================= */
 window.updateStock = async (id, val) => {
   const p = products.find(x => x.id === id);
   if (!p) return;
 
-  await updateDoc(doc(db, "products", id), {
-    stock: (p.stock || 0) + val
-  });
+  try {
+    await updateDoc(doc(db, "products", id), {
+      stock: (p.stock || 0) + val
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 /* =========================
@@ -167,17 +192,20 @@ LOAD ORDERS
 ========================= */
 function loadOrders() {
   onSnapshot(collection(db, "orders"), (snap) => {
-    orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const list = document.getElementById("orderList");
+    orders = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
+
+    const list = el("orderList");
     if (!list) return;
 
     list.innerHTML = orders.map(o => `
       <div class="admin-card">
-        <h4>${o.orderId}</h4>
-        <p>${o.customer?.name}</p>
-        <p>Rs ${o.total}</p>
-
+        <h4>${o.orderId || 'No ID'}</h4>
+        <p>${o.customer?.name || ''}</p>
+        <p>Rs ${o.total || 0}</p>
         <span>${o.status || "Pending"}</span>
       </div>
     `).join("");
@@ -187,28 +215,36 @@ function loadOrders() {
 }
 
 /* =========================
-ANALYTICS FIX
+ANALYTICS SAFE FIX
 ========================= */
 function loadAnalytics() {
+
   const totalProducts = products.length;
   const totalOrders = orders.length;
 
   let revenue = 0;
-  orders.forEach(o => revenue += Number(o.total || 0));
+  orders.forEach(o => {
+    revenue += Number(o.total || 0);
+  });
 
-  document.getElementById("totalProducts").innerText = totalProducts;
-  document.getElementById("totalOrders").innerText = totalOrders;
-  document.getElementById("totalRevenue").innerText = "Rs " + revenue;
+  const p = el("totalProducts");
+  const o = el("totalOrders");
+  const r = el("totalRevenue");
+
+  if (p) p.innerText = totalProducts;
+  if (o) o.innerText = totalOrders;
+  if (r) r.innerText = "Rs " + revenue;
 
   renderChart(totalProducts, totalOrders, revenue);
 }
 
 /* =========================
-REAL CHART FIX
+CHART (FIXED)
 ========================= */
 function renderChart(p, o, r) {
-  const ctx = document.getElementById("analyticsChart");
-  if (!ctx) return;
+
+  const ctx = el("analyticsChart");
+  if (!ctx || typeof Chart === "undefined") return;
 
   if (chartInstance) chartInstance.destroy();
 
