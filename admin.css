@@ -2,7 +2,6 @@ body{
     margin:0;
     font-family:sans-serif;
     background:#f5f7fb;
-    color:#111;
 }
 
 .admin-container{
@@ -11,42 +10,32 @@ body{
     padding:20px;
 }
 
-h2{
-    text-align:center;
-}
-
-input, textarea{
+input,textarea,select{
     width:100%;
     padding:10px;
     margin:5px 0;
-    border:1px solid #ddd;
     border-radius:8px;
+    border:1px solid #ddd;
 }
 
 button{
-    padding:10px 14px;
-    border:none;
-    border-radius:8px;
+    padding:10px;
     background:#1f8f4d;
     color:white;
+    border:none;
+    border-radius:8px;
     cursor:pointer;
-    margin-top:10px;
 }
 
 .logout-btn{
-    background:#ff3b30;
+    background:red;
 }
 
 #productList div,
-#orderList div{
-    background:white;
-    padding:10px;
+#orderList div,
+#categoryList div{
+    background:#fff;
     margin:8px 0;
+    padding:10px;
     border-radius:10px;
-    box-shadow:0 5px 10px rgba(0,0,0,0.05);
-}
-
-img{
-    width:60px;
-    border-radius:6px;
 }
