@@ -1,11 +1,11 @@
 import {
-  db,
-  collection,
-  onSnapshot,
-  addDoc,
-  deleteDoc,
-  doc,
-  updateDoc
+db,
+collection,
+onSnapshot,
+addDoc,
+deleteDoc,
+doc,
+updateDoc
 } from "./firebase.js";
 
 /* =========================
@@ -14,244 +14,251 @@ STATE
 let products = [];
 let orders = [];
 let categories = [];
-let deliveryFee = 375;
 
 /* =========================
-INIT
+CLOUDINARY
 ========================= */
-window.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
-  loadAnalytics();
-});
+const CLOUD = "dayvblw7g";
+const PRESET = "freshora_upload";
 
-/* =========================
-UPLOAD MULTI IMAGE (MAX 3)
-========================= */
 async function uploadImages(files) {
-  const urls = [];
+let urls = [];
 
-  if (!files) return urls;
+if (!files) return urls;
 
-  const limit = Math.min(files.length, 3);
+for (let i = 0; i < Math.min(files.length, 3); i++) {
+const form = new FormData();
+form.append("file", files[i]);
+form.append("upload_preset", PRESET);
 
-  for (let i = 0; i < limit; i++) {
-    const formData = new FormData();
-    formData.append("file", files[i]);
-    formData.append("upload_preset", "freshora_upload");
-    formData.append("folder", "freshora/products");
+const res = await fetch(
+`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,
+{
+method: "POST",
+body: form
+}
+);
 
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dayvblw7g/image/upload",
-      {
-        method: "POST",
-        body: formData
-      }
-    );
+const data = await res.json();
+urls.push(data.secure_url);
+}
 
-    const data = await res.json();
-    urls.push(data.secure_url);
-  }
-
-  return urls;
+return urls;
 }
 
 /* =========================
 ADD / UPDATE PRODUCT
 ========================= */
 window.uploadAndAddProduct = async () => {
-  const name = document.getElementById("pname").value;
-  const price = Number(document.getElementById("pprice").value || 0);
-  const discount = Number(document.getElementById("pdiscount").value || 0);
-  const category = document.getElementById("pcategory").value;
-  const desc = document.getElementById("pdesc").value;
-  const files = document.getElementById("pimageFile").files;
 
-  if (!name || !price) {
-    alert("Fill required fields");
-    return;
-  }
+const name = pname.value;
+const price = Number(pprice.value);
+const discount = Number(pdiscount.value || 0);
+const category = pcategory.value;
+const desc = pdesc.value;
+const files = pimageFile.files;
 
-  const images = await uploadImages(files);
+if (!name || !price) return alert("Fill required fields");
 
-  await addDoc(collection(db, "products"), {
-    name,
-    price,
-    discount,
-    category,
-    description: desc,
-    stock: 10,
-    images,
-    image: images[0] || "",
-    createdAt: new Date().toISOString()
-  });
+const images = await uploadImages(files);
 
-  alert("Product saved ✅");
+await addDoc(collection(db, "products"), {
+name,
+price,
+discount,
+category,
+description: desc,
+stock: 10,
+images,
+image: images[0] || "",
+createdAt: new Date().toISOString()
+});
+
+alert("Saved ✅");
 };
 
 /* =========================
 DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
-  await deleteDoc(doc(db, "products", id));
+await deleteDoc(doc(db, "products", id));
+};
+
+/* =========================
+EDIT MODAL STYLE UPDATE
+========================= */
+window.editProduct = (p) => {
+pname.value = p.name;
+pprice.value = p.price;
+pdiscount.value = p.discount;
+pcategory.value = p.category;
+pdesc.value = p.description;
+
+window.editId = p.id;
 };
 
 /* =========================
 UPDATE PRODUCT
 ========================= */
 window.updateProduct = async () => {
-  const id = document.getElementById("editId").value;
+if (!window.editId) return alert("Select product first");
 
-  if (!id) return alert("Enter product ID");
+await updateDoc(doc(db, "products", window.editId), {
+name: pname.value,
+price: Number(pprice.value),
+discount: Number(pdiscount.value),
+category: pcategory.value,
+description: pdesc.value
+});
 
-  await updateDoc(doc(db, "products", id), {
-    name: document.getElementById("editName").value,
-    price: Number(document.getElementById("editPrice").value),
-    discount: Number(document.getElementById("editDiscount").value)
-  });
-
-  alert("Updated ✅");
+alert("Updated ✅");
 };
 
 /* =========================
 LOAD PRODUCTS
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
-  const list = document.getElementById("productList");
 
-  products = snap.docs.map(d => ({
-    id: d.id,
-    ...d.data()
-  }));
+products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-  if (!list) return;
+productList.innerHTML = products.map(p => `
+<div class="card">
 
-  list.innerHTML = products.map(p => `
-    <div class="admin-card">
-      <img src="${p.image || ''}" width="60">
+<img src="${p.image}" width="60">
 
-      <div>
-        <h4>${p.name}</h4>
-        <p>Rs ${p.price}</p>
-        <p>Stock: ${p.stock || 0}</p>
-        <p>Category: ${p.category || '-'}</p>
-      </div>
+<div>
+<b>${p.name}</b><br>
+Rs ${p.price}<br>
+Stock:
+<button onclick="changeStock('${p.id}',-1)">-</button>
+${p.stock || 0}
+<button onclick="changeStock('${p.id}',1)">+</button>
+<br>
+${p.category}
+</div>
 
-      <button onclick="deleteProduct('${p.id}')">Delete</button>
-    </div>
-  `).join("");
+<button onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
+<button onclick="deleteProduct('${p.id}')">Del</button>
 
-  loadAnalytics();
+</div>
+`).join("");
+
+updateAnalytics();
 });
 
 /* =========================
-LOAD ORDERS
+STOCK SYSTEM
 ========================= */
-onSnapshot(collection(db, "orders"), (snap) => {
-  const list = document.getElementById("orderList");
+window.changeStock = async (id, val) => {
 
-  orders = snap.docs.map(d => ({
-    id: d.id,
-    ...d.data()
-  }));
+const p = products.find(x => x.id === id);
+if (!p) return;
 
-  if (!list) return;
-
-  list.innerHTML = orders.map(o => `
-    <div class="admin-card">
-      <h4>${o.orderId}</h4>
-      <p>${o.customer?.name}</p>
-      <p>Rs ${o.total}</p>
-
-      <select onchange="updateOrderStatus('${o.id}', this.value)">
-        <option ${o.status === "Pending" ? "selected" : ""}>Pending</option>
-        <option ${o.status === "Delivered" ? "selected" : ""}>Delivered</option>
-      </select>
-    </div>
-  `).join("");
-
-  loadAnalytics();
+await updateDoc(doc(db,"products",id), {
+stock: (p.stock || 0) + val
 });
-
-/* =========================
-ORDER STATUS
-========================= */
-window.updateOrderStatus = async (id, status) => {
-  await updateDoc(doc(db, "orders", id), { status });
 };
 
 /* =========================
-CATEGORIES SYSTEM
+CATEGORIES CRUD
 ========================= */
+window.addCategory = async () => {
+await addDoc(collection(db,"categories"), {
+name: catInput.value
+});
+catInput.value = "";
+};
+
+window.deleteCategory = async (id) => {
+await deleteDoc(doc(db,"categories",id));
+};
+
 function loadCategories() {
-  onSnapshot(collection(db, "categories"), (snap) => {
-    categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+onSnapshot(collection(db,"categories"), snap => {
 
-    const input = document.getElementById("pcategory");
-    if (input) {
-      input.innerHTML = "";
-      categories.forEach(c => {
-        input.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-      });
-    }
-  });
+categories = snap.docs.map(d => ({id:d.id,...d.data()}));
+
+pcategory.innerHTML =
+categories.map(c=>`<option value="${c.name}">${c.name}</option>`).join("");
+
+catList.innerHTML =
+categories.map(c=>`
+<div>
+${c.name}
+<button onclick="deleteCategory('${c.id}')">X</button>
+</div>
+`).join("");
+});
 }
+loadCategories();
 
 /* =========================
-DELIVERY FEE CONTROL
+ORDERS + STATUS
 ========================= */
-function getDeliveryFee(subtotal) {
-  return subtotal > 5000 ? 0 : deliveryFee;
-}
+onSnapshot(collection(db,"orders"), snap => {
+
+orders = snap.docs.map(d => ({id:d.id,...d.data()}));
+
+orderList.innerHTML = orders.map(o=>`
+<div>
+<b>${o.orderId}</b>
+<p>${o.customer?.name}</p>
+
+<span class="${o.status}">
+${o.status || "Pending"}
+</span>
+
+<select onchange="updateStatus('${o.id}',this.value)">
+<option>Pending</option>
+<option>Delivered</option>
+</select>
+</div>
+`).join("");
+
+updateAnalytics();
+});
+
+window.updateStatus = async (id,status)=>{
+await updateDoc(doc(db,"orders",id),{status});
+};
 
 /* =========================
-ANALYTICS
+ANALYTICS + CHART
 ========================= */
-function loadAnalytics() {
-  const totalProducts = products.length;
-  const totalOrders = orders.length;
+function updateAnalytics(){
 
-  let revenue = 0;
+totalProducts.innerText = products.length;
+totalOrders.innerText = orders.length;
 
-  orders.forEach(o => {
-    revenue += Number(o.total || 0);
-  });
+let revenue = 0;
+orders.forEach(o => revenue += Number(o.total||0));
 
-  const p = document.getElementById("totalProducts");
-  const o = document.getElementById("totalOrders");
-  const r = document.getElementById("totalRevenue");
+totalRevenue.innerText = "Rs " + revenue;
 
-  if (p) p.innerText = totalProducts;
-  if (o) o.innerText = totalOrders;
-  if (r) r.innerText = "Rs " + revenue;
-
-  renderChart(totalProducts, totalOrders, revenue);
+renderChart(products.length, orders.length, revenue);
 }
 
-/* =========================
-CHART
-========================= */
-function renderChart(p, o, r) {
-  const ctx = document.getElementById("analyticsChart");
+function renderChart(p,o,r){
 
-  if (!ctx || typeof Chart === "undefined") return;
+if(window.chart) window.chart.destroy();
 
-  if (window.myChart) window.myChart.destroy();
-
-  window.myChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["Products", "Orders", "Revenue"],
-      datasets: [{
-        data: [p, o, r]
-      }]
-    }
-  });
+window.chart = new Chart(analyticsChart,{
+type:"line",
+data:{
+labels:["Products","Orders","Revenue"],
+datasets:[{
+data:[p,o,r],
+borderColor:"#1f8f4d",
+tension:0.3
+}]
+}
+});
 }
 
 /* =========================
 LOGOUT
 ========================= */
-window.logout = () => {
-  localStorage.removeItem("admin");
-  window.location.href = "login.html";
+window.logout = ()=>{
+localStorage.removeItem("admin");
+location.href="login.html";
 };
