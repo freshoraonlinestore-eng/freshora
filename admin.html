@@ -9,47 +9,35 @@
 <link rel="stylesheet" href="admin.css?v=8">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body>
 
 <div class="admin-container">
 
-<h2>🟢 Freshora Admin V8 PRO MAX</h2>
+<h2>🟢 Freshora Admin V8 FIX</h2>
 
 <button onclick="logout()">Logout</button>
 
 <hr>
 
-<!-- ADD PRODUCT -->
-<h3>📦 Add / Edit Product</h3>
+<h3>📦 Product Panel</h3>
 
 <input id="pname" placeholder="Product Name">
 <input id="pprice" type="number" placeholder="Price">
 <input id="pdiscount" type="number" placeholder="Discount %">
 
-<select id="pcategory"></select>
+<input id="pcategory" placeholder="Category">
+<input id="pstock" type="number" placeholder="Stock">
 
 <textarea id="pdesc" placeholder="Description"></textarea>
 
-<input id="pimageFile" type="file" multiple>
+<input type="file" id="pimageFile" multiple>
 
 <button onclick="uploadAndAddProduct()">Save Product</button>
 
 <hr>
 
-<!-- CATEGORY -->
-<h3>📁 Category System</h3>
-
-<input id="catInput" placeholder="New Category">
-<button onclick="addCategory()">Add</button>
-
-<div id="catList"></div>
-
-<hr>
-
-<!-- ANALYTICS -->
 <h3>📊 Analytics</h3>
 
 <p>Products: <span id="totalProducts">0</span></p>
@@ -60,13 +48,11 @@
 
 <hr>
 
-<!-- PRODUCTS -->
 <h3>🛍 Products</h3>
 <div id="productList"></div>
 
 <hr>
 
-<!-- ORDERS -->
 <h3>📦 Orders</h3>
 <div id="orderList"></div>
 
