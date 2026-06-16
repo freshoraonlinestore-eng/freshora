@@ -1,23 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Login - Freshora</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Admin Login</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#0f172a;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:white;
+}
+
+.box{
+  background:#111827;
+  padding:30px;
+  border-radius:12px;
+  width:300px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border:none;
+  border-radius:6px;
+}
+
+button{
+  width:100%;
+  padding:10px;
+  background:#22c55e;
+  border:none;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
-<div style="max-width:350px;margin:100px auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1)">
-  <h2>Admin Login</h2>
+<div class="box">
+  <h2>🔐 Admin Login</h2>
 
-  <input id="email" placeholder="Email" style="width:100%;padding:10px;margin:10px 0">
-  <input id="password" type="password" placeholder="Password" style="width:100%;padding:10px;margin:10px 0">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
 
-  <button onclick="login()" style="width:100%;padding:10px;background:#1f8f4d;color:#fff;border:none;border-radius:8px">
-    Login
-  </button>
+  <button onclick="login()">Login</button>
 
-  <p id="msg" style="color:red;margin-top:10px"></p>
+  <p id="msg"></p>
 </div>
 
 <script type="module">
@@ -26,13 +61,18 @@ import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/1
 
 window.login = async () => {
   const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const pass = document.getElementById("password").value;
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    await signInWithEmailAndPassword(auth, email, pass);
+
+    localStorage.setItem("admin", "true");
+
     window.location.href = "admin.html";
+
   } catch (e) {
-    document.getElementById("msg").innerText = "Login Failed";
+    document.getElementById("msg").innerText = "Login Failed ❌";
+    console.log(e);
   }
 };
 </script>
