@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Freshora Admin V6</title>
+<title>Freshora Admin V7 Pro Max</title>
 
-<link rel="stylesheet" href="admin.css?v=6">
+<link rel="stylesheet" href="admin.css?v=7">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
@@ -15,33 +16,54 @@
 
 <div class="admin-container">
 
-    <h2>🟢 Freshora Admin V6</h2>
+    <h2>🟢 Freshora ADMIN V7 PRO MAX</h2>
 
     <button onclick="logout()" class="logout-btn">Logout</button>
 
     <hr>
 
-    <!-- PRODUCT FORM -->
-    <h3>📦 Product Manager</h3>
+    <!-- SETTINGS -->
+    <h3>⚙️ Delivery Settings</h3>
+    <input id="deliveryFee" type="number" placeholder="Delivery Fee">
+    <button onclick="saveSettings()">Save Settings</button>
+
+    <hr>
+
+    <!-- CATEGORY -->
+    <h3>📂 Category System</h3>
+
+    <input id="catName" placeholder="Category Name">
+    <button onclick="addCategory()">Add Category</button>
+
+    <div id="categoryList"></div>
+
+    <hr>
+
+    <!-- PRODUCT -->
+    <h3>📦 Product System</h3>
 
     <input id="pname" placeholder="Product Name">
     <input id="pprice" type="number" placeholder="Price">
     <input id="pdiscount" type="number" placeholder="Discount %">
-    <input id="pcategory" placeholder="Category">
+
+    <select id="pcategory"></select>
+
+    <input id="pstock" type="number" placeholder="Stock">
+
     <textarea id="pdesc" placeholder="Description"></textarea>
 
-    <input id="pimageFile" type="file" multiple>
+    <input type="file" id="pimageFile" multiple>
 
-    <button onclick="uploadAndAddProduct()" class="btn">
-        Save Product
-    </button>
+    <button onclick="saveProduct()">Save Product</button>
 
     <hr>
 
     <!-- ANALYTICS -->
     <h3>📊 Analytics</h3>
 
-    <div class="box">
+    <canvas id="chart"></canvas>
+
+    <div>
         <p>Products: <span id="totalProducts">0</span></p>
         <p>Orders: <span id="totalOrders">0</span></p>
         <p>Revenue: <span id="totalRevenue">0</span></p>
@@ -61,7 +83,7 @@
 
 </div>
 
-<script type="module" src="admin.js?v=6"></script>
+<script type="module" src="admin.js?v=7"></script>
 
 </body>
 </html>
