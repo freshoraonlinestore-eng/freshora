@@ -1,3 +1,5 @@
+console.log("ADMIN LOADED OK");
+
 import {
   db,
   collection,
