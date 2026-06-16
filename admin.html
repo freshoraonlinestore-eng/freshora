@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Freshora Admin V8</title>
+<title>Freshora Admin V8 FIX</title>
 
 <link rel="stylesheet" href="admin.css?v=8">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -15,49 +16,52 @@
 
 <div class="admin-container">
 
-<h2>🟢 Freshora Admin V8 FIX</h2>
+  <h2>🟢 Freshora Admin V8</h2>
 
-<button onclick="logout()">Logout</button>
+  <button onclick="logout()">Logout</button>
 
-<hr>
+  <hr>
 
-<h3>📦 Product Panel</h3>
+  <!-- PRODUCT FORM -->
+  <h3>📦 Product Panel</h3>
 
-<input id="pname" placeholder="Product Name">
-<input id="pprice" type="number" placeholder="Price">
-<input id="pdiscount" type="number" placeholder="Discount %">
+  <input id="pname" placeholder="Product Name">
+  <input id="pprice" type="number" placeholder="Price">
+  <input id="pdiscount" type="number" placeholder="Discount %">
+  <input id="pcategory" placeholder="Category">
+  <input id="pstock" type="number" placeholder="Stock">
+  <textarea id="pdesc" placeholder="Description"></textarea>
 
-<input id="pcategory" placeholder="Category">
-<input id="pstock" type="number" placeholder="Stock">
+  <input type="file" id="pimageFile">
 
-<textarea id="pdesc" placeholder="Description"></textarea>
+  <button onclick="uploadAndAddProduct()">Save Product</button>
 
-<input type="file" id="pimageFile" multiple>
+  <hr>
 
-<button onclick="uploadAndAddProduct()">Save Product</button>
+  <!-- ANALYTICS -->
+  <h3>📊 Analytics</h3>
 
-<hr>
+  <p>Products: <span id="totalProducts">0</span></p>
+  <p>Orders: <span id="totalOrders">0</span></p>
+  <p>Revenue: <span id="totalRevenue">0</span></p>
 
-<h3>📊 Analytics</h3>
+  <canvas id="analyticsChart"></canvas>
 
-<p>Products: <span id="totalProducts">0</span></p>
-<p>Orders: <span id="totalOrders">0</span></p>
-<p>Revenue: <span id="totalRevenue">0</span></p>
+  <hr>
 
-<canvas id="analyticsChart"></canvas>
+  <!-- PRODUCTS -->
+  <h3>🛍 Products</h3>
+  <div id="productList"></div>
 
-<hr>
+  <hr>
 
-<h3>🛍 Products</h3>
-<div id="productList"></div>
-
-<hr>
-
-<h3>📦 Orders</h3>
-<div id="orderList"></div>
+  <!-- ORDERS -->
+  <h3>📦 Orders</h3>
+  <div id="orderList"></div>
 
 </div>
 
+<!-- IMPORTANT -->
 <script type="module" src="admin.js?v=8"></script>
 
 </body>
