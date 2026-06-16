@@ -1,17 +1,24 @@
+console.log("ADMIN SYSTEM LOADING...");
+
+import { db, collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, auth } from "./firebase.js";
+
 import {
-  db,
-  collection,
-  onSnapshot,
-  addDoc,
-  deleteDoc,
-  updateDoc,
-  doc
-} from "./firebase.js";
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* =========================
-SAFE START LOG
+SECURE LOGIN GUARD
 ========================= */
-console.log("🔥 APP JS V8 PRO LOADED");
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    console.log("ADMIN LOGGED IN:", user.email);
+    loadProducts();
+    loadOrders();
+  }
+});
 
 /* =========================
 STATE
@@ -21,32 +28,29 @@ let orders = [];
 let chartInstance = null;
 
 /* =========================
-SAFE GET ELEMENT
+ADD / UPDATE PRODUCT
 ========================= */
-function el(id) {
-  return document.getElementById(id);
-}
+window.uploadAndAddProduct = async () => {
+  try {
+    const name = document.getElementById("pname").value;
+    const price = Number(document.getElementById("pprice").value || 0);
+    const discount = Number(document.getElementById("pdiscount").value || 0);
+    const category = document.getElementById("pcategory").value;
+    const stock = Number(document.getElementById("pstock").value || 0);
+    const desc = document.getElementById("pdesc").value;
 
-/* =========================
-INIT
-========================= */
-window.addEventListener("DOMContentLoaded", () => {
-  loadProducts();
-  loadOrders();
-});
+    const files = document.getElementById("pimageFile").files;
 
-/* =========================
-UPLOAD IMAGES (SAFE)
-========================= */
-async function uploadImages(files) {
-  const urls = [];
+    if (!name || !price) {
+      alert("Fill required fields");
+      return;
+    }
 
-  if (!files) return urls;
+    let imageUrl = "";
 
-  for (let i = 0; i < Math.min(files.length, 3); i++) {
-    try {
+    if (files && files[0]) {
       const formData = new FormData();
-      formData.append("file", files[i]);
+      formData.append("file", files[0]);
       formData.append("upload_preset", "freshora_upload");
 
       const res = await fetch(
@@ -55,36 +59,8 @@ async function uploadImages(files) {
       );
 
       const data = await res.json();
-      if (data.secure_url) urls.push(data.secure_url);
-
-    } catch (err) {
-      console.error("Image upload error:", err);
+      imageUrl = data.secure_url || "";
     }
-  }
-
-  return urls;
-}
-
-/* =========================
-ADD / UPDATE PRODUCT
-========================= */
-window.uploadAndAddProduct = async () => {
-  try {
-    const name = el("pname")?.value;
-    const price = Number(el("pprice")?.value || 0);
-    const discount = Number(el("pdiscount")?.value || 0);
-    const category = el("pcategory")?.value || "General";
-    const stock = Number(el("pstock")?.value || 0);
-    const desc = el("pdesc")?.value;
-
-    const files = el("pimageFile")?.files;
-
-    if (!name || price <= 0) {
-      alert("Fill required fields");
-      return;
-    }
-
-    const images = await uploadImages(files);
 
     await addDoc(collection(db, "products"), {
       name,
@@ -93,15 +69,14 @@ window.uploadAndAddProduct = async () => {
       category,
       stock,
       description: desc,
-      images,
-      image: images[0] || "",
+      image: imageUrl,
       createdAt: new Date().toISOString()
     });
 
     alert("Product Saved ✅");
 
-  } catch (err) {
-    console.error("ADD ERROR:", err);
+  } catch (e) {
+    console.error("ADD ERROR:", e);
   }
 };
 
@@ -116,33 +91,25 @@ function loadProducts() {
       ...d.data()
     }));
 
-    const list = el("productList");
+    const list = document.getElementById("productList");
     if (!list) return;
-
-    if (products.length === 0) {
-      list.innerHTML = "<p>No products</p>";
-      return;
-    }
 
     list.innerHTML = products.map(p => `
       <div class="admin-card">
         <img src="${p.image || ''}" width="60">
 
         <div>
-          <h4>${p.name || ''}</h4>
-          <p>Rs ${p.price || 0}</p>
+          <h4>${p.name}</h4>
+          <p>Rs ${p.price}</p>
           <p>Stock: ${p.stock || 0}</p>
           <p>Category: ${p.category || '-'}</p>
         </div>
 
-        <button onclick="editProduct('${p.id}')">Edit</button>
         <button onclick="deleteProduct('${p.id}')">Delete</button>
-        <button onclick="updateStock('${p.id}',1)">+</button>
-        <button onclick="updateStock('${p.id}',-1)">-</button>
       </div>
     `).join("");
 
-    loadAnalytics();
+    updateAnalytics();
   });
 }
 
@@ -150,41 +117,7 @@ function loadProducts() {
 DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
-  try {
-    await deleteDoc(doc(db, "products", id));
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-/* =========================
-EDIT PRODUCT (AUTO FILL)
-========================= */
-window.editProduct = (id) => {
-  const p = products.find(x => x.id === id);
-  if (!p) return;
-
-  if (el("pname")) el("pname").value = p.name;
-  if (el("pprice")) el("pprice").value = p.price;
-  if (el("pdiscount")) el("pdiscount").value = p.discount;
-  if (el("pcategory")) el("pcategory").value = p.category;
-  if (el("pstock")) el("pstock").value = p.stock;
-};
-
-/* =========================
-STOCK UPDATE
-========================= */
-window.updateStock = async (id, val) => {
-  const p = products.find(x => x.id === id);
-  if (!p) return;
-
-  try {
-    await updateDoc(doc(db, "products", id), {
-      stock: (p.stock || 0) + val
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  await deleteDoc(doc(db, "products", id));
 };
 
 /* =========================
@@ -198,26 +131,26 @@ function loadOrders() {
       ...d.data()
     }));
 
-    const list = el("orderList");
+    const list = document.getElementById("orderList");
     if (!list) return;
 
     list.innerHTML = orders.map(o => `
       <div class="admin-card">
-        <h4>${o.orderId || 'No ID'}</h4>
-        <p>${o.customer?.name || ''}</p>
+        <h4>${o.orderId}</h4>
+        <p>${o.customer?.name || ""}</p>
         <p>Rs ${o.total || 0}</p>
-        <span>${o.status || "Pending"}</span>
+        <p>Status: ${o.status || "Pending"}</p>
       </div>
     `).join("");
 
-    loadAnalytics();
+    updateAnalytics();
   });
 }
 
 /* =========================
-ANALYTICS SAFE FIX
+ANALYTICS
 ========================= */
-function loadAnalytics() {
+function updateAnalytics() {
 
   const totalProducts = products.length;
   const totalOrders = orders.length;
@@ -227,9 +160,9 @@ function loadAnalytics() {
     revenue += Number(o.total || 0);
   });
 
-  const p = el("totalProducts");
-  const o = el("totalOrders");
-  const r = el("totalRevenue");
+  const p = document.getElementById("totalProducts");
+  const o = document.getElementById("totalOrders");
+  const r = document.getElementById("totalRevenue");
 
   if (p) p.innerText = totalProducts;
   if (o) o.innerText = totalOrders;
@@ -239,11 +172,11 @@ function loadAnalytics() {
 }
 
 /* =========================
-CHART (FIXED)
+CHART (SAFE FIX)
 ========================= */
 function renderChart(p, o, r) {
 
-  const ctx = el("analyticsChart");
+  const ctx = document.getElementById("analyticsChart");
   if (!ctx || typeof Chart === "undefined") return;
 
   if (chartInstance) chartInstance.destroy();
@@ -261,9 +194,10 @@ function renderChart(p, o, r) {
 }
 
 /* =========================
-LOGOUT
+LOGOUT (SECURE)
 ========================= */
 window.logout = () => {
-  localStorage.removeItem("admin");
-  window.location.href = "login.html";
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
 };
