@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Freshora Admin V7 Pro Max</title>
+<title>Freshora Admin V8</title>
 
-<link rel="stylesheet" href="admin.css?v=7">
+<link rel="stylesheet" href="admin.css?v=8">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -16,73 +16,63 @@
 
 <div class="admin-container">
 
-    <h2>🟢 Freshora ADMIN V7 PRO MAX</h2>
+<h2>🟢 Freshora Admin V8 PRO MAX</h2>
 
-    <button onclick="logout()" class="logout-btn">Logout</button>
+<button onclick="logout()">Logout</button>
 
-    <hr>
+<hr>
 
-    <!-- SETTINGS -->
-    <h3>⚙️ Delivery Settings</h3>
-    <input id="deliveryFee" type="number" placeholder="Delivery Fee">
-    <button onclick="saveSettings()">Save Settings</button>
+<!-- ADD PRODUCT -->
+<h3>📦 Add / Edit Product</h3>
 
-    <hr>
+<input id="pname" placeholder="Product Name">
+<input id="pprice" type="number" placeholder="Price">
+<input id="pdiscount" type="number" placeholder="Discount %">
 
-    <!-- CATEGORY -->
-    <h3>📂 Category System</h3>
+<select id="pcategory"></select>
 
-    <input id="catName" placeholder="Category Name">
-    <button onclick="addCategory()">Add Category</button>
+<textarea id="pdesc" placeholder="Description"></textarea>
 
-    <div id="categoryList"></div>
+<input id="pimageFile" type="file" multiple>
 
-    <hr>
+<button onclick="uploadAndAddProduct()">Save Product</button>
 
-    <!-- PRODUCT -->
-    <h3>📦 Product System</h3>
+<hr>
 
-    <input id="pname" placeholder="Product Name">
-    <input id="pprice" type="number" placeholder="Price">
-    <input id="pdiscount" type="number" placeholder="Discount %">
+<!-- CATEGORY -->
+<h3>📁 Category System</h3>
 
-    <select id="pcategory"></select>
+<input id="catInput" placeholder="New Category">
+<button onclick="addCategory()">Add</button>
 
-    <input id="pstock" type="number" placeholder="Stock">
+<div id="catList"></div>
 
-    <textarea id="pdesc" placeholder="Description"></textarea>
+<hr>
 
-    <input type="file" id="pimageFile" multiple>
+<!-- ANALYTICS -->
+<h3>📊 Analytics</h3>
 
-    <button onclick="saveProduct()">Save Product</button>
+<p>Products: <span id="totalProducts">0</span></p>
+<p>Orders: <span id="totalOrders">0</span></p>
+<p>Revenue: <span id="totalRevenue">0</span></p>
 
-    <hr>
+<canvas id="analyticsChart"></canvas>
 
-    <!-- ANALYTICS -->
-    <h3>📊 Analytics</h3>
+<hr>
 
-    <canvas id="chart"></canvas>
+<!-- PRODUCTS -->
+<h3>🛍 Products</h3>
+<div id="productList"></div>
 
-    <div>
-        <p>Products: <span id="totalProducts">0</span></p>
-        <p>Orders: <span id="totalOrders">0</span></p>
-        <p>Revenue: <span id="totalRevenue">0</span></p>
-    </div>
+<hr>
 
-    <hr>
-
-    <!-- PRODUCTS -->
-    <h3>🛍 Products</h3>
-    <div id="productList"></div>
-
-    <hr>
-
-    <!-- ORDERS -->
-    <h3>📦 Orders</h3>
-    <div id="orderList"></div>
+<!-- ORDERS -->
+<h3>📦 Orders</h3>
+<div id="orderList"></div>
 
 </div>
 
-<script type="module" src="admin.js"></script>
+<script type="module" src="admin.js?v=8"></script>
+
 </body>
 </html>
