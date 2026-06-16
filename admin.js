@@ -4,187 +4,206 @@ import {
   onSnapshot,
   addDoc,
   deleteDoc,
-  doc,
-  updateDoc
+  doc
 } from "./firebase.js";
 
 /* =========================
 STATE
 ========================= */
-let editId = null;
+let products = [];
+let orders = [];
 
 /* =========================
-SETTINGS (Delivery Fee)
+SAFE ELEMENT GET
 ========================= */
-window.saveSettings = async () => {
-
-    const fee = Number(document.getElementById("deliveryFee").value);
-
-    await addDoc(collection(db, "settings"), {
-        deliveryFee: fee
-    });
-
-    alert("Settings saved");
-};
+const el = (id) => document.getElementById(id);
 
 /* =========================
-CATEGORY
+INIT
 ========================= */
-window.addCategory = async () => {
-
-    const name = document.getElementById("catName").value;
-
-    if (!name) return;
-
-    await addDoc(collection(db, "categories"), {
-        name
-    });
-};
-
-/* LOAD CATEGORY */
-onSnapshot(collection(db, "categories"), (snap) => {
-
-    const list = document.getElementById("categoryList");
-    const select = document.getElementById("pcategory");
-
-    list.innerHTML = "";
-    select.innerHTML = "";
-
-    snap.docs.forEach(d => {
-
-        const c = d.data();
-
-        list.innerHTML += `
-            <div>
-                ${c.name}
-                <button onclick="deleteCategory('${d.id}')">Delete</button>
-            </div>
-        `;
-
-        select.innerHTML += `<option>${c.name}</option>`;
-    });
+window.addEventListener("DOMContentLoaded", () => {
+  loadProducts();
+  loadOrders();
 });
 
-/* DELETE CATEGORY */
-window.deleteCategory = async (id) => {
-    await deleteDoc(doc(db, "categories", id));
-};
+/* =========================
+PRODUCTS LOAD
+========================= */
+function loadProducts() {
+  onSnapshot(collection(db, "products"), (snap) => {
+    products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    renderProducts();
+    updateAnalytics();
+  }, (err) => {
+    console.error("Products error:", err);
+  });
+}
 
 /* =========================
-PRODUCT SAVE (ADD/UPDATE)
+ORDERS LOAD
 ========================= */
-window.saveProduct = async () => {
+function loadOrders() {
+  onSnapshot(collection(db, "orders"), (snap) => {
+    orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const name = pname.value;
-    const price = Number(pprice.value);
-    const discount = Number(pdiscount.value);
-    const category = pcategory.value;
-    const stock = Number(pstock.value);
-    const desc = pdesc.value;
-
-    let images = [];
-
-    const files = document.getElementById("pimageFile").files;
-
-    for (let i = 0; i < files.length; i++) {
-        images.push(URL.createObjectURL(files[i]));
-    }
-
-    const data = {
-        name,
-        price,
-        discount,
-        category,
-        stock,
-        description: desc,
-        image: images[0] || "",
-        images
-    };
-
-    if (editId) {
-        await updateDoc(doc(db, "products", editId), data);
-        editId = null;
-        alert("Updated");
-    } else {
-        await addDoc(collection(db, "products"), data);
-        alert("Added");
-    }
-};
+    renderOrders();
+    updateAnalytics();
+  }, (err) => {
+    console.error("Orders error:", err);
+  });
+}
 
 /* =========================
-LOAD PRODUCTS
+RENDER PRODUCTS
 ========================= */
-onSnapshot(collection(db, "products"), (snap) => {
+function renderProducts() {
+  const box = el("productList");
+  if (!box) return;
 
-    const list = document.getElementById("productList");
+  if (!products.length) {
+    box.innerHTML = "<p>No products</p>";
+    return;
+  }
 
-    document.getElementById("totalProducts").innerText = snap.docs.length;
+  box.innerHTML = products.map(p => `
+    <div class="item">
+      <img src="${p.image || ''}" width="60">
 
-    list.innerHTML = snap.docs.map(d => {
+      <div>
+        <h4>${p.name || ''}</h4>
+        <p>Rs ${p.price || 0}</p>
+        <small>${p.category || ''}</small>
+      </div>
 
-        const p = d.data();
+      <button onclick="deleteProduct('${p.id}')">Delete</button>
+    </div>
+  `).join("");
+}
 
-        return `
-        <div>
-            <img src="${p.image}" width="50">
-            <h4>${p.name}</h4>
-            <p>Rs ${p.price}</p>
-            <p>Stock: ${p.stock}</p>
+/* =========================
+RENDER ORDERS
+========================= */
+function renderOrders() {
+  const box = el("orderList");
+  if (!box) return;
 
-            <button onclick="deleteProduct('${d.id}')">Delete</button>
-            <button onclick="editProduct('${d.id}', '${p.name}', ${p.price}, ${p.discount})">Edit</button>
-        </div>
-        `;
-    }).join("");
-});
+  if (!orders.length) {
+    box.innerHTML = "<p>No orders</p>";
+    return;
+  }
 
-/* DELETE PRODUCT */
+  box.innerHTML = orders.map(o => `
+    <div class="item">
+      <h4>${o.orderId || ''}</h4>
+      <p>${o.customer?.name || ''}</p>
+      <b>Rs ${o.total || 0}</b>
+    </div>
+  `).join("");
+}
+
+/* =========================
+ANALYTICS FIX
+========================= */
+function updateAnalytics() {
+
+  const totalProducts = products.length;
+  const totalOrders = orders.length;
+
+  let revenue = 0;
+  orders.forEach(o => {
+    revenue += Number(o.total || 0);
+  });
+
+  const pEl = el("totalProducts");
+  const oEl = el("totalOrders");
+  const rEl = el("totalRevenue");
+
+  if (pEl) pEl.innerText = totalProducts;
+  if (oEl) oEl.innerText = totalOrders;
+  if (rEl) rEl.innerText = revenue;
+
+  drawChart(totalProducts, totalOrders, revenue);
+}
+
+/* =========================
+CHART
+========================= */
+let chartInstance = null;
+
+function drawChart(p, o, r) {
+  const ctx = el("analyticsChart");
+  if (!ctx) return;
+
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Products", "Orders", "Revenue"],
+      datasets: [{
+        data: [p, o, r]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+/* =========================
+DELETE PRODUCT
+========================= */
 window.deleteProduct = async (id) => {
+  try {
     await deleteDoc(doc(db, "products", id));
-};
-
-/* EDIT PRODUCT */
-window.editProduct = (id, name, price, discount) => {
-
-    pname.value = name;
-    pprice.value = price;
-    pdiscount.value = discount;
-
-    editId = id;
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 /* =========================
-ORDERS + ANALYTICS
+ADD PRODUCT (SAFE)
 ========================= */
-onSnapshot(collection(db, "orders"), (snap) => {
+window.uploadAndAddProduct = async () => {
 
-    const list = document.getElementById("orderList");
+  try {
 
-    let revenue = 0;
+    const name = el("pname")?.value;
+    const price = el("pprice")?.value;
+    const discount = el("pdiscount")?.value;
+    const category = el("pcategory")?.value;
+    const desc = el("pdesc")?.value;
 
-    document.getElementById("totalOrders").innerText = snap.docs.length;
+    if (!name || !price) {
+      alert("Fill required fields");
+      return;
+    }
 
-    list.innerHTML = snap.docs.map(d => {
+    await addDoc(collection(db, "products"), {
+      name,
+      price: Number(price),
+      discount: Number(discount || 0),
+      category,
+      description: desc,
+      createdAt: new Date().toISOString()
+    });
 
-        const o = d.data();
-        revenue += o.total || 0;
+    alert("Saved ✅");
 
-        return `
-        <div>
-            <h4>${o.orderId}</h4>
-            <p>${o.customer?.name}</p>
-            <p>${o.total} LKR</p>
-        </div>
-        `;
-    }).join("");
-
-    document.getElementById("totalRevenue").innerText = revenue;
-});
+  } catch (err) {
+    console.error("Add product error:", err);
+    alert("Failed ❌");
+  }
+};
 
 /* =========================
 LOGOUT
 ========================= */
 window.logout = () => {
-    localStorage.removeItem("admin");
-    window.location.href = "login.html";
+  localStorage.removeItem("admin");
+  location.href = "login.html";
 };
