@@ -1,68 +1,230 @@
+FULL COMPLETE admin.html (REPLACE ENTIRE FILE)
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Freshora Admin FIXED</title>
+<title>Freshora Admin V7 PRO</title>
 
-<link rel="stylesheet" href="admin.css?v=6">
-  
+<link rel="stylesheet" href="admin.css?v=7">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
 
-<div id="debug" style="position:fixed;bottom:10px;right:10px;background:black;color:white;padding:6px;z-index:9999">
-HTML OK
-</div>
-
 <div class="admin-container">
 
-<h2>🟢 Freshora Admin FIX</h2>
+    <div class="topbar">
 
-<button onclick="logout()">Logout</button>
+        <h2>🟢 Freshora Admin V7 PRO</h2>
 
-<hr>
+        <button onclick="logout()" class="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </button>
 
-<h3>📦 Add Product</h3>
+    </div>
 
-<input id="pname" placeholder="Name">
-<input id="pprice" placeholder="Price">
-<input id="pdiscount" placeholder="Discount">
-<input id="pcategory" placeholder="Category">
-<textarea id="pdesc" placeholder="Description"></textarea>
+    <!-- =========================
+    ANALYTICS
+    ========================== -->
 
-<input id="pimageFile" type="file">
+    <div class="analytics-grid">
 
-<button onclick="uploadAndAddProduct()">Save Product</button>
+        <div class="stat-card">
+            <h4>Total Products</h4>
+            <span id="totalProducts">0</span>
+        </div>
 
-<hr>
+        <div class="stat-card">
+            <h4>Total Orders</h4>
+            <span id="totalOrders">0</span>
+        </div>
 
-<h3>📊 Analytics</h3>
+        <div class="stat-card">
+            <h4>Total Revenue</h4>
+            <span id="totalRevenue">Rs 0</span>
+        </div>
 
-<p>Products: <span id="totalProducts">0</span></p>
-<p>Orders: <span id="totalOrders">0</span></p>
-<p>Revenue: <span id="totalRevenue">0</span></p>
+        <div class="stat-card">
+            <h4>Delivery Fee</h4>
+            <span id="deliveryFeeText">Rs 350</span>
+        </div>
 
-<canvas id="analyticsChart"></canvas>
+    </div>
 
-<hr>
+    <div class="chart-box">
+        <canvas id="analyticsChart"></canvas>
+    </div>
 
-<h3>🛍 Products</h3>
-<div id="productList"></div>
+    <!-- =========================
+    DELIVERY SETTINGS
+    ========================== -->
 
-<hr>
+    <section class="admin-section">
 
-<h3>📦 Orders</h3>
-<div id="orderList"></div>
+        <h3>🚚 Delivery Settings</h3>
+
+        <div class="form-grid">
+
+            <input
+                id="deliveryFee"
+                type="number"
+                placeholder="Delivery Fee">
+
+            <input
+                id="freeDelivery"
+                type="number"
+                placeholder="Free Delivery Above">
+
+        </div>
+
+        <button
+            onclick="saveDeliverySettings()"
+            class="primary-btn">
+
+            Save Delivery Settings
+
+        </button>
+
+    </section>
+
+    <!-- =========================
+    CATEGORY SYSTEM
+    ========================== -->
+
+    <section class="admin-section">
+
+        <h3>📂 Categories</h3>
+
+        <div class="form-grid">
+
+            <input
+                id="categoryName"
+                placeholder="Category Name">
+
+        </div>
+
+        <button
+            onclick="addCategory()"
+            class="primary-btn">
+
+            Add Category
+
+        </button>
+
+        <div id="categoryList" class="category-list"></div>
+
+    </section>
+
+    <!-- =========================
+    PRODUCT SYSTEM
+    ========================== -->
+
+    <section class="admin-section">
+
+        <h3>📦 Add / Update Product</h3>
+
+        <div class="form-grid">
+
+            <input id="pname" placeholder="Product Name">
+
+            <input id="pprice" type="number" placeholder="Price">
+
+            <input id="pdiscount" type="number" placeholder="Discount %">
+
+            <input id="pstock" type="number" placeholder="Stock Quantity">
+
+            <select id="pcategory"></select>
+
+            <select id="pstatus">
+                <option value="active">Active</option>
+                <option value="hidden">Hidden</option>
+            </select>
+
+            <textarea
+                id="pdesc"
+                placeholder="Description"></textarea>
+
+            <input
+                type="file"
+                id="pimage1"
+                accept="image/*">
+
+            <input
+                type="file"
+                id="pimage2"
+                accept="image/*">
+
+            <input
+                type="file"
+                id="pimage3"
+                accept="image/*">
+
+        </div>
+
+        <button
+            onclick="uploadAndAddProduct()"
+            class="primary-btn">
+
+            Save Product
+
+        </button>
+
+    </section>
+
+    <!-- =========================
+    SEARCH
+    ========================== -->
+
+    <section class="admin-section">
+
+        <div class="search-box">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+                id="adminSearch"
+                placeholder="Search products...">
+
+        </div>
+
+    </section>
+
+    <!-- =========================
+    PRODUCTS
+    ========================== -->
+
+    <section class="admin-section">
+
+        <h3>🛍 Products</h3>
+
+        <div id="productList" class="product-grid"></div>
+
+    </section>
+
+    <!-- =========================
+    ORDERS
+    ========================== -->
+
+    <section class="admin-section">
+
+        <h3>📦 Orders</h3>
+
+        <div id="orderList"></div>
+
+    </section>
 
 </div>
 
-<script type="module" src="admin.js?v=6"></script>
+<script type="module" src="admin.js?v=7"></script>
 
 </body>
 </html>
