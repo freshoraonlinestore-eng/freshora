@@ -1,203 +1,523 @@
-console.log("ADMIN SYSTEM LOADING...");
-
-import { db, collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, auth } from "./firebase.js";
-
 import {
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  db,
+  collection,
+  addDoc,
+  onSnapshot,
+  deleteDoc,
+  doc
+} from "./firebase.js";
 
 /* =========================
-SECURE LOGIN GUARD
+FRESHORA ADMIN V6 PRO MAX
+FULL COMPLETE admin.js
 ========================= */
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-  } else {
-    console.log("ADMIN LOGGED IN:", user.email);
-    loadProducts();
-    loadOrders();
-  }
-});
+
+/* =========================
+CLOUDINARY CONFIG
+========================= */
+const CLOUD_NAME = "dayvblw7g";
+const UPLOAD_PRESET = "freshora_upload";
 
 /* =========================
 STATE
 ========================= */
-let products = [];
-let orders = [];
-let chartInstance = null;
+let productsData = [];
+let ordersData = [];
+let analyticsChart = null;
 
 /* =========================
-ADD / UPDATE PRODUCT
+UTILS
+========================= */
+function qs(id) {
+  return document.getElementById(id);
+}
+
+function showToast(msg) {
+
+  let toast = document.querySelector(".admin-toast");
+
+  if (!toast) {
+
+    toast = document.createElement("div");
+    toast.className = "admin-toast";
+    document.body.appendChild(toast);
+  }
+
+  toast.innerText = msg;
+  toast.classList.add("show");
+
+  clearTimeout(window.toastTimer);
+
+  window.toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
+}
+
+function formatPrice(v) {
+  return Number(v || 0).toLocaleString();
+}
+
+/* =========================
+IMAGE UPLOAD
+========================= */
+async function uploadImage(file) {
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+  formData.append("folder", "freshora/products");
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  const data = await res.json();
+
+  if (!data.secure_url) {
+    throw new Error("Image upload failed");
+  }
+
+  return data.secure_url;
+}
+
+/* =========================
+CLEAR FORM
+========================= */
+function clearForm() {
+
+  qs("pname").value = "";
+  qs("pprice").value = "";
+  qs("pdiscount").value = "";
+  qs("pcategory").value = "";
+  qs("pdesc").value = "";
+  qs("pimageFile").value = "";
+}
+
+/* =========================
+ADD PRODUCT
 ========================= */
 window.uploadAndAddProduct = async () => {
-  try {
-    const name = document.getElementById("pname").value;
-    const price = Number(document.getElementById("pprice").value || 0);
-    const discount = Number(document.getElementById("pdiscount").value || 0);
-    const category = document.getElementById("pcategory").value;
-    const stock = Number(document.getElementById("pstock").value || 0);
-    const desc = document.getElementById("pdesc").value;
 
-    const files = document.getElementById("pimageFile").files;
+  try {
+
+    const name = qs("pname").value.trim();
+    const price = qs("pprice").value.trim();
+    const discount = qs("pdiscount").value.trim();
+    const category = qs("pcategory").value.trim();
+    const desc = qs("pdesc").value.trim();
+    const file = qs("pimageFile").files[0];
 
     if (!name || !price) {
-      alert("Fill required fields");
+
+      showToast("Fill required fields");
       return;
     }
 
     let imageUrl = "";
 
-    if (files && files[0]) {
-      const formData = new FormData();
-      formData.append("file", files[0]);
-      formData.append("upload_preset", "freshora_upload");
+    if (file) {
 
-      const res = await fetch(
-        "https://api.cloudinary.com/v1_1/dayvblw7g/image/upload",
-        { method: "POST", body: formData }
-      );
+      showToast("Uploading image...");
 
-      const data = await res.json();
-      imageUrl = data.secure_url || "";
+      imageUrl = await uploadImage(file);
     }
 
     await addDoc(collection(db, "products"), {
+
       name,
-      price,
-      discount,
+      price: Number(price),
+      discount: Number(discount || 0),
       category,
-      stock,
       description: desc,
       image: imageUrl,
+
+      stock: 100,
+      active: true,
+
       createdAt: new Date().toISOString()
+
     });
 
-    alert("Product Saved ✅");
+    showToast("Product Added ✅");
 
-  } catch (e) {
-    console.error("ADD ERROR:", e);
+    clearForm();
+
+  } catch (err) {
+
+    console.error(err);
+
+    showToast("Add failed ❌");
   }
 };
-
-/* =========================
-LOAD PRODUCTS
-========================= */
-function loadProducts() {
-  onSnapshot(collection(db, "products"), (snap) => {
-
-    products = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }));
-
-    const list = document.getElementById("productList");
-    if (!list) return;
-
-    list.innerHTML = products.map(p => `
-      <div class="admin-card">
-        <img src="${p.image || ''}" width="60">
-
-        <div>
-          <h4>${p.name}</h4>
-          <p>Rs ${p.price}</p>
-          <p>Stock: ${p.stock || 0}</p>
-          <p>Category: ${p.category || '-'}</p>
-        </div>
-
-        <button onclick="deleteProduct('${p.id}')">Delete</button>
-      </div>
-    `).join("");
-
-    updateAnalytics();
-  });
-}
 
 /* =========================
 DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
-  await deleteDoc(doc(db, "products", id));
+
+  const ok = confirm("Delete this product?");
+
+  if (!ok) return;
+
+  try {
+
+    await deleteDoc(doc(db, "products", id));
+
+    showToast("Product deleted");
+
+  } catch (err) {
+
+    console.error(err);
+
+    showToast("Delete failed");
+  }
 };
+
+/* =========================
+EDIT PRODUCT
+========================= */
+window.editProduct = (id) => {
+
+  const p = productsData.find(x => x.id === id);
+
+  if (!p) return;
+
+  qs("pname").value = p.name || "";
+  qs("pprice").value = p.price || "";
+  qs("pdiscount").value = p.discount || "";
+  qs("pcategory").value = p.category || "";
+  qs("pdesc").value = p.description || "";
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  showToast("Edit mode loaded");
+};
+
+/* =========================
+SEARCH PRODUCTS
+========================= */
+window.searchProducts = () => {
+
+  const search =
+    qs("adminSearch")
+    ?.value
+    .toLowerCase()
+    .trim() || "";
+
+  const filtered = productsData.filter(p => {
+
+    return (
+      (p.name || "")
+      .toLowerCase()
+      .includes(search)
+    );
+
+  });
+
+  renderProducts(filtered);
+};
+
+/* =========================
+RENDER PRODUCTS
+========================= */
+function renderProducts(data) {
+
+  const list = qs("productList");
+
+  if (!list) return;
+
+  if (!data.length) {
+
+    list.innerHTML = `
+      <div class="empty-box">
+        No products found
+      </div>
+    `;
+
+    return;
+  }
+
+  list.innerHTML = data.map(p => {
+
+    const finalPrice =
+      p.discount > 0
+      ? Math.round(
+          p.price - (p.price * p.discount / 100)
+        )
+      : p.price;
+
+    return `
+    <div class="admin-card">
+
+      <img
+        src="${p.image || ""}"
+        class="admin-product-img"
+      >
+
+      <div class="admin-card-content">
+
+        <h4>${p.name || ""}</h4>
+
+        <p>
+          Rs ${formatPrice(finalPrice)}
+        </p>
+
+        <small>
+          Category:
+          ${p.category || "N/A"}
+        </small>
+
+        <div class="stock-row">
+
+          ${
+            p.stock <= 0
+            ? `<span class="stock-badge out">
+                Out Of Stock
+               </span>`
+
+            : p.stock <= 5
+            ? `<span class="stock-badge low">
+                Low Stock
+               </span>`
+
+            : `<span class="stock-badge in">
+                In Stock
+               </span>`
+          }
+
+        </div>
+
+        <div class="admin-actions">
+
+          <button
+            class="edit-btn"
+            onclick="editProduct('${p.id}')">
+
+            <i class="fa-solid fa-pen"></i>
+            Edit
+
+          </button>
+
+          <button
+            class="delete-btn"
+            onclick="deleteProduct('${p.id}')">
+
+            <i class="fa-solid fa-trash"></i>
+            Delete
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+    `;
+
+  }).join("");
+}
+
+/* =========================
+LOAD PRODUCTS
+========================= */
+onSnapshot(collection(db, "products"), (snap) => {
+
+  productsData = snap.docs.map(d => ({
+    id: d.id,
+    ...d.data()
+  }));
+
+  renderProducts(productsData);
+
+  if (qs("totalProducts")) {
+    qs("totalProducts").innerText =
+      productsData.length;
+  }
+
+  updateAnalytics();
+});
+
+/* =========================
+RENDER ORDERS
+========================= */
+function renderOrders(data) {
+
+  const list = qs("orderList");
+
+  if (!list) return;
+
+  if (!data.length) {
+
+    list.innerHTML = `
+      <div class="empty-box">
+        No orders yet
+      </div>
+    `;
+
+    return;
+  }
+
+  list.innerHTML = data.map(o => {
+
+    return `
+    <div class="order-card">
+
+      <div class="order-top">
+
+        <h4>${o.orderId || "ORDER"}</h4>
+
+        <span class="order-status">
+          Pending
+        </span>
+
+      </div>
+
+      <p>
+        👤 ${o.customer?.name || ""}
+      </p>
+
+      <p>
+        📞 ${o.customer?.phone || ""}
+      </p>
+
+      <p>
+        💰 Rs ${formatPrice(o.total || 0)}
+      </p>
+
+      <p>
+        📍 ${o.customer?.address || ""}
+      </p>
+
+    </div>
+    `;
+
+  }).join("");
+}
 
 /* =========================
 LOAD ORDERS
 ========================= */
-function loadOrders() {
-  onSnapshot(collection(db, "orders"), (snap) => {
+onSnapshot(collection(db, "orders"), (snap) => {
 
-    orders = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }));
+  ordersData = snap.docs.map(d => ({
+    id: d.id,
+    ...d.data()
+  }));
 
-    const list = document.getElementById("orderList");
-    if (!list) return;
+  renderOrders(ordersData);
 
-    list.innerHTML = orders.map(o => `
-      <div class="admin-card">
-        <h4>${o.orderId}</h4>
-        <p>${o.customer?.name || ""}</p>
-        <p>Rs ${o.total || 0}</p>
-        <p>Status: ${o.status || "Pending"}</p>
-      </div>
-    `).join("");
+  if (qs("totalOrders")) {
+    qs("totalOrders").innerText =
+      ordersData.length;
+  }
 
-    updateAnalytics();
-  });
-}
+  updateAnalytics();
+});
 
 /* =========================
 ANALYTICS
 ========================= */
 function updateAnalytics() {
 
-  const totalProducts = products.length;
-  const totalOrders = orders.length;
+  const totalRevenue =
+    ordersData.reduce((sum, o) => {
+      return sum + Number(o.total || 0);
+    }, 0);
 
-  let revenue = 0;
-  orders.forEach(o => {
-    revenue += Number(o.total || 0);
-  });
+  if (qs("totalRevenue")) {
 
-  const p = document.getElementById("totalProducts");
-  const o = document.getElementById("totalOrders");
-  const r = document.getElementById("totalRevenue");
+    qs("totalRevenue").innerText =
+      "Rs " + formatPrice(totalRevenue);
+  }
 
-  if (p) p.innerText = totalProducts;
-  if (o) o.innerText = totalOrders;
-  if (r) r.innerText = "Rs " + revenue;
+  const canvas =
+    document.getElementById("analyticsChart");
 
-  renderChart(totalProducts, totalOrders, revenue);
-}
+  if (!canvas || typeof Chart === "undefined") {
+    return;
+  }
 
-/* =========================
-CHART (SAFE FIX)
-========================= */
-function renderChart(p, o, r) {
+  const ctx = canvas.getContext("2d");
 
-  const ctx = document.getElementById("analyticsChart");
-  if (!ctx || typeof Chart === "undefined") return;
+  if (analyticsChart) {
+    analyticsChart.destroy();
+  }
 
-  if (chartInstance) chartInstance.destroy();
+  analyticsChart = new Chart(ctx, {
 
-  chartInstance = new Chart(ctx, {
-    type: "doughnut",
+    type: "bar",
+
     data: {
-      labels: ["Products", "Orders", "Revenue"],
+
+      labels: [
+        "Products",
+        "Orders",
+        "Revenue"
+      ],
+
       datasets: [{
-        data: [p, o, r],
-        backgroundColor: ["#22c55e", "#3b82f6", "#f59e0b"]
+
+        label: "Freshora Analytics",
+
+        data: [
+          productsData.length,
+          ordersData.length,
+          totalRevenue
+        ],
+
+        borderWidth: 2,
+        borderRadius: 10
+
       }]
+    },
+
+    options: {
+
+      responsive: true,
+
+      plugins: {
+
+        legend: {
+          display: false
+        }
+      }
     }
   });
 }
 
 /* =========================
-LOGOUT (SECURE)
+LOGOUT
 ========================= */
 window.logout = () => {
-  signOut(auth).then(() => {
-    window.location.href = "login.html";
-  });
+
+  localStorage.removeItem("admin");
+
+  window.location.href = "login.html";
 };
+
+/* =========================
+AUTO INIT
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+
+  console.log("Freshora Admin V6 Loaded ✅");
+
+  const searchInput =
+    document.getElementById("adminSearch");
+
+  if (searchInput) {
+
+    searchInput.addEventListener(
+      "input",
+      searchProducts
+    );
+  }
+});
