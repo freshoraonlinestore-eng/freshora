@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Freshora Online Store</title>
-    <link rel="stylesheet" href="style.css?v=21" />
+    
+    <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
@@ -20,24 +21,16 @@
 
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off" />
+            <input type="text" id="searchInput" placeholder="Search products..." />
         </div>
 
-        <button id="darkModeBtn" class="icon-btn" onclick="toggleDarkMode()">
-            <i class="fa-solid fa-moon"></i>
-        </button>
-        
         <button class="cart-btn" onclick="toggleCart()">
             <i class="fa-solid fa-cart-shopping"></i>
             <span id="cartCount">0</span>
         </button>
     </header>
 
-    <select id="categoryFilter" class="filter-dropdown">
-        <option value="all">All Categories</option>
-        </select>
-
-    <main class="container">
+    <main>
         <section id="products" class="products-grid">
             </section>
     </main>
@@ -48,17 +41,15 @@
             <button onclick="toggleCart()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="cartItems"></div>
-        <div id="cartTotal"></div>
         <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
     </div>
 
     <div id="toast" class="toast"></div>
-    <div id="loadingScreen" class="loading-screen"><div class="loader"></div></div>
 
     <footer class="social-links">
         <a href="https://facebook.com/" target="_blank" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
         <a href="https://instagram.com/" target="_blank" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
-        <a href="https://wa.me/94752425790" target="_blank" class="social-btn whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://wa.me/94752425790" target="_blank" class="social-btn"><i class="fa-brands fa-whatsapp"></i></a>
     </footer>
 
     <script type="module" src="app.js"></script>
