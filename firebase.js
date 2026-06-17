@@ -1,8 +1,4 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-/* =========================
-FIRESTORE
-========================= */
 import {
   getFirestore,
   collection,
@@ -13,15 +9,10 @@ import {
   where,
   orderBy,
   deleteDoc,
-  doc
+  doc,
+  updateDoc // මෙය අනිවාර්යයෙන්ම තිබිය යුතුය
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-/* =========================
-AUTH (ADMIN LOGIN)
-========================= */
-import {
-  getAuth
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* =========================
 FIREBASE CONFIG
@@ -39,10 +30,6 @@ const firebaseConfig = {
 INIT APP
 ========================= */
 const app = initializeApp(firebaseConfig);
-
-/* =========================
-SERVICES
-========================= */
 const db = getFirestore(app);
 const auth = getAuth(app);
 
@@ -53,8 +40,6 @@ export {
   app,
   db,
   auth,
-
-  // firestore
   collection,
   onSnapshot,
   addDoc,
@@ -63,5 +48,6 @@ export {
   where,
   orderBy,
   deleteDoc,
-  doc
+  doc,
+  updateDoc // Export කිරීමට අමතක නොකරන්න
 };
