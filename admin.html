@@ -1,68 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Freshora Admin FIXED</title>
-
-<link rel="stylesheet" href="admin.css?v=6">
-  
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freshora Admin PRO Control Dashboard</title>
+    <link rel="stylesheet" href="admin.css?v=6">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
-<div id="debug" style="position:fixed;bottom:10px;right:10px;background:black;color:white;padding:6px;z-index:9999">
-HTML OK
-</div>
-
 <div class="admin-container">
+    <h2>Freshora Admin PRO Control Dashboard</h2>
+    <div style="text-align: center;">
+        <button onclick="logout()" style="background: var(--danger); color: white;">Logout</button>
+    </div>
 
-<h2>🟢 Freshora Admin FIX</h2>
+    <h3>📊 Intelligence Reports</h3>
+    <div class="admin-card">
+        <p>Products: <span id="totalProducts">0</span></p>
+        <p>Total Stock: 0</p>
+        <p style="color: var(--danger);">Low Stock Items: 1</p>
+        <p>Total Revenue: <span id="totalRevenue">Rs 0</span></p>
+        <div style="display: grid; gap: 10px;">
+            <button onclick="downloadInventory()">Download Product Inventory</button>
+            <button onclick="downloadSales()">Download Sales/Orders Report</button>
+            <button onclick="downloadReviews()">Download Customer Reviews</button>
+        </div>
+    </div>
 
-<button onclick="logout()">Logout</button>
+    <h3>🚚 Manage Delivery Fees</h3>
+    <div class="admin-card">
+        <select id="districtSelect">
+            <option>Select District</option>
+            <option>Colombo</option>
+        </select>
+        <input id="deliveryCost" placeholder="Delivery Cost (LKR)">
+        <button onclick="saveDeliveryFee()" style="background: var(--primary); color: white;">Save Delivery Fee</button>
+    </div>
 
-<hr>
+    <h3>📦 Manage Products</h3>
+    <div class="admin-card">
+        <input id="pname" placeholder="Product Name">
+        <input id="pprice" placeholder="Price (LKR)">
+        <input id="pdiscount" placeholder="Discount %">
+        <input id="pstock" placeholder="Stock Qty">
+        <textarea id="pdesc" placeholder="Product Description..."></textarea>
+        <input id="pimageFile" type="file">
+        <select id="pcategorySelect">
+            <option>Other</option>
+        </select>
+        <button onclick="uploadAndAddProduct()" style="background: var(--primary); color: white;">Add New Product</button>
+        <button onclick="updateSelected()" style="background: orange; color: white;">Update Selected</button>
+        <button onclick="clearForm()">Clear Form</button>
+    </div>
 
-<h3>📦 Add Product</h3>
+    <h3>🏷 Categories</h3>
+    <div class="admin-card">
+        <input id="catName" placeholder="Category Name">
+        <button onclick="addCategory()" style="background: var(--primary); color: white;">Add</button>
+        <button onclick="updateCategory()" style="background: orange; color: white;">Update</button>
+    </div>
 
-<input id="pname" placeholder="Name">
-<input id="pprice" placeholder="Price">
-<input id="pdiscount" placeholder="Discount">
-<input id="pcategory" placeholder="Category">
-<textarea id="pdesc" placeholder="Description"></textarea>
+    <h3>🛍 Live Incoming Orders</h3>
+    <div id="orderList"></div>
 
-<input id="pimageFile" type="file">
+    <h3>📋 Products List</h3>
+    <input id="adminSearch" placeholder="Live search by name or category...">
+    <div id="productList"></div>
 
-<button onclick="uploadAndAddProduct()">Save Product</button>
-
-<hr>
-
-<h3>📊 Analytics</h3>
-
-<p>Products: <span id="totalProducts">0</span></p>
-<p>Orders: <span id="totalOrders">0</span></p>
-<p>Revenue: <span id="totalRevenue">0</span></p>
-
-<canvas id="analyticsChart"></canvas>
-
-<hr>
-
-<h3>🛍 Products</h3>
-<div id="productList"></div>
-
-<hr>
-
-<h3>📦 Orders</h3>
-<div id="orderList"></div>
-
+    <hr>
+    <canvas id="analyticsChart"></canvas>
 </div>
 
 <script type="module" src="admin.js?v=6"></script>
-
 </body>
 </html>
