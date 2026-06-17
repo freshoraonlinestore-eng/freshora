@@ -11,16 +11,16 @@
 <body>
 
 <div class="admin-container">
-    <h2>Freshora Admin PRO Control Dashboard</h2>
+    <h2><i class="fas fa-user-shield"></i> Freshora Admin PRO Control Dashboard</h2>
     <div style="text-align: center;">
         <button onclick="logout()" style="background: var(--danger); color: white;">Logout</button>
     </div>
 
-    <h3>📊 Intelligence Reports</h3>
+    <h3><i class="fas fa-chart-line"></i> Intelligence Reports</h3>
     <div class="admin-card">
         <p>Products: <span id="totalProducts">0</span></p>
-        <p>Total Stock: 0</p>
-        <p style="color: var(--danger);">Low Stock Items: 1</p>
+        <p>Total Stock: <span id="totalStock">0</span></p>
+        <p style="color: var(--danger);">Low Stock Items: <span id="lowStock">0</span></p>
         <p>Total Revenue: <span id="totalRevenue">Rs 0</span></p>
         <div style="display: grid; gap: 10px;">
             <button onclick="downloadInventory()">Download Product Inventory</button>
@@ -29,7 +29,7 @@
         </div>
     </div>
 
-    <h3>🚚 Manage Delivery Fees</h3>
+    <h3><i class="fas fa-truck"></i> Manage Delivery Fees</h3>
     <div class="admin-card">
         <select id="districtSelect">
             <option>Select District</option>
@@ -39,7 +39,7 @@
         <button onclick="saveDeliveryFee()" style="background: var(--primary); color: white;">Save Delivery Fee</button>
     </div>
 
-    <h3>📦 Manage Products</h3>
+    <h3><i class="fas fa-box-open"></i> Manage Products</h3>
     <div class="admin-card">
         <input id="pname" placeholder="Product Name">
         <input id="pprice" placeholder="Price (LKR)">
@@ -55,19 +55,45 @@
         <button onclick="clearForm()">Clear Form</button>
     </div>
 
-    <h3>🏷 Categories</h3>
+    <h3><i class="fas fa-tags"></i> Categories</h3>
     <div class="admin-card">
         <input id="catName" placeholder="Category Name">
         <button onclick="addCategory()" style="background: var(--primary); color: white;">Add</button>
         <button onclick="updateCategory()" style="background: orange; color: white;">Update</button>
     </div>
 
-    <h3>🛍 Live Incoming Orders</h3>
-    <div id="orderList"></div>
+    <h3><i class="fas fa-shopping-cart"></i> Live Incoming Orders</h3>
+    <div class="admin-card" style="overflow-x:auto;">
+        <table style="width:100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Order ID</th><th>Customer Name</th><th>Phone</th><th>District</th><th>Total Bill</th><th>Status</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="orderList">
+                <tr><td colspan="7" style="text-align:center;">No recent orders found.</td></tr>
+            </tbody>
+        </table>
+    </div>
 
-    <h3>📋 Products List</h3>
+    <h3><i class="fas fa-list"></i> Products List</h3>
     <input id="adminSearch" placeholder="Live search by name or category...">
-    <div id="productList"></div>
+    <div class="admin-card" style="overflow-x:auto;">
+        <table style="width:100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr>
+                    <th>Img</th><th>Name</th><th>Old Price</th><th>Discount</th><th>Final</th><th>Cat</th><th>Stock</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="productListBody"></tbody>
+        </table>
+    </div>
+
+    <h3><i class="fas fa-folder-open"></i> Active Categories</h3>
+    <div id="activeCategoryList"></div>
+
+    <h3><i class="fas fa-shipping-fast"></i> Configured Delivery Fees</h3>
+    <div id="deliveryList"></div>
 
     <hr>
     <canvas id="analyticsChart"></canvas>
