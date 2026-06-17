@@ -44,17 +44,50 @@ window.uploadAndAddProduct = async () => {
         price: Number(qs("pprice").value),
         discount: Number(qs("pdiscount").value || 0),
         stock: Number(qs("pstock").value || 0),
-        category: qs("pcategorySelect") ? qs("pcategorySelect").value : "Other",
+        category: qs("pcategorySelect").value,
         image: imageUrl,
         createdAt: new Date().getTime()
     });
     showToast("Product Added ✅");
+    clearForm();
+};
+
+window.clearForm = () => {
     ["pname", "pprice", "pdiscount", "pstock", "pdesc"].forEach(id => qs(id).value = "");
 };
 
 window.deleteProduct = async (id) => {
     if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id));
 };
+
+window.selectProduct = (id) => {
+    const p = productsData.find(item => item.id === id);
+    if(p) {
+        qs("pname").value = p.name;
+        qs("pprice").value = p.price;
+        qs("pdiscount").value = p.discount;
+        qs("pstock").value = p.stock;
+        showToast("Product Selected for Update!");
+    }
+};
+
+/* --- TABLE RENDERING --- */
+function renderTable(data) {
+    const tbody = qs("productListBody");
+    if(!tbody) return;
+    tbody.innerHTML = data.map(p => `
+        <tr onclick="selectProduct('${p.id}')" style="cursor:pointer;">
+            <td><img src="${p.image || ''}" width="40" height="40" style="border-radius:5px"></td>
+            <td>${p.name}</td>
+            <td>Rs ${Number(p.price).toLocaleString()}</td>
+            <td>${p.discount}%</td>
+            <td>Rs ${Math.round(p.price - (p.price * p.discount / 100)).toLocaleString()}</td>
+            <td>${p.category || 'Other'}</td>
+            <td>${p.stock}</td>
+            <td><button onclick="event.stopPropagation(); deleteProduct('${p.id}')" style="background:var(--danger); color:white;">🗑</button></td>
+        </tr>
+    `).join("");
+}
 
 /* --- SYNC DATA --- */
 onSnapshot(collection(db, "products"), (snap) => {
@@ -63,24 +96,20 @@ onSnapshot(collection(db, "products"), (snap) => {
     renderTable(productsData);
 });
 
-function renderTable(data) {
-    const tbody = qs("productListBody");
-    if(!tbody) return;
-    tbody.innerHTML = data.map(p => `
-        <tr>
-            <td><img src="${p.image || ''}" width="40" height="40" style="border-radius:5px"></td>
-            <td>${p.name}</td>
-            <td>Rs ${Number(p.price).toLocaleString()}</td>
-            <td>${p.discount}%</td>
-            <td>Rs ${Math.round(p.price - (p.price * p.discount / 100)).toLocaleString()}</td>
-            <td>${p.category || 'Other'}</td>
-            <td>${p.stock}</td>
-            <td><button onclick="deleteProduct('${p.id}')" style="background:var(--danger); color:white;">🗑</button></td>
-        </tr>
+/* --- CATEGORIES & SEARCH --- */
+onSnapshot(collection(db, "categories"), (snap) => {
+    const select = qs("pcategorySelect");
+    const list = qs("activeCategoryList");
+    const cats = snap.docs.map(d => d.data().name);
+    if(select) select.innerHTML = '<option value="Other">Other</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join("");
+    if(list) list.innerHTML = snap.docs.map(doc => `
+        <div class="admin-card" style="display:flex; justify-content:space-between; margin:5px 0;">
+            <span>🏷 ${doc.data().name}</span>
+            <button onclick="deleteDoc(doc(db,'categories','${doc.id}'))" style="background:var(--danger); width:auto; color:white;">🗑</button>
+        </div>
     `).join("");
-}
+});
 
-/* --- SEARCH FUNCTIONALITY --- */
 window.addEventListener("DOMContentLoaded", () => {
     const searchInput = qs("adminSearch");
     if(searchInput) {
@@ -92,7 +121,6 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/* --- CATEGORIES --- */
 window.addCategory = async () => {
     const name = qs("catName").value;
     if(!name) return;
@@ -101,18 +129,6 @@ window.addCategory = async () => {
     showToast("Category Added!");
 };
 
-onSnapshot(collection(db, "categories"), (snap) => {
-    const select = qs("pcategorySelect");
-    const list = qs("activeCategoryList");
-    const cats = snap.docs.map(d => d.data().name);
-    
-    if(select) select.innerHTML = '<option value="Other">Other</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join("");
-    if(list) list.innerHTML = snap.docs.map(doc => `
-        <div class="admin-card" style="display:flex; justify-content:space-between; margin:5px 0;">
-            <span>🏷 ${doc.data().name}</span>
-            <button onclick="deleteDoc(doc(db,'categories','${doc.id}'))" style="background:var(--danger); width:auto; color:white;">🗑</button>
-        </div>
-    `).join("");
-});
-
 window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
+
+console.log("Freshora Admin System Active 🚀");
