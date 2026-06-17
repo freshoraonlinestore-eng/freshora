@@ -3,33 +3,27 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
-
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freshora Admin PRO Control Dashboard</title>
+    <title>Freshora Admin PRO Dashboard</title>
     <link rel="stylesheet" href="admin.css?v=6">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 <div class="admin-container">
-    <h2><i class="fas fa-user-shield"></i> Freshora Admin PRO Control Dashboard</h2>
+    <h2><i class="fas fa-user-shield"></i> Freshora Admin PRO</h2>
     <div style="text-align: center;">
-        <button onclick="logout()" style="background: var(--danger); color: white;">Logout</button>
+        <button onclick="logout()" style="background: var(--danger, #ff4d4d); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Logout</button>
     </div>
 
     <h3><i class="fas fa-chart-line"></i> Intelligence Reports</h3>
     <div class="admin-card">
         <p>Products: <span id="totalProducts">0</span></p>
         <p>Total Stock: <span id="totalStock">0</span></p>
-        <p style="color: var(--danger);">Low Stock Items: <span id="lowStock">0</span></p>
+        <p style="color: var(--danger, #ff4d4d);">Low Stock Items: <span id="lowStock">0</span></p>
         <p>Total Revenue: <span id="totalRevenue">Rs 0</span></p>
-        <div style="display: grid; gap: 10px;">
-            <button onclick="downloadInventory()">Download Product Inventory</button>
-            <button onclick="downloadSales()">Download Sales/Orders Report</button>
-            <button onclick="downloadReviews()">Download Customer Reviews</button>
-        </div>
     </div>
 
     <h3><i class="fas fa-truck"></i> Manage Delivery Fees</h3>
@@ -39,7 +33,7 @@
             <option value="Colombo">Colombo</option>
         </select>
         <input id="deliveryCost" type="number" placeholder="Delivery Cost (LKR)">
-        <button onclick="saveDeliveryFee()" style="background: var(--primary); color: white;">Save Delivery Fee</button>
+        <button onclick="saveDeliveryFee()" style="background: var(--primary, #007bff); color: white; border: none; padding: 10px; cursor: pointer;">Save Delivery Fee</button>
     </div>
 
     <h3><i class="fas fa-box-open"></i> Manage Products</h3>
@@ -48,44 +42,38 @@
         <input id="pprice" type="number" placeholder="Price (LKR)">
         <input id="pdiscount" type="number" placeholder="Discount %">
         <input id="pstock" type="number" placeholder="Stock Qty">
-        <textarea id="pdesc" placeholder="Product Description..."></textarea>
         <input id="pimageFile" type="file">
         <select id="pcategorySelect">
             <option value="Other">Other</option>
         </select>
-        <button onclick="uploadAndAddProduct()" style="background: var(--primary); color: white;">Add New Product</button>
-        <button onclick="updateSelected()" style="background: orange; color: white;">Update Selected</button>
-        <button onclick="clearForm()">Clear Form</button>
-    </div>
-
-    <h3><i class="fas fa-tags"></i> Categories</h3>
-    <div class="admin-card">
-        <input id="catName" placeholder="Category Name">
-        <button onclick="addCategory()" style="background: var(--primary); color: white;">Add</button>
-        <button onclick="updateCategory()" style="background: orange; color: white;">Update</button>
+        <div style="display: flex; gap: 5px; margin-top: 10px;">
+            <button onclick="uploadAndAddProduct()" style="background: var(--primary, #007bff); color: white; border: none; padding: 10px; flex: 1;">Add New</button>
+            <button onclick="updateSelected()" style="background: orange; color: white; border: none; padding: 10px; flex: 1;">Update Selected</button>
+            <button onclick="clearForm()" style="padding: 10px; flex: 1;">Clear</button>
+        </div>
     </div>
 
     <h3><i class="fas fa-shopping-cart"></i> Live Incoming Orders</h3>
     <div class="admin-card" style="overflow-x:auto;">
-        <table style="width:100%; border-collapse: collapse;">
+        <table style="width:100%; border-collapse: collapse; text-align: left;">
             <thead>
                 <tr>
-                    <th>Order ID</th><th>Customer Name</th><th>Phone</th><th>District</th><th>Total Bill</th><th>Status</th><th>Action</th>
+                    <th>ID</th><th>Customer</th><th>Phone</th><th>District</th><th>Bill</th><th>Status</th>
                 </tr>
             </thead>
             <tbody id="orderList">
-                <tr><td colspan="7" style="text-align:center;">No recent orders found.</td></tr>
+                <tr><td colspan="6" style="text-align:center;">Loading orders...</td></tr>
             </tbody>
         </table>
     </div>
 
     <h3><i class="fas fa-list"></i> Products List</h3>
-    <input id="adminSearch" placeholder="Live search by name or category...">
+    <input id="adminSearch" placeholder="Search by name or category..." style="width: 100%; padding: 10px; margin-bottom: 10px;">
     <div class="admin-card" style="overflow-x:auto;">
         <table style="width:100%; border-collapse: collapse; text-align: left;">
             <thead>
                 <tr>
-                    <th>Img</th><th>Name</th><th>Old Price</th><th>Discount</th><th>Final</th><th>Cat</th><th>Stock</th><th>Action</th>
+                    <th>Img</th><th>Name</th><th>Price</th><th>Final</th><th>Stock</th><th>Action</th>
                 </tr>
             </thead>
             <tbody id="productListBody"></tbody>
@@ -97,11 +85,8 @@
 
     <h3><i class="fas fa-shipping-fast"></i> Configured Delivery Fees</h3>
     <div id="deliveryList"></div>
-
-    <hr>
-    <canvas id="analyticsChart"></canvas>
 </div>
 
-<script type="module" src="admin.js?v=6"></script>
+<script type="module" src="admin.js?v=7"></script>
 </body>
 </html>
