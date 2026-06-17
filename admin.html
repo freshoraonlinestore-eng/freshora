@@ -4,9 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Freshora Admin V8 FIX</title>
+<title>Freshora Admin FIXED</title>
 
-<link rel="stylesheet" href="admin.css?v=8">
+<link rel="stylesheet" href="admin.css?v=6">
+  
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,55 +16,53 @@
 
 <body>
 
+<div id="debug" style="position:fixed;bottom:10px;right:10px;background:black;color:white;padding:6px;z-index:9999">
+HTML OK
+</div>
+
 <div class="admin-container">
 
-  <h2>🟢 Freshora Admin V8</h2>
+<h2>🟢 Freshora Admin FIX</h2>
 
-  <button onclick="logout()">Logout</button>
+<button onclick="logout()">Logout</button>
 
-  <hr>
+<hr>
 
-  <!-- PRODUCT FORM -->
-  <h3>📦 Product Panel</h3>
+<h3>📦 Add Product</h3>
 
-  <input id="pname" placeholder="Product Name">
-  <input id="pprice" type="number" placeholder="Price">
-  <input id="pdiscount" type="number" placeholder="Discount %">
-  <input id="pcategory" placeholder="Category">
-  <input id="pstock" type="number" placeholder="Stock">
-  <textarea id="pdesc" placeholder="Description"></textarea>
+<input id="pname" placeholder="Name">
+<input id="pprice" placeholder="Price">
+<input id="pdiscount" placeholder="Discount">
+<input id="pcategory" placeholder="Category">
+<textarea id="pdesc" placeholder="Description"></textarea>
 
-  <input type="file" id="pimageFile">
+<input id="pimageFile" type="file">
 
-  <button onclick="uploadAndAddProduct()">Save Product</button>
+<button onclick="uploadAndAddProduct()">Save Product</button>
 
-  <hr>
+<hr>
 
-  <!-- ANALYTICS -->
-  <h3>📊 Analytics</h3>
+<h3>📊 Analytics</h3>
 
-  <p>Products: <span id="totalProducts">0</span></p>
-  <p>Orders: <span id="totalOrders">0</span></p>
-  <p>Revenue: <span id="totalRevenue">0</span></p>
+<p>Products: <span id="totalProducts">0</span></p>
+<p>Orders: <span id="totalOrders">0</span></p>
+<p>Revenue: <span id="totalRevenue">0</span></p>
 
-  <canvas id="analyticsChart"></canvas>
+<canvas id="analyticsChart"></canvas>
 
-  <hr>
+<hr>
 
-  <!-- PRODUCTS -->
-  <h3>🛍 Products</h3>
-  <div id="productList"></div>
+<h3>🛍 Products</h3>
+<div id="productList"></div>
 
-  <hr>
+<hr>
 
-  <!-- ORDERS -->
-  <h3>📦 Orders</h3>
-  <div id="orderList"></div>
+<h3>📦 Orders</h3>
+<div id="orderList"></div>
 
 </div>
 
-<!-- IMPORTANT -->
-<script type="module" src="admin.js?v=8"></script>
+<script type="module" src="admin.js?v=6"></script>
 
 </body>
 </html>
