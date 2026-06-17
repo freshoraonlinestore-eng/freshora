@@ -11,6 +11,12 @@ let allProducts = [];
    ========================= */
 function saveCart() {
     localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
+}
+
+function updateCartCount() {
+    const count = document.getElementById("cartCount");
+    if (count) count.innerText = cart.length;
 }
 
 function showToast(msg) {
@@ -30,14 +36,9 @@ function renderProducts(products) {
 
     container.innerHTML = products.map(p => `
         <div class="card">
-            ${p.discount ? `<div class="discount-badge">${p.discount}% OFF</div>` : ''}
             <img src="${p.image || 'https://via.placeholder.com/200'}" alt="${p.name}">
             <h3>${p.name}</h3>
-            <p>${p.description || ''}</p>
-            <div>
-                <span class="old-price">${p.oldPrice ? 'Rs ' + p.oldPrice : ''}</span>
-                <span class="new-price">Rs ${p.price}</span>
-            </div>
+            <div class="price-row">Rs ${Number(p.price).toLocaleString()}</div>
             <button class="add-btn" onclick="addToCart('${p.id}')">Add to Cart</button>
         </div>
     `).join('');
@@ -63,14 +64,9 @@ window.toggleCart = () => {
    ========================= */
 function filterProducts() {
     const searchTerm = document.getElementById("searchInput")?.value.toLowerCase() || "";
-    const category = document.getElementById("categoryFilter")?.value || "all";
-
-    const filtered = allProducts.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchTerm);
-        const matchesCategory = (category === "all" || p.category === category);
-        return matchesSearch && matchesCategory;
-    });
-
+    const filtered = allProducts.filter(p => 
+        p.name.toLowerCase().includes(searchTerm)
+    );
     renderProducts(filtered);
 }
 
@@ -78,32 +74,14 @@ function filterProducts() {
    INIT
    ========================= */
 window.addEventListener("DOMContentLoaded", () => {
+    updateCartCount();
+    
     // Search listener
     document.getElementById("searchInput")?.addEventListener("input", filterProducts);
-    
-    // Category filter listener
-    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
 
-    // Firebase listener
+    // Firebase Data Fetch
     onSnapshot(collection(db, "products"), (snap) => {
         allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        // Populate Categories
-        const cats = [...new Set(allProducts.map(p => p.category))];
-        const filter = document.getElementById("categoryFilter");
-        if(filter) {
-            filter.innerHTML = '<option value="all">All Categories</option>' + 
-            cats.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
         renderProducts(allProducts);
-        document.getElementById("loadingScreen")?.remove();
     });
 });
-
-/* =========================
-   DARK MODE
-   ========================= */
-window.toggleDarkMode = () => {
-    document.body.classList.toggle("dark");
-};
