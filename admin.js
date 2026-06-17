@@ -1,7 +1,7 @@
 import { db, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "./firebase.js";
 
 /* =========================
-   FRESHORA ADMIN V6 - FINAL
+   FRESHORA ADMIN V6 - FULL
    ========================= */
 
 const CLOUD_NAME = "dayvblw7g";
@@ -17,7 +17,7 @@ function showToast(msg) {
     if (!toast) {
         toast = document.createElement("div");
         toast.className = "admin-toast";
-        toast.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; display:none;";
+        toast.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; display:none; z-index:1000;";
         document.body.appendChild(toast);
     }
     toast.innerText = msg;
@@ -25,11 +25,10 @@ function showToast(msg) {
     setTimeout(() => toast.style.display = "none", 2500);
 }
 
-/* --- PRODUCT ACTIONS --- */
+/* --- PRODUCT ACTIONS (KEEPING EXISTING) --- */
 window.uploadAndAddProduct = async () => {
     const name = qs("pname").value;
     if (!name) return showToast("Enter product name!");
-
     const fileInput = qs("pimageFile");
     let imageUrl = "";
     if (fileInput.files[0]) {
@@ -40,7 +39,6 @@ window.uploadAndAddProduct = async () => {
         const data = await res.json();
         imageUrl = data.secure_url;
     }
-
     await addDoc(collection(db, "products"), {
         name: name,
         price: Number(qs("pprice").value),
@@ -89,11 +87,11 @@ window.selectProduct = (id) => {
     }
 };
 
-/* --- SYNC & DATA RENDERING --- */
+/* --- DATA SYNC & RENDERING --- */
 onSnapshot(collection(db, "products"), (snap) => {
     productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     
-    // Stats Update
+    // Stats
     const totalStock = productsData.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
     const lowStock = productsData.filter(p => p.stock < 5).length;
     
@@ -101,7 +99,7 @@ onSnapshot(collection(db, "products"), (snap) => {
     if(qs("totalStock")) qs("totalStock").innerText = totalStock;
     if(qs("lowStock")) qs("lowStock").innerText = lowStock;
 
-    // Table Render
+    // Table
     const tbody = qs("productListBody");
     if(tbody) {
         tbody.innerHTML = productsData.map(p => `
@@ -119,20 +117,49 @@ onSnapshot(collection(db, "products"), (snap) => {
     }
 });
 
-/* --- ORDERS & FEES --- */
+/* --- ORDERS & FEES (NEW) --- */
 onSnapshot(collection(db, "orders"), (snap) => {
     const list = qs("orderList");
     if(list) {
         const orders = snap.docs.map(d => ({id: d.id, ...d.data()}));
         list.innerHTML = orders.length ? orders.map(o => `
-            <tr><td>${o.id.slice(-5)}</td><td>${o.customerName}</td><td>${o.phone}</td><td>${o.district}</td><td>Rs ${o.totalBill}</td><td>${o.status}</td><td>-</td></tr>
-        `).join("") : '<tr><td colspan="7" style="text-align:center;">No recent orders.</td></tr>';
+            <tr>
+                <td>${o.id.slice(-5)}</td><td>${o.customerName}</td><td>${o.phone}</td>
+                <td>${o.district}</td><td>Rs ${o.totalBill}</td><td>${o.status}</td>
+                <td>-</td>
+            </tr>
+        `).join("") : '<tr><td colspan="7" style="text-align:center;">No recent orders found.</td></tr>';
     }
 });
 
 onSnapshot(collection(db, "deliveryFees"), (snap) => {
     const list = qs("deliveryList");
     if(list) list.innerHTML = snap.docs.map(d => `<div class="admin-card">${d.data().district}: Rs ${d.data().cost}</div>`).join("");
+});
+
+/* --- CATEGORIES & SEARCH --- */
+onSnapshot(collection(db, "categories"), (snap) => {
+    const select = qs("pcategorySelect");
+    const list = qs("activeCategoryList");
+    const cats = snap.docs.map(d => d.data().name);
+    if(select) select.innerHTML = '<option value="Other">Other</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join("");
+    if(list) list.innerHTML = snap.docs.map(doc => `
+        <div class="admin-card" style="display:flex; justify-content:space-between; margin:5px 0;">
+            <span>🏷 ${doc.data().name}</span>
+            <button onclick="deleteDoc(doc(db,'categories','${doc.id}'))" style="background:var(--danger); width:auto; color:white;">🗑</button>
+        </div>
+    `).join("");
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+    const searchInput = qs("adminSearch");
+    if(searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = productsData.filter(p => p.name.toLowerCase().includes(val) || (p.category && p.category.toLowerCase().includes(val)));
+            renderTable(filtered);
+        });
+    }
 });
 
 /* --- UTILITIES --- */
@@ -152,8 +179,8 @@ window.saveDeliveryFee = async () => {
     showToast("Delivery Fee Saved!");
 };
 
-window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
 window.downloadInventory = () => showToast("Downloading...");
 window.downloadSales = () => showToast("Downloading...");
 window.downloadReviews = () => showToast("Downloading...");
 window.updateCategory = () => showToast("Feature active.");
+window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
