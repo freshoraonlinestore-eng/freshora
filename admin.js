@@ -8,6 +8,7 @@ const CLOUD_NAME = "dayvblw7g";
 const UPLOAD_PRESET = "freshora_upload";
 
 let productsData = [];
+let selectedProductId = null; // Update කිරීමට තෝරාගත් ID එක ගබඩා කිරීමට
 
 const qs = (id) => document.getElementById(id);
 
@@ -52,21 +53,38 @@ window.uploadAndAddProduct = async () => {
     clearForm();
 };
 
+window.updateSelected = async () => {
+    if (!selectedProductId) return showToast("Select a product first!");
+    await updateDoc(doc(db, "products", selectedProductId), {
+        name: qs("pname").value,
+        price: Number(qs("pprice").value),
+        discount: Number(qs("pdiscount").value),
+        stock: Number(qs("pstock").value),
+        category: qs("pcategorySelect").value
+    });
+    showToast("Product Updated!");
+    clearForm();
+    selectedProductId = null;
+};
+
 window.clearForm = () => {
     ["pname", "pprice", "pdiscount", "pstock", "pdesc"].forEach(id => qs(id).value = "");
+    selectedProductId = null;
 };
 
 window.deleteProduct = async (id) => {
-    if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id));
+    if(confirm("Delete this product?")) await deleteDoc(doc(db, "products", id));
 };
 
 window.selectProduct = (id) => {
     const p = productsData.find(item => item.id === id);
     if(p) {
+        selectedProductId = id;
         qs("pname").value = p.name;
         qs("pprice").value = p.price;
         qs("pdiscount").value = p.discount;
         qs("pstock").value = p.stock;
+        qs("pcategorySelect").value = p.category || "Other";
         showToast("Product Selected for Update!");
     }
 };
@@ -96,7 +114,22 @@ onSnapshot(collection(db, "products"), (snap) => {
     renderTable(productsData);
 });
 
-/* --- CATEGORIES & SEARCH --- */
+/* --- DUMMY FUNCTIONS FOR BUTTONS --- */
+window.downloadInventory = () => showToast("Downloading Inventory...");
+window.downloadSales = () => showToast("Downloading Sales Report...");
+window.downloadReviews = () => showToast("Downloading Reviews...");
+window.saveDeliveryFee = () => showToast("Delivery Fee saved!");
+window.addCategory = async () => {
+    const name = qs("catName").value;
+    if(!name) return;
+    await addDoc(collection(db, "categories"), { name: name });
+    qs("catName").value = "";
+    showToast("Category Added!");
+};
+window.updateCategory = () => showToast("Update Category feature active.");
+window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
+
+/* --- SEARCH & CATEGORIES --- */
 onSnapshot(collection(db, "categories"), (snap) => {
     const select = qs("pcategorySelect");
     const list = qs("activeCategoryList");
@@ -120,15 +153,3 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-
-window.addCategory = async () => {
-    const name = qs("catName").value;
-    if(!name) return;
-    await addDoc(collection(db, "categories"), { name: name });
-    qs("catName").value = "";
-    showToast("Category Added!");
-};
-
-window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
-
-console.log("Freshora Admin System Active 🚀");
