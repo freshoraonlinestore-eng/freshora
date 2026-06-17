@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Freshora Online Store</title>
-    
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
@@ -21,16 +20,20 @@
 
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchInput" placeholder="Search products..." />
+            <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off" />
         </div>
 
-        <button class="cart-btn" onclick="toggleCart()">
+        <button id="cartBtn" class="cart-btn" onclick="toggleCart()">
             <i class="fa-solid fa-cart-shopping"></i>
             <span id="cartCount">0</span>
         </button>
     </header>
 
-    <main>
+    <select id="categoryFilter" class="filter-dropdown">
+        <option value="all">All Categories</option>
+    </select>
+
+    <main class="container">
         <section id="products" class="products-grid">
             </section>
     </main>
@@ -41,10 +44,15 @@
             <button onclick="toggleCart()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="cartItems"></div>
+        <div id="cartTotal"></div>
         <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
     </div>
 
     <div id="toast" class="toast"></div>
+
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader"></div>
+    </div>
 
     <footer class="social-links">
         <a href="https://facebook.com/" target="_blank" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
