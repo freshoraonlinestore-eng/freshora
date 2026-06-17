@@ -1,14 +1,14 @@
 import { db, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "./firebase.js";
 
 /* =========================
-   FRESHORA ADMIN V6 - FULL
+   FRESHORA ADMIN V6 - FINAL
    ========================= */
 
 const CLOUD_NAME = "dayvblw7g";
 const UPLOAD_PRESET = "freshora_upload";
 
 let productsData = [];
-let selectedProductId = null; // Update කිරීමට තෝරාගත් ID එක ගබඩා කිරීමට
+let selectedProductId = null;
 
 const qs = (id) => document.getElementById(id);
 
@@ -17,11 +17,12 @@ function showToast(msg) {
     if (!toast) {
         toast = document.createElement("div");
         toast.className = "admin-toast";
+        toast.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; display:none;";
         document.body.appendChild(toast);
     }
     toast.innerText = msg;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2500);
+    toast.style.display = "block";
+    setTimeout(() => toast.style.display = "none", 2500);
 }
 
 /* --- PRODUCT ACTIONS --- */
@@ -64,7 +65,6 @@ window.updateSelected = async () => {
     });
     showToast("Product Updated!");
     clearForm();
-    selectedProductId = null;
 };
 
 window.clearForm = () => {
@@ -89,36 +89,53 @@ window.selectProduct = (id) => {
     }
 };
 
-/* --- TABLE RENDERING --- */
-function renderTable(data) {
-    const tbody = qs("productListBody");
-    if(!tbody) return;
-    tbody.innerHTML = data.map(p => `
-        <tr onclick="selectProduct('${p.id}')" style="cursor:pointer;">
-            <td><img src="${p.image || ''}" width="40" height="40" style="border-radius:5px"></td>
-            <td>${p.name}</td>
-            <td>Rs ${Number(p.price).toLocaleString()}</td>
-            <td>${p.discount}%</td>
-            <td>Rs ${Math.round(p.price - (p.price * p.discount / 100)).toLocaleString()}</td>
-            <td>${p.category || 'Other'}</td>
-            <td>${p.stock}</td>
-            <td><button onclick="event.stopPropagation(); deleteProduct('${p.id}')" style="background:var(--danger); color:white;">🗑</button></td>
-        </tr>
-    `).join("");
-}
-
-/* --- SYNC DATA --- */
+/* --- SYNC & DATA RENDERING --- */
 onSnapshot(collection(db, "products"), (snap) => {
     productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    // Stats Update
+    const totalStock = productsData.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
+    const lowStock = productsData.filter(p => p.stock < 5).length;
+    
     if(qs("totalProducts")) qs("totalProducts").innerText = productsData.length;
-    renderTable(productsData);
+    if(qs("totalStock")) qs("totalStock").innerText = totalStock;
+    if(qs("lowStock")) qs("lowStock").innerText = lowStock;
+
+    // Table Render
+    const tbody = qs("productListBody");
+    if(tbody) {
+        tbody.innerHTML = productsData.map(p => `
+            <tr onclick="selectProduct('${p.id}')" style="cursor:pointer;">
+                <td><img src="${p.image || ''}" width="40" height="40" style="border-radius:5px"></td>
+                <td>${p.name}</td>
+                <td>Rs ${Number(p.price).toLocaleString()}</td>
+                <td>${p.discount}%</td>
+                <td>Rs ${Math.round(p.price - (p.price * p.discount / 100)).toLocaleString()}</td>
+                <td>${p.category || 'Other'}</td>
+                <td>${p.stock}</td>
+                <td><button onclick="event.stopPropagation(); deleteProduct('${p.id}')" style="background:var(--danger); color:white;">🗑</button></td>
+            </tr>
+        `).join("");
+    }
 });
 
-/* --- DUMMY FUNCTIONS FOR BUTTONS --- */
-window.downloadInventory = () => showToast("Downloading Inventory...");
-window.downloadSales = () => showToast("Downloading Sales Report...");
-window.downloadReviews = () => showToast("Downloading Reviews...");
-window.saveDeliveryFee = () => showToast("Delivery Fee saved!");
+/* --- ORDERS & FEES --- */
+onSnapshot(collection(db, "orders"), (snap) => {
+    const list = qs("orderList");
+    if(list) {
+        const orders = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        list.innerHTML = orders.length ? orders.map(o => `
+            <tr><td>${o.id.slice(-5)}</td><td>${o.customerName}</td><td>${o.phone}</td><td>${o.district}</td><td>Rs ${o.totalBill}</td><td>${o.status}</td><td>-</td></tr>
+        `).join("") : '<tr><td colspan="7" style="text-align:center;">No recent orders.</td></tr>';
+    }
+});
+
+onSnapshot(collection(db, "deliveryFees"), (snap) => {
+    const list = qs("deliveryList");
+    if(list) list.innerHTML = snap.docs.map(d => `<div class="admin-card">${d.data().district}: Rs ${d.data().cost}</div>`).join("");
+});
+
+/* --- UTILITIES --- */
 window.addCategory = async () => {
     const name = qs("catName").value;
     if(!name) return;
@@ -126,30 +143,17 @@ window.addCategory = async () => {
     qs("catName").value = "";
     showToast("Category Added!");
 };
-window.updateCategory = () => showToast("Update Category feature active.");
+
+window.saveDeliveryFee = async () => {
+    const district = qs("districtSelect").value;
+    const cost = qs("deliveryCost").value;
+    if(!district || !cost) return showToast("Enter details!");
+    await addDoc(collection(db, "deliveryFees"), { district, cost });
+    showToast("Delivery Fee Saved!");
+};
+
 window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
-
-/* --- SEARCH & CATEGORIES --- */
-onSnapshot(collection(db, "categories"), (snap) => {
-    const select = qs("pcategorySelect");
-    const list = qs("activeCategoryList");
-    const cats = snap.docs.map(d => d.data().name);
-    if(select) select.innerHTML = '<option value="Other">Other</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join("");
-    if(list) list.innerHTML = snap.docs.map(doc => `
-        <div class="admin-card" style="display:flex; justify-content:space-between; margin:5px 0;">
-            <span>🏷 ${doc.data().name}</span>
-            <button onclick="deleteDoc(doc(db,'categories','${doc.id}'))" style="background:var(--danger); width:auto; color:white;">🗑</button>
-        </div>
-    `).join("");
-});
-
-window.addEventListener("DOMContentLoaded", () => {
-    const searchInput = qs("adminSearch");
-    if(searchInput) {
-        searchInput.addEventListener("input", (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = productsData.filter(p => p.name.toLowerCase().includes(val) || (p.category && p.category.toLowerCase().includes(val)));
-            renderTable(filtered);
-        });
-    }
-});
+window.downloadInventory = () => showToast("Downloading...");
+window.downloadSales = () => showToast("Downloading...");
+window.downloadReviews = () => showToast("Downloading...");
+window.updateCategory = () => showToast("Feature active.");
