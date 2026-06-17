@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
 
-
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freshora Admin PRO Control Dashboard</title>
@@ -37,23 +35,23 @@
     <h3><i class="fas fa-truck"></i> Manage Delivery Fees</h3>
     <div class="admin-card">
         <select id="districtSelect">
-            <option>Select District</option>
-            <option>Colombo</option>
+            <option value="">Select District</option>
+            <option value="Colombo">Colombo</option>
         </select>
-        <input id="deliveryCost" placeholder="Delivery Cost (LKR)">
+        <input id="deliveryCost" type="number" placeholder="Delivery Cost (LKR)">
         <button onclick="saveDeliveryFee()" style="background: var(--primary); color: white;">Save Delivery Fee</button>
     </div>
 
     <h3><i class="fas fa-box-open"></i> Manage Products</h3>
     <div class="admin-card">
         <input id="pname" placeholder="Product Name">
-        <input id="pprice" placeholder="Price (LKR)">
-        <input id="pdiscount" placeholder="Discount %">
-        <input id="pstock" placeholder="Stock Qty">
+        <input id="pprice" type="number" placeholder="Price (LKR)">
+        <input id="pdiscount" type="number" placeholder="Discount %">
+        <input id="pstock" type="number" placeholder="Stock Qty">
         <textarea id="pdesc" placeholder="Product Description..."></textarea>
         <input id="pimageFile" type="file">
         <select id="pcategorySelect">
-            <option>Other</option>
+            <option value="Other">Other</option>
         </select>
         <button onclick="uploadAndAddProduct()" style="background: var(--primary); color: white;">Add New Product</button>
         <button onclick="updateSelected()" style="background: orange; color: white;">Update Selected</button>
