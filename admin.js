@@ -1,96 +1,137 @@
-import { db, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "./firebase.js";
+import {
+  db,
+  collection,
+  addDoc,
+  onSnapshot,
+  deleteDoc,
+  doc
+} from "./firebase.js";
 
 /* =========================
-FRESHORA ADMIN V6 PRO - COMPLETE JS
-========================= */
+   FRESHORA ADMIN V6 - FULL
+   ========================= */
 
 const CLOUD_NAME = "dayvblw7g";
 const UPLOAD_PRESET = "freshora_upload";
 
-// DOM Selector
+let productsData = [];
+let ordersData = [];
+
+// Helper
 const qs = (id) => document.getElementById(id);
 
-// Toast Notification
 function showToast(msg) {
-    let toast = document.querySelector(".admin-toast") || document.createElement("div");
-    toast.className = "admin-toast";
-    document.body.appendChild(toast);
+    let toast = document.querySelector(".admin-toast");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.className = "admin-toast";
+        document.body.appendChild(toast);
+    }
     toast.innerText = msg;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2500);
+    toast.style.display = "block";
+    setTimeout(() => toast.style.display = "none", 2500);
 }
 
 /* --- PRODUCT ACTIONS --- */
 window.uploadAndAddProduct = async () => {
     const name = qs("pname").value;
-    if (!name) return showToast("Product Name is required!");
-    
-    // Cloudinary upload logic here...
+    if (!name) return showToast("Enter product name!");
+
+    // Image Upload Logic
+    const fileInput = qs("pimageFile");
+    let imageUrl = "";
+    if (fileInput.files[0]) {
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        formData.append("upload_preset", UPLOAD_PRESET);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+            method: "POST",
+            body: formData
+        });
+        const data = await res.json();
+        imageUrl = data.secure_url;
+    }
+
     await addDoc(collection(db, "products"), {
         name: name,
         price: Number(qs("pprice").value),
-        discount: Number(qs("pdiscount").value),
-        stock: Number(qs("pstock").value),
-        category: qs("pcategorySelect").value,
-        createdAt: new Date().toISOString()
+        discount: Number(qs("pdiscount").value || 0),
+        stock: Number(qs("pstock").value || 0),
+        category: qs("pcategorySelect") ? qs("pcategorySelect").value : "Other",
+        image: imageUrl,
+        createdAt: new Date().getTime()
     });
     showToast("Product Added Successfully ✅");
     clearForm();
 };
 
 window.clearForm = () => {
-    ["pname", "pprice", "pdiscount", "pstock", "pdesc"].forEach(id => qs(id).value = "");
+    ["pname", "pprice", "pdiscount", "pstock", "pdesc"].forEach(id => {
+        if(qs(id)) qs(id).value = "";
+    });
 };
 
-/* --- CATEGORY ACTIONS --- */
+window.deleteProduct = async (id) => {
+    if(confirm("Delete this product?")) {
+        await deleteDoc(doc(db, "products", id));
+        showToast("Deleted!");
+    }
+};
+
+/* --- CATEGORIES --- */
 window.addCategory = async () => {
-    const catName = qs("catName").value;
-    if (!catName) return;
-    await addDoc(collection(db, "categories"), { name: catName });
-    showToast("Category Added!");
+    const name = qs("catName").value;
+    if(!name) return;
+    await addDoc(collection(db, "categories"), { name: name });
     qs("catName").value = "";
+    showToast("Category Added!");
 };
 
 window.deleteCategory = async (id) => {
-    if(confirm("Delete this category?")) await deleteDoc(doc(db, "categories", id));
+    await deleteDoc(doc(db, "categories", id));
 };
 
-/* --- DATA LISTENER (REALTIME) --- */
+/* --- REALTIME DATA SYNC --- */
+// Sync Products
 onSnapshot(collection(db, "products"), (snap) => {
-    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderProductTable(data);
-    qs("totalProducts").innerText = data.length;
+    productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    // Update Stats
+    if(qs("totalProducts")) qs("totalProducts").innerText = productsData.length;
+    
+    // Render Table
+    const tbody = qs("productListBody");
+    if(tbody) {
+        tbody.innerHTML = productsData.map(p => `
+            <tr>
+                <td><img src="${p.image || ''}" width="40"></td>
+                <td>${p.name}</td>
+                <td>Rs ${Number(p.price).toLocaleString()}</td>
+                <td>${p.discount}%</td>
+                <td>Rs ${Math.round(p.price - (p.price * p.discount / 100)).toLocaleString()}</td>
+                <td>${p.category || 'Other'}</td>
+                <td>${p.stock}</td>
+                <td><button onclick="deleteProduct('${p.id}')" style="background:var(--danger)">🗑</button></td>
+            </tr>
+        `).join("");
+    }
 });
 
-function renderProductTable(data) {
-    const tbody = qs("productListBody");
-    tbody.innerHTML = data.map(p => `
-        <tr>
-            <td><img src="${p.image || ''}" width="40" height="40"></td>
-            <td>${p.name}</td>
-            <td>Rs ${p.price || 0}</td>
-            <td>${p.discount || 0}%</td>
-            <td>Rs ${p.price - (p.price * (p.discount || 0) / 100)}</td>
-            <td>${p.category}</td>
-            <td>${p.stock || 0}</td>
-            <td><button onclick="deleteProduct('${p.id}')" style="background:var(--danger)">🗑</button></td>
-        </tr>
-    `).join("");
-}
+// Sync Categories
+onSnapshot(collection(db, "categories"), (snap) => {
+    const list = qs("activeCategoryList");
+    if(list) {
+        list.innerHTML = snap.docs.map(doc => `
+            <div class="admin-card" style="display:flex; justify-content:space-between; margin:5px 0;">
+                <span>🏷 ${doc.data().name}</span>
+                <button onclick="deleteCategory('${doc.id}')" style="background:var(--danger); width:auto;">🗑</button>
+            </div>
+        `).join("");
+    }
+});
 
-window.deleteProduct = async (id) => {
-    if(confirm("Delete product?")) await deleteDoc(doc(db, "products", id));
-};
-
-/* --- DELIVERY & REPORTS --- */
-window.saveDeliveryFee = () => showToast("Delivery fee saved for " + qs("districtSelect").value);
-window.downloadInventory = () => showToast("Downloading CSV...");
-window.downloadSales = () => showToast("Downloading Reports...");
-window.downloadReviews = () => showToast("Downloading Reviews...");
-
-window.logout = () => {
-    localStorage.removeItem("admin");
-    window.location.href = "login.html";
-};
+/* --- UTILS --- */
+window.saveDeliveryFee = () => showToast("Delivery settings saved!");
+window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
 
 console.log("Freshora Admin System Active 🚀");
