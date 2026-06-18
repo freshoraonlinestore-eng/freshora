@@ -304,3 +304,33 @@ Total: Rs ${order.totalBill}
 Status: ${order.status}
   `);
 };
+
+let chart;
+
+function loadChart(data) {
+  const ctx = document.getElementById("analyticsChart");
+
+  const labels = data.map(d => new Date(d.createdAt).toLocaleDateString());
+  const values = data.map(d => d.totalBill || 0);
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Sales",
+        data: values,
+        borderColor: "green",
+        fill: false
+      }]
+    }
+  });
+}
+
+/* attach to orders */
+onSnapshot(collection(db, "orders"), (snap) => {
+  const orders = snap.docs.map(d => d.data());
+  loadChart(orders);
+});
