@@ -215,3 +215,92 @@ window.logout = () => {
   localStorage.removeItem("admin");
   location.href = "login.html";
 };
+
+/* =========================
+ORDERS SYSTEM + WHATSAPP
+========================= */
+
+function getStatusColor(status) {
+  switch (status) {
+    case "Pending": return "orange";
+    case "Confirmed": return "blue";
+    case "Shipped": return "purple";
+    case "Delivered": return "green";
+    default: return "gray";
+  }
+}
+
+/* =========================
+LIVE ORDERS
+========================= */
+onSnapshot(collection(db, "orders"), (snap) => {
+  const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  let totalRevenue = 0;
+
+  const tbody = document.getElementById("orderList");
+
+  tbody.innerHTML = orders.length ? orders.map(o => {
+    totalRevenue += Number(o.totalBill || 0);
+
+    return `
+      <tr>
+        <td onclick="showCustomer('${o.id}')">${o.id.slice(-5)}</td>
+        <td>${o.customerName}</td>
+        <td>${o.phone}</td>
+        <td>${o.district}</td>
+        <td>Rs ${o.totalBill}</td>
+        <td style="color:${getStatusColor(o.status)}">
+          ${o.status}
+        </td>
+        <td>
+          <button onclick="updateOrderStatus('${o.id}','Confirmed')">✔</button>
+          <button onclick="updateOrderStatus('${o.id}','Shipped')">🚚</button>
+          <button onclick="updateOrderStatus('${o.id}','Delivered')">📦</button>
+        </td>
+      </tr>
+    `;
+  }).join("") : `<tr><td colspan="7">No Orders</td></tr>`;
+
+  const revenueEl = document.getElementById("totalRevenue");
+  if (revenueEl) revenueEl.innerText = "Rs " + totalRevenue;
+});
+
+/* =========================
+ORDER STATUS UPDATE + WHATSAPP
+========================= */
+window.updateOrderStatus = async (id, status) => {
+  try {
+    const ref = doc(db, "orders", id);
+    await updateDoc(ref, { status });
+
+    // send whatsapp
+    const phone = "+94752425790";
+    const msg = `Order ${id} status updated to: ${status}`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
+
+    toast("Status Updated & WhatsApp Sent");
+  } catch (e) {
+    toast("Error updating order");
+  }
+};
+
+/* =========================
+CUSTOMER POPUP
+========================= */
+window.showCustomer = async (id) => {
+  const snap = await getDocs(collection(db, "orders"));
+  const order = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .find(o => o.id === id);
+
+  if (!order) return;
+
+  alert(`
+Customer: ${order.customerName}
+Phone: ${order.phone}
+Address: ${order.address}
+District: ${order.district}
+Total: Rs ${order.totalBill}
+Status: ${order.status}
+  `);
+};
