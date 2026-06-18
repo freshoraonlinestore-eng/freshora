@@ -1,5 +1,5 @@
 /* =========================
-FRESHORA ADMIN V6 PRO CSS
+FRESHORA ADMIN PRO V7 CSS
 ========================= */
 
 :root {
@@ -8,10 +8,20 @@ FRESHORA ADMIN V6 PRO CSS
   --text: #111;
   --muted: #666;
   --primary: #1f8f4d;
+  --warning: orange;
   --danger: #ff3b30;
   --border: #e6eee8;
-  --shadow: 0 4px 12px rgba(0,0,0,0.05);
-  --radius: 12px;
+  --shadow: 0 6px 18px rgba(0,0,0,0.08);
+  --radius: 14px;
+}
+
+/* DARK MODE */
+body.dark {
+  --bg: #0f1720;
+  --card: #1b2430;
+  --text: #ffffff;
+  --muted: #aaa;
+  --border: #2a3442;
 }
 
 body {
@@ -19,72 +29,141 @@ body {
   font-family: 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
-  padding-bottom: 50px;
+  transition: 0.3s;
 }
 
+/* TOP BAR */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* CONTAINER */
 .admin-container {
-  max-width: 1000px;
-  margin: 20px auto;
+  max-width: 1200px;
+  margin: auto;
   padding: 20px;
 }
 
-/* Typography */
-h2 { text-align: center; color: var(--primary); margin-bottom: 25px; }
-h3 { margin-top: 30px; display: flex; align-items: center; gap: 10px; }
+/* HEADINGS */
+h3 {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-/* Cards */
-.admin-card {
+/* GRID CARDS */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+.card {
   background: var(--card);
+  padding: 15px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 20px;
-  margin-top: 10px;
   border: 1px solid var(--border);
+  transition: 0.2s;
 }
 
-/* Inputs & Form Elements */
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* INPUTS */
 input, textarea, select {
   width: 100%;
   padding: 12px;
   margin: 8px 0;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--border);
-  box-sizing: border-box;
+  background: transparent;
+  color: var(--text);
 }
 
-/* Buttons */
+/* BUTTONS */
 button {
-  padding: 10px 15px;
+  padding: 10px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
+  margin-top: 8px;
   transition: 0.2s;
-  width: 100%;
-  margin-top: 5px;
 }
-button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-/* Table Styling */
+button:hover {
+  transform: scale(1.02);
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: white;
+}
+
+.warning-btn {
+  background: var(--warning);
+  color: white;
+}
+
+.danger-btn {
+  background: var(--danger);
+  color: white;
+}
+
+/* TABLE */
+.table-wrap {
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   font-size: 14px;
 }
+
 th {
+  text-align: left;
   background: var(--bg);
   padding: 12px;
-  text-align: left;
   border-bottom: 2px solid var(--border);
 }
+
 td {
   padding: 12px;
   border-bottom: 1px solid var(--border);
 }
-img { border-radius: 6px; }
 
-/* Utilities */
+tr:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+/* IMAGE PREVIEW */
+.preview-box {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.preview-box img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+/* TOAST */
 .admin-toast {
   position: fixed;
   bottom: 20px;
@@ -92,14 +171,33 @@ img { border-radius: 6px; }
   transform: translateX(-50%);
   background: #333;
   color: #fff;
-  padding: 10px 20px;
-  border-radius: 20px;
+  padding: 12px 20px;
+  border-radius: 25px;
   display: none;
+  z-index: 9999;
 }
-.admin-toast.show { display: block; }
 
-/* Responsive */
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .admin-container { padding: 10px; }
-  table { font-size: 12px; }
+  .admin-container {
+    padding: 10px;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  .grid-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
