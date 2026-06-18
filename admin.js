@@ -334,3 +334,18 @@ onSnapshot(collection(db, "orders"), (snap) => {
   const orders = snap.docs.map(d => d.data());
   loadChart(orders);
 });
+
+window.addCoupon = async () => {
+  const code = document.getElementById("couponCode").value;
+  const discount = document.getElementById("couponDiscount").value;
+
+  if (!code) return toast("Enter coupon");
+
+  await addDoc(collection(db, "coupons"), {
+    code,
+    discount: Number(discount),
+    createdAt: Date.now()
+  });
+
+  toast("Coupon Added");
+};
