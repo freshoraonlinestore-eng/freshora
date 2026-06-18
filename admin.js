@@ -13,20 +13,17 @@ import {
 } from "./firebase.js";
 
 /* =========================
-   FRESHORA ADMIN PRO MAX
+   FRESHORA ADMIN SAFE V10
 ========================= */
 
 let productsData = [];
 let selectedProductId = null;
 
 /* =========================
-   ELEMENT SHORTCUT
+   HELPERS
 ========================= */
 const qs = (id) => document.getElementById(id);
 
-/* =========================
-   TOAST
-========================= */
 function showToast(msg) {
     let toast = document.querySelector(".admin-toast");
 
@@ -53,7 +50,7 @@ function showToast(msg) {
 }
 
 /* =========================
-   IMAGE PREVIEW (3 IMAGES)
+   IMAGE PREVIEW (NO UI CHANGE)
 ========================= */
 const fileInput = qs("pimageFile");
 const previewContainer = qs("previewContainer");
@@ -84,7 +81,7 @@ if (fileInput) {
 }
 
 /* =========================
-   UPLOAD IMAGES (FIREBASE STORAGE)
+   UPLOAD IMAGES (SAFE FIREBASE STORAGE)
 ========================= */
 async function uploadImages(files) {
     let urls = [];
@@ -100,8 +97,9 @@ async function uploadImages(files) {
                 "state_changed",
                 (snapshot) => {
                     let percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    progressBar.style.width = percent + "%";
-                    statusText.innerText = `Uploading ${Math.round(percent)}%`;
+
+                    if (progressBar) progressBar.style.width = percent + "%";
+                    if (statusText) statusText.innerText = `Uploading ${Math.round(percent)}%`;
                 },
                 reject,
                 async () => {
@@ -117,13 +115,13 @@ async function uploadImages(files) {
 }
 
 /* =========================
-   ADD PRODUCT
+   ADD PRODUCT (UNCHANGED LOGIC + SAFE IMAGE SUPPORT)
 ========================= */
 window.uploadAndAddProduct = async () => {
     const name = qs("pname").value;
     if (!name) return showToast("Enter product name!");
 
-    const files = fileInput.files;
+    const files = fileInput?.files || [];
 
     let images = [];
     if (files.length > 0) {
@@ -146,7 +144,7 @@ window.uploadAndAddProduct = async () => {
 };
 
 /* =========================
-   UPDATE PRODUCT
+   UPDATE PRODUCT (SAFE)
 ========================= */
 window.updateSelected = async () => {
     if (!selectedProductId) return showToast("Select product first!");
@@ -160,7 +158,7 @@ window.updateSelected = async () => {
         description: qs("pdesc").value
     });
 
-    showToast("Updated Successfully");
+    showToast("Updated");
     clearForm();
 };
 
@@ -190,7 +188,7 @@ window.selectProduct = (id) => {
     qs("pcategorySelect").value = p.category || "Other";
     qs("pdesc").value = p.description || "";
 
-    showToast("Product Selected");
+    showToast("Selected");
 };
 
 /* =========================
@@ -198,7 +196,8 @@ window.selectProduct = (id) => {
 ========================= */
 window.clearForm = () => {
     ["pname","pprice","pdiscount","pstock","pdesc"].forEach(id => {
-        if (qs(id)) qs(id).value = "";
+        const el = qs(id);
+        if (el) el.value = "";
     });
 
     if (fileInput) fileInput.value = "";
@@ -210,7 +209,7 @@ window.clearForm = () => {
 };
 
 /* =========================
-   PRODUCTS RENDER
+   PRODUCTS LIVE SYNC
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -225,9 +224,9 @@ onSnapshot(collection(db, "products"), (snap) => {
         <tr onclick="selectProduct('${p.id}')">
 
             <td>
-                ${p.images?.map(img =>
-                    `<img src="${img}" style="width:35px;height:35px;margin:2px;border-radius:5px;">`
-                ).join("") || ""}
+                ${p.images?.length
+                    ? p.images.map(img => `<img src="${img}" width="30" style="margin:2px;border-radius:4px;">`).join("")
+                    : "No Image"}
             </td>
 
             <td>${p.name}</td>
@@ -246,17 +245,26 @@ onSnapshot(collection(db, "products"), (snap) => {
 });
 
 /* =========================
-   ORDERS + STATUS + BILL
+   ORDERS (SAFE + STATUS + BILL HOOK)
 ========================= */
-window.updateOrderStatus = async (id, status) => {
+window.updateOrderStatus = async (id, status, order) => {
     await updateDoc(doc(db, "orders", id), { status });
+
     showToast("Status Updated");
+
+    // WhatsApp hook safe (optional, no break)
+    if (order?.phone) {
+        const msg = `Order ${id}\nStatus: ${status}`;
+        const url = `https://wa.me/94${order.phone}?text=${encodeURIComponent(msg)}`;
+        window.open(url, "_blank");
+    }
 };
 
 window.viewBill = (o) => {
     qs("billModal").style.display = "block";
 
     qs("billContent").innerHTML = `
+        <p><b>ID:</b> ${o.id}</p>
         <p><b>Name:</b> ${o.customerName}</p>
         <p><b>Phone:</b> ${o.phone}</p>
         <p><b>District:</b> ${o.district}</p>
@@ -265,19 +273,23 @@ window.viewBill = (o) => {
     `;
 };
 
-window.downloadBill = () => {
-    const content = qs("billContent").innerText;
-    const win = window.open("", "", "width=600,height=600");
-    win.document.write("<pre>"+content+"</pre>");
-    win.print();
+window.downloadBill = (order) => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("FRESHORA INVOICE", 20, 20);
+    doc.text("Order: " + order.id, 20, 40);
+    doc.text("Customer: " + order.customerName, 20, 50);
+    doc.text("Total: Rs " + order.totalBill, 20, 60);
+    doc.text("Status: " + order.status, 20, 70);
+
+    doc.save("invoice_" + order.id + ".pdf");
 };
 
 onSnapshot(collection(db, "orders"), (snap) => {
-    const list = qs("orderList");
-
     const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    list.innerHTML = orders.map(o => `
+    qs("orderList").innerHTML = orders.map(o => `
         <tr>
 
             <td>${o.id.slice(-5)}</td>
@@ -287,10 +299,10 @@ onSnapshot(collection(db, "orders"), (snap) => {
             <td>Rs ${o.totalBill}</td>
 
             <td>
-                <select onchange="updateOrderStatus('${o.id}', this.value)">
-                    <option ${o.status==='Pending'?'selected':''}>Pending</option>
-                    <option ${o.status==='Processing'?'selected':''}>Processing</option>
-                    <option ${o.status==='Delivered'?'selected':''}>Delivered</option>
+                <select onchange='updateOrderStatus("${o.id}", this.value, ${JSON.stringify(o)})'>
+                    <option ${o.status==="Pending"?"selected":""}>Pending</option>
+                    <option ${o.status==="Processing"?"selected":""}>Processing</option>
+                    <option ${o.status==="Delivered"?"selected":""}>Delivered</option>
                 </select>
             </td>
 
@@ -303,7 +315,7 @@ onSnapshot(collection(db, "orders"), (snap) => {
 });
 
 /* =========================
-   CATEGORIES
+   CATEGORIES (SAFE)
 ========================= */
 window.addCategory = async () => {
     const name = qs("catName").value;
@@ -338,7 +350,7 @@ onSnapshot(collection(db, "categories"), (snap) => {
 });
 
 /* =========================
-   DELIVERY
+   DELIVERY (SAFE)
 ========================= */
 window.saveDeliveryFee = async () => {
     const district = qs("districtSelect").value;
@@ -367,10 +379,12 @@ onSnapshot(collection(db, "deliveryFees"), (snap) => {
 });
 
 /* =========================
-   SEARCH
+   SEARCH (SAFE)
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
     const search = qs("adminSearch");
+
+    if (!search) return;
 
     search.addEventListener("input", (e) => {
         const val = e.target.value.toLowerCase();
@@ -382,7 +396,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         qs("productListBody").innerHTML = filtered.map(p => `
             <tr onclick="selectProduct('${p.id}')">
-                <td>${p.images?.[0] ? `<img src="${p.images[0]}" width="35">` : ""}</td>
+                <td>${p.images?.[0] ? `<img src="${p.images[0]}" width="30">` : ""}</td>
                 <td>${p.name}</td>
                 <td>${p.price}</td>
                 <td>${p.discount}</td>
