@@ -1,107 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freshora Admin PRO Control Dashboard</title>
-    <link rel="stylesheet" href="admin.css?v=6">
+    <title>Freshora Admin PRO V7</title>
+
+    <link rel="stylesheet" href="admin.css?v=7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
+<!-- TOP BAR -->
+<div class="topbar">
+    <h2><i class="fas fa-shield-halved"></i> Freshora Admin PRO V7</h2>
+    <button onclick="logout()" class="danger-btn">Logout</button>
+</div>
+
 <div class="admin-container">
-    <h2><i class="fas fa-user-shield"></i> Freshora Admin PRO Control Dashboard</h2>
-    <div style="text-align: center;">
-        <button onclick="logout()" style="background: var(--danger); color: white;">Logout</button>
+
+<!-- DASHBOARD CARDS -->
+<h3>📊 Dashboard</h3>
+<div class="grid-cards">
+
+    <div class="card">
+        <h4>Total Products</h4>
+        <p id="totalProducts">0</p>
     </div>
 
-    <h3><i class="fas fa-chart-line"></i> Intelligence Reports</h3>
-    <div class="admin-card">
-        <p>Products: <span id="totalProducts">0</span></p>
-        <p>Total Stock: <span id="totalStock">0</span></p>
-        <p style="color: var(--danger);">Low Stock Items: <span id="lowStock">0</span></p>
-        <p>Total Revenue: <span id="totalRevenue">Rs 0</span></p>
-        <div style="display: grid; gap: 10px;">
-            <button onclick="downloadInventory()">Download Product Inventory</button>
-            <button onclick="downloadSales()">Download Sales/Orders Report</button>
-            <button onclick="downloadReviews()">Download Customer Reviews</button>
-        </div>
+    <div class="card">
+        <h4>Total Stock</h4>
+        <p id="totalStock">0</p>
     </div>
 
-    <h3><i class="fas fa-truck"></i> Manage Delivery Fees</h3>
-    <div class="admin-card">
-        <select id="districtSelect">
-            <option value="">Select District</option>
-            <option value="Colombo">Colombo</option>
-        </select>
-        <input id="deliveryCost" type="number" placeholder="Delivery Cost (LKR)">
-        <button onclick="saveDeliveryFee()" style="background: var(--primary); color: white;">Save Delivery Fee</button>
+    <div class="card">
+        <h4>Low Stock</h4>
+        <p id="lowStock">0</p>
     </div>
 
-    <h3><i class="fas fa-box-open"></i> Manage Products</h3>
-    <div class="admin-card">
-        <input id="pname" placeholder="Product Name">
-        <input id="pprice" type="number" placeholder="Price (LKR)">
-        <input id="pdiscount" type="number" placeholder="Discount %">
-        <input id="pstock" type="number" placeholder="Stock Qty">
-        <textarea id="pdesc" placeholder="Product Description..."></textarea>
-        <input id="pimageFile" type="file">
-        <select id="pcategorySelect">
-            <option value="Other">Other</option>
-        </select>
-        <button onclick="uploadAndAddProduct()" style="background: var(--primary); color: white;">Add New Product</button>
-        <button onclick="updateSelected()" style="background: orange; color: white;">Update Selected</button>
-        <button onclick="clearForm()">Clear Form</button>
+    <div class="card">
+        <h4>Total Revenue</h4>
+        <p id="totalRevenue">Rs 0</p>
     </div>
 
-    <h3><i class="fas fa-tags"></i> Categories</h3>
-    <div class="admin-card">
-        <input id="catName" placeholder="Category Name">
-        <button onclick="addCategory()" style="background: var(--primary); color: white;">Add</button>
-        <button onclick="updateCategory()" style="background: orange; color: white;">Update</button>
-    </div>
+</div>
 
-    <h3><i class="fas fa-shopping-cart"></i> Live Incoming Orders</h3>
-    <div class="admin-card" style="overflow-x:auto;">
-        <table style="width:100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th>Order ID</th><th>Customer Name</th><th>Phone</th><th>District</th><th>Total Bill</th><th>Status</th><th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="orderList">
-                <tr><td colspan="7" style="text-align:center;">No recent orders found.</td></tr>
-            </tbody>
-        </table>
-    </div>
-
-    <h3><i class="fas fa-list"></i> Products List</h3>
-    <input id="adminSearch" placeholder="Live search by name or category...">
-    <div class="admin-card" style="overflow-x:auto;">
-        <table style="width:100%; border-collapse: collapse; text-align: left;">
-            <thead>
-                <tr>
-                    <th>Img</th><th>Name</th><th>Old Price</th><th>Discount</th><th>Final</th><th>Cat</th><th>Stock</th><th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="productListBody"></tbody>
-        </table>
-    </div>
-
-    <h3><i class="fas fa-folder-open"></i> Active Categories</h3>
-    <div id="activeCategoryList"></div>
-
-    <h3><i class="fas fa-shipping-fast"></i> Configured Delivery Fees</h3>
-    <div id="deliveryList"></div>
-
-    <hr>
+<!-- ANALYTICS -->
+<h3>📈 Sales Analytics</h3>
+<div class="card">
     <canvas id="analyticsChart"></canvas>
 </div>
 
-<script type="module" src="admin.js?v=6"></script>
+<!-- PRODUCT MANAGEMENT -->
+<h3>📦 Product Management</h3>
+
+<div class="card">
+
+    <input id="pname" placeholder="Product Name">
+    <input id="pprice" type="number" placeholder="Price">
+    <input id="pdiscount" type="number" placeholder="Discount %">
+    <input id="pstock" type="number" placeholder="Stock">
+
+    <textarea id="pdesc" placeholder="Description"></textarea>
+
+    <!-- 3 IMAGE UPLOAD -->
+    <label>Upload Images (Max 3)</label>
+    <input id="pimageFile" type="file" multiple>
+
+    <!-- PREVIEW -->
+    <div id="imagePreview" class="preview-box"></div>
+
+    <select id="pcategorySelect">
+        <option value="Other">Other</option>
+    </select>
+
+    <button onclick="uploadAndAddProduct()" class="primary-btn">Add Product</button>
+    <button onclick="updateSelected()" class="warning-btn">Update Product</button>
+    <button onclick="clearForm()">Clear</button>
+
+</div>
+
+<!-- SEARCH + FILTER -->
+<h3>🔍 Search & Filter</h3>
+<div class="card">
+    <input id="adminSearch" placeholder="Search product...">
+</div>
+
+<!-- PRODUCT TABLE -->
+<h3>📋 Products List</h3>
+<div class="card table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Img</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Discount</th>
+                <th>Final</th>
+                <th>Category</th>
+                <th>Stock</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="productListBody"></tbody>
+    </table>
+</div>
+
+<!-- ORDERS -->
+<h3>🛒 Live Orders</h3>
+<div class="card table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>District</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="orderList"></tbody>
+    </table>
+</div>
+
+<!-- CATEGORY -->
+<h3>🏷 Categories</h3>
+<div class="card">
+    <input id="catName" placeholder="Category Name">
+    <button onclick="addCategory()" class="primary-btn">Add</button>
+
+    <div id="activeCategoryList"></div>
+</div>
+
+<!-- DELIVERY -->
+<h3>🚚 Delivery Settings</h3>
+<div class="card">
+    <select id="districtSelect">
+        <option value="">Select District</option>
+        <option value="Colombo">Colombo</option>
+    </select>
+
+    <input id="deliveryCost" type="number" placeholder="Cost">
+
+    <button onclick="saveDeliveryFee()" class="primary-btn">Save</button>
+
+    <div id="deliveryList"></div>
+</div>
+
+<!-- COUPONS -->
+<h3>🎟 Coupons</h3>
+<div class="card">
+    <input id="couponCode" placeholder="Coupon Code">
+    <input id="couponDiscount" type="number" placeholder="Discount %">
+    <button onclick="addCoupon()" class="primary-btn">Add Coupon</button>
+</div>
+
+<!-- BANNERS -->
+<h3>🖼 Banners</h3>
+<div class="card">
+    <input type="file" id="bannerUpload">
+    <button onclick="uploadBanner()" class="primary-btn">Upload Banner</button>
+</div>
+
+</div>
+
+<script type="module" src="firebase.js"></script>
+<script type="module" src="admin.js?v=7"></script>
+
 </body>
 </html>
