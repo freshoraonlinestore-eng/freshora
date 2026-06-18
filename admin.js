@@ -418,3 +418,15 @@ window.sendPush = async (title, body) => {
 
   toast("Push Saved (FCM Ready)");
 };
+
+window.saveDeliveryFee = async () => {
+  const district = document.getElementById("districtSelect").value;
+  const cost = document.getElementById("deliveryCost").value;
+
+  await addDoc(collection(db, "deliveryFees"), {
+    district,
+    cost: Number(cost)
+  });
+
+  toast("Delivery Saved");
+};
