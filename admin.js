@@ -372,3 +372,19 @@ window.uploadBanner = async () => {
 
   toast("Banner Uploaded");
 };
+
+window.exportCSV = () => {
+  let csv = "Name,Price,Discount,Stock\n";
+
+  products.forEach(p => {
+    csv += `${p.name},${p.price},${p.discount},${p.stock}\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "products.csv";
+  a.click();
+};
