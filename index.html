@@ -145,7 +145,7 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <!-- GALLERY (MULTI IMAGE SUPPORT) -->
+            <!-- GALLERY -->
             <div id="galleryContainer" class="gallery-container"></div>
 
             <h2 id="modalName"></h2>
@@ -216,8 +216,19 @@
 
     </div>
 
+    <!-- DEBUG SAFETY (NO UI CHANGE) -->
+    <script>
+        window.addEventListener("error", (e) => {
+            console.error("JS ERROR:", e.message);
+        });
+
+        window.addEventListener("unhandledrejection", (e) => {
+            console.error("PROMISE ERROR:", e.reason);
+        });
+    </script>
+
     <!-- APP JS -->
-    <script type="module" src="app.js"></script>
+    <script type="module" src="./app.js"></script>
 
 </body>
 </html>
