@@ -1,24 +1,20 @@
-console.log("🚀 APP STARTED");
-
-window.addEventListener("error", (e) => {
-    console.error("❌ JS ERROR:", e.message, e.filename, e.lineno);
-});
-
-window.addEventListener("unhandledrejection", (e) => {
-    console.error("❌ PROMISE ERROR:", e.reason);
-});
-
+/* =========================
+   IMPORTS (MUST BE FIRST)
+========================= */
 import {
   db,
   collection,
   addDoc,
-  onSnapshot,
-  doc,
-  updateDoc
+  onSnapshot
 } from "./firebase.js";
 
 /* =========================
-   STATE
+   START LOG
+========================= */
+console.log("🚀 APP STARTED");
+
+/* =========================
+   GLOBAL STATE
 ========================= */
 let productsData = [];
 let cart = [];
@@ -26,7 +22,7 @@ let currentProduct = null;
 let selectedRating = 0;
 
 /* =========================
-   HELPERS
+   SAFE HELPERS
 ========================= */
 const qs = (id) => document.getElementById(id);
 
@@ -40,116 +36,102 @@ function toast(msg) {
 }
 
 /* =========================
-   DARK MODE
+   SAFE DOM READY WRAPPER
 ========================= */
-window.toggleDarkMode = () => {
-    document.body.classList.toggle("dark");
+document.addEventListener("DOMContentLoaded", () => {
 
-    const icon = document.querySelector("#darkModeBtn i");
-    if (document.body.classList.contains("dark")) {
-        icon.classList.replace("fa-moon", "fa-sun");
-    } else {
-        icon.classList.replace("fa-sun", "fa-moon");
-    }
-};
+    initUI();
 
-/* =========================
-   CART
-========================= */
-window.toggleCart = () => {
-    qs("cartDrawer").classList.toggle("open");
-};
-
-window.addToCart = (product) => {
-    const existing = cart.find(p => p.id === product.id);
-
-    if (existing) {
-        existing.qty += 1;
-    } else {
-        cart.push({ ...product, qty: 1 });
-    }
-
-    renderCart();
-    toast("Added to cart");
-};
-
-window.clearCart = () => {
-    cart = [];
-    renderCart();
-};
-
-/* =========================
-   CART RENDER
-========================= */
-function renderCart() {
-    const box = qs("cartItems");
-
-    box.innerHTML = cart.map(p => `
-        <div class="cart-item">
-            <span>${p.name}</span>
-            <span>${p.qty} x Rs ${p.price}</span>
-        </div>
-    `).join("");
-
-    const total = cart.reduce((a, b) => a + b.qty * b.price, 0);
-    qs("cartTotal").innerText = "Total: Rs " + total;
-    qs("floatingCartCount").innerText = cart.reduce((a, b) => a + b.qty, 0);
-}
-
-/* =========================
-   CHECKOUT
-========================= */
-window.checkout = async () => {
-    if (!cart.length) return toast("Cart empty");
-
-    const order = {
-        customerName: qs("cusName").value,
-        phone: qs("cusPhone").value,
-        address: qs("cusAddress").value,
-        items: cart,
-        totalBill: cart.reduce((a, b) => a + b.qty * b.price, 0),
-        status: "Pending",
-        createdAt: Date.now()
-    };
-
-    await addDoc(collection(db, "orders"), order);
-
-    cart = [];
-    renderCart();
-
-    toast("Order placed!");
-};
-
-/* =========================
-   PRODUCTS LOAD
-========================= */
-onSnapshot(collection(db, "products"), (snap) => {
-    productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderProducts(productsData);
 });
 
 /* =========================
-   RENDER PRODUCTS
+   INIT UI
 ========================= */
-function renderProducts(list) {
+function initUI() {
+
+    /* DARK MODE */
+    window.toggleDarkMode = () => {
+        document.body.classList.toggle("dark");
+        const icon = document.querySelector("#darkModeBtn i");
+        if (!icon) return;
+
+        icon.classList.toggle("fa-moon");
+        icon.classList.toggle("fa-sun");
+    };
+
+    /* CART */
+    window.toggleCart = () => {
+        qs("cartDrawer")?.classList.toggle("open");
+    };
+
+    window.clearCart = () => {
+        cart = [];
+        renderCart();
+    };
+
+    /* FILTERS */
+    ["categoryFilter", "priceFilter", "discountFilter"].forEach(id => {
+        qs(id)?.addEventListener("change", filterProducts);
+    });
+
+    /* SEARCH */
+    qs("searchInput")?.addEventListener("input", (e) => {
+        const val = e.target.value.toLowerCase();
+        const filtered = productsData.filter(p =>
+            (p.name || "").toLowerCase().includes(val) ||
+            (p.category || "").toLowerCase().includes(val)
+        );
+        renderProducts(filtered);
+    });
+
+    /* REVIEWS */
+    qs("reviewSubmitBtn")?.addEventListener("click", submitReview);
+
+    document.querySelectorAll("#starRating i").forEach(star => {
+        star.addEventListener("click", () => {
+            selectedRating = star.dataset.value;
+        });
+    });
+}
+
+/* =========================
+   PRODUCTS LOAD (SAFE)
+========================= */
+onSnapshot(collection(db, "products"), (snap) => {
+
+    if (!snap) return;
+
+    productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    renderProducts(productsData);
+
+});
+
+/* =========================
+   SAFE PRODUCT RENDER
+========================= */
+function renderProducts(list = []) {
+
     const box = qs("products");
+    if (!box) return;
 
     box.innerHTML = list.map(p => {
 
-        const img = (p.images && p.images.length)
-            ? p.images[0]
-            : (p.image || "https://via.placeholder.com/200");
+        const img =
+            (p.images && p.images.length)
+                ? p.images[0]
+                : p.image || "https://via.placeholder.com/200";
 
         return `
-        <div class="product-card" onclick='openProduct("${p.id}")'>
+        <div class="product-card" onclick="openProduct('${p.id}')">
 
             <img src="${img}" />
 
-            <h3>${p.name}</h3>
+            <h3>${p.name || ""}</h3>
 
-            <p>Rs ${p.price}</p>
+            <p>Rs ${p.price || 0}</p>
 
-            <button onclick='event.stopPropagation(); addToCart(${JSON.stringify(p)})'>
+            <button onclick="event.stopPropagation(); addToCart('${p.id}')">
                 Add
             </button>
 
@@ -159,9 +141,10 @@ function renderProducts(list) {
 }
 
 /* =========================
-   OPEN PRODUCT MODAL
+   OPEN PRODUCT
 ========================= */
 window.openProduct = (id) => {
+
     const p = productsData.find(x => x.id === id);
     if (!p) return;
 
@@ -169,136 +152,118 @@ window.openProduct = (id) => {
 
     qs("productModal").style.display = "block";
 
-    qs("modalName").innerText = p.name;
-    qs("modalPrice").innerText = "Rs " + p.price;
+    qs("modalName").innerText = p.name || "";
+    qs("modalPrice").innerText = "Rs " + (p.price || 0);
     qs("modalDesc").innerText = p.description || "";
 
     renderGallery(p.images || []);
-
     loadReviews(id);
 };
 
 /* =========================
-   CLOSE MODAL
+   CART SAFE
 ========================= */
-window.closeModal = () => {
-    qs("productModal").style.display = "none";
+window.addToCart = (id) => {
+
+    const p = productsData.find(x => x.id === id);
+    if (!p) return;
+
+    const existing = cart.find(x => x.id === id);
+
+    if (existing) existing.qty++;
+    else cart.push({ ...p, qty: 1 });
+
+    renderCart();
+    toast("Added to cart");
 };
 
-/* =========================
-   GALLERY
-========================= */
-function renderGallery(images = []) {
-    const box = qs("galleryContainer");
+function renderCart() {
 
-    if (!images.length) {
-        box.innerHTML = `<img src="https://via.placeholder.com/300" />`;
-        return;
-    }
+    const box = qs("cartItems");
+    if (!box) return;
 
-    box.innerHTML = images.map(img => `
-        <img src="${img}" style="width:100%;margin-bottom:5px;border-radius:10px;">
+    box.innerHTML = cart.map(p => `
+        <div class="cart-item">
+            <span>${p.name}</span>
+            <span>${p.qty} x Rs ${p.price}</span>
+        </div>
     `).join("");
+
+    const total = cart.reduce((a, b) => a + b.qty * b.price, 0);
+
+    qs("cartTotal").innerText = "Total: Rs " + total;
+    qs("floatingCartCount").innerText = cart.reduce((a, b) => a + b.qty, 0);
 }
 
 /* =========================
-   REVIEWS
+   CHECKOUT SAFE
+========================= */
+window.checkout = async () => {
+
+    if (!cart.length) return toast("Cart empty");
+
+    await addDoc(collection(db, "orders"), {
+        customerName: qs("cusName")?.value || "",
+        phone: qs("cusPhone")?.value || "",
+        address: qs("cusAddress")?.value || "",
+        items: cart,
+        totalBill: cart.reduce((a, b) => a + b.qty * b.price, 0),
+        status: "Pending",
+        createdAt: Date.now()
+    });
+
+    cart = [];
+    renderCart();
+    toast("Order placed!");
+};
+
+/* =========================
+   REVIEWS SAFE
 ========================= */
 function loadReviews(productId) {
+
     const box = qs("reviewList");
     if (!box) return;
 
     onSnapshot(collection(db, "reviews"), (snap) => {
+
         const reviews = snap.docs
             .map(d => d.data())
             .filter(r => r.productId === productId);
 
         box.innerHTML = reviews.map(r => `
-            <div class="review">
-                ⭐ ${r.text}
-            </div>
+            <div class="review">⭐ ${r.text}</div>
         `).join("");
     });
 }
 
-/* =========================
-   SUBMIT REVIEW
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-    qs("reviewSubmitBtn").addEventListener("click", async () => {
-        if (!currentProduct) return;
+async function submitReview() {
 
-        const text = qs("reviewText").value;
-        if (!text) return;
+    if (!currentProduct) return;
 
-        await addDoc(collection(db, "reviews"), {
-            productId: currentProduct.id,
-            text,
-            rating: selectedRating,
-            createdAt: Date.now()
-        });
+    const text = qs("reviewText")?.value;
+    if (!text) return;
 
-        qs("reviewText").value = "";
-        toast("Review added");
+    await addDoc(collection(db, "reviews"), {
+        productId: currentProduct.id,
+        text,
+        rating: selectedRating,
+        createdAt: Date.now()
     });
-});
 
-/* =========================
-   STARS
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("#starRating i").forEach(star => {
-        star.addEventListener("click", () => {
-            selectedRating = star.dataset.value;
-        });
-    });
-});
-
-/* =========================
-   FILTERS
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-
-    qs("categoryFilter").addEventListener("change", filterProducts);
-    qs("priceFilter").addEventListener("change", filterProducts);
-    qs("discountFilter").addEventListener("change", filterProducts);
-
-});
-
-function filterProducts() {
-    let filtered = [...productsData];
-
-    const cat = qs("categoryFilter").value;
-    const price = qs("priceFilter").value;
-    const disc = qs("discountFilter").value;
-
-    if (cat !== "all") {
-        filtered = filtered.filter(p => p.category === cat);
-    }
-
-    if (price === "low") filtered = filtered.filter(p => p.price < 1000);
-    if (price === "mid") filtered = filtered.filter(p => p.price >= 1000 && p.price < 5000);
-    if (price === "high") filtered = filtered.filter(p => p.price >= 5000);
-
-    if (disc === "10") filtered = filtered.filter(p => p.discount >= 10);
-    if (disc === "20") filtered = filtered.filter(p => p.discount >= 20);
-    if (disc === "50") filtered = filtered.filter(p => p.discount >= 50);
-
-    renderProducts(filtered);
+    qs("reviewText").value = "";
+    toast("Review added");
 }
 
 /* =========================
-   SEARCH
+   GALLERY SAFE
 ========================= */
-document.addEventListener("DOMContentLoaded", () => {
-    qs("searchInput").addEventListener("input", (e) => {
-        const val = e.target.value.toLowerCase();
+function renderGallery(images = []) {
 
-        const filtered = productsData.filter(p =>
-            p.name.toLowerCase().includes(val) ||
-            (p.category || "").toLowerCase().includes(val)
-        );
+    const box = qs("galleryContainer");
+    if (!box) return;
 
-        renderProducts(filtered);
-    });
-});
+    box.innerHTML = images.length
+        ? images.map(img => `<img src="${img}" style="width:100%;margin-bottom:5px;border-radius:10px;">`).join("")
+        : `<img src="https://via.placeholder.com/300">`;
+}
