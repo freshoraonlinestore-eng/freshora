@@ -349,3 +349,26 @@ window.addCoupon = async () => {
 
   toast("Coupon Added");
 };
+
+window.uploadBanner = async () => {
+  const file = document.getElementById("bannerUpload").files[0];
+  if (!file) return toast("Select image");
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("upload_preset", UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    { method: "POST", body: form }
+  );
+
+  const data = await res.json();
+
+  await addDoc(collection(db, "banners"), {
+    image: data.secure_url,
+    createdAt: Date.now()
+  });
+
+  toast("Banner Uploaded");
+};
