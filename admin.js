@@ -430,3 +430,9 @@ window.saveDeliveryFee = async () => {
 
   toast("Delivery Saved");
 };
+
+
+window.deleteCategory = async (id) => {
+  await deleteDoc(doc(db, "categories", id));
+  toast("Category Deleted");
+};
