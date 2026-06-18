@@ -1,23 +1,45 @@
-import { db, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "./firebase.js";
+import {
+  db,
+  collection,
+  addDoc,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  updateDoc,
+  storage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL
+} from "./firebase.js";
 
 /* =========================
-   FRESHORA ADMIN V6 - FULL
-   ========================= */
-
-const CLOUD_NAME = "dayvblw7g";
-const UPLOAD_PRESET = "freshora_upload";
+   FRESHORA ADMIN V7 (FIXED)
+========================= */
 
 let productsData = [];
 let selectedProductId = null;
 
 const qs = (id) => document.getElementById(id);
 
+/* =========================
+   UI HELPERS
+========================= */
 function showToast(msg) {
     let toast = document.querySelector(".admin-toast");
     if (!toast) {
         toast = document.createElement("div");
         toast.className = "admin-toast";
-        toast.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; display:none; z-index:1000;";
+        toast.style = `
+            position:fixed;
+            bottom:20px;
+            left:50%;
+            transform:translateX(-50%);
+            background:#222;
+            color:#fff;
+            padding:10px 20px;
+            border-radius:20px;
+            z-index:9999;
+        `;
         document.body.appendChild(toast);
     }
     toast.innerText = msg;
@@ -25,35 +47,96 @@ function showToast(msg) {
     setTimeout(() => toast.style.display = "none", 2500);
 }
 
-/* --- PRODUCT ACTIONS (KEEPING EXISTING) --- */
+/* =========================
+   IMAGE PREVIEW (3 IMAGES)
+========================= */
+const fileInput = qs("pimageFile");
+const previewContainer = qs("previewContainer");
+const progressBar = qs("uploadProgress");
+const statusText = qs("uploadStatus");
+
+fileInput.addEventListener("change", () => {
+    previewContainer.innerHTML = "";
+
+    Array.from(fileInput.files).slice(0, 3).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.style = "width:70px;height:70px;object-fit:cover;border-radius:8px;";
+            previewContainer.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+
+/* =========================
+   UPLOAD MULTIPLE IMAGES
+========================= */
+async function uploadImages(files) {
+    let urls = [];
+
+    for (let i = 0; i < files.length && i < 3; i++) {
+        const file = files[i];
+
+        const storageRef = ref(storage, "products/" + Date.now() + "_" + file.name);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        await new Promise((resolve, reject) => {
+            uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                    let percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = percent + "%";
+                    statusText.innerText = `Uploading ${Math.round(percent)}%`;
+                },
+                reject,
+                async () => {
+                    const url = await getDownloadURL(uploadTask.snapshot.ref);
+                    urls.push(url);
+                    resolve();
+                }
+            );
+        });
+    }
+
+    return urls;
+}
+
+/* =========================
+   ADD PRODUCT
+========================= */
 window.uploadAndAddProduct = async () => {
     const name = qs("pname").value;
     if (!name) return showToast("Enter product name!");
-    const fileInput = qs("pimageFile");
-    let imageUrl = "";
-    if (fileInput.files[0]) {
-        const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
-        formData.append("upload_preset", UPLOAD_PRESET);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
-        const data = await res.json();
-        imageUrl = data.secure_url;
+
+    const files = fileInput.files;
+
+    let imageUrls = [];
+    if (files.length > 0) {
+        imageUrls = await uploadImages(files);
     }
+
     await addDoc(collection(db, "products"), {
-        name: name,
+        name,
         price: Number(qs("pprice").value),
         discount: Number(qs("pdiscount").value || 0),
         stock: Number(qs("pstock").value || 0),
         category: qs("pcategorySelect").value,
-        image: imageUrl,
-        createdAt: new Date().getTime()
+        images: imageUrls,
+        createdAt: Date.now()
     });
+
     showToast("Product Added ✅");
     clearForm();
 };
 
+/* =========================
+   UPDATE PRODUCT
+========================= */
 window.updateSelected = async () => {
-    if (!selectedProductId) return showToast("Select a product first!");
+    if (!selectedProductId) return showToast("Select product first!");
+
     await updateDoc(doc(db, "products", selectedProductId), {
         name: qs("pname").value,
         price: Number(qs("pprice").value),
@@ -61,126 +144,188 @@ window.updateSelected = async () => {
         stock: Number(qs("pstock").value),
         category: qs("pcategorySelect").value
     });
-    showToast("Product Updated!");
+
+    showToast("Updated!");
     clearForm();
 };
 
+/* =========================
+   DELETE PRODUCT
+========================= */
+window.deleteProduct = async (id) => {
+    if (confirm("Delete product?")) {
+        await deleteDoc(doc(db, "products", id));
+        showToast("Deleted");
+    }
+};
+
+/* =========================
+   SELECT PRODUCT
+========================= */
+window.selectProduct = (id) => {
+    const p = productsData.find(x => x.id === id);
+    if (!p) return;
+
+    selectedProductId = id;
+
+    qs("pname").value = p.name;
+    qs("pprice").value = p.price;
+    qs("pdiscount").value = p.discount;
+    qs("pstock").value = p.stock;
+    qs("pcategorySelect").value = p.category || "Other";
+
+    showToast("Selected for update");
+};
+
+/* =========================
+   CLEAR FORM
+========================= */
 window.clearForm = () => {
-    ["pname", "pprice", "pdiscount", "pstock", "pdesc"].forEach(id => qs(id).value = "");
+    ["pname","pprice","pdiscount","pstock","pdesc"].forEach(id => qs(id).value = "");
+    fileInput.value = "";
+    previewContainer.innerHTML = "";
+    progressBar.style.width = "0%";
+    statusText.innerText = "";
     selectedProductId = null;
 };
 
-window.deleteProduct = async (id) => {
-    if(confirm("Delete this product?")) await deleteDoc(doc(db, "products", id));
-};
-
-window.selectProduct = (id) => {
-    const p = productsData.find(item => item.id === id);
-    if(p) {
-        selectedProductId = id;
-        qs("pname").value = p.name;
-        qs("pprice").value = p.price;
-        qs("pdiscount").value = p.discount;
-        qs("pstock").value = p.stock;
-        qs("pcategorySelect").value = p.category || "Other";
-        showToast("Product Selected for Update!");
-    }
-};
-
-/* --- DATA SYNC & RENDERING --- */
+/* =========================
+   PRODUCTS LIST
+========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    
-    // Stats
-    const totalStock = productsData.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
-    const lowStock = productsData.filter(p => p.stock < 5).length;
-    
-    if(qs("totalProducts")) qs("totalProducts").innerText = productsData.length;
-    if(qs("totalStock")) qs("totalStock").innerText = totalStock;
-    if(qs("lowStock")) qs("lowStock").innerText = lowStock;
 
-    // Table
+    qs("totalProducts").innerText = productsData.length;
+    qs("totalStock").innerText = productsData.reduce((a,b)=>a+(b.stock||0),0);
+    qs("lowStock").innerText = productsData.filter(p => p.stock < 5).length;
+
     const tbody = qs("productListBody");
-    if(tbody) {
-        tbody.innerHTML = productsData.map(p => `
-            <tr onclick="selectProduct('${p.id}')" style="cursor:pointer;">
-                <td><img src="${p.image || ''}" width="40" height="40" style="border-radius:5px"></td>
-                <td>${p.name}</td>
-                <td>Rs ${Number(p.price).toLocaleString()}</td>
-                <td>${p.discount}%</td>
-                <td>Rs ${Math.round(p.price - (p.price * p.discount / 100)).toLocaleString()}</td>
-                <td>${p.category || 'Other'}</td>
-                <td>${p.stock}</td>
-                <td><button onclick="event.stopPropagation(); deleteProduct('${p.id}')" style="background:var(--danger); color:white;">🗑</button></td>
-            </tr>
-        `).join("");
-    }
+
+    tbody.innerHTML = productsData.map(p => `
+        <tr onclick="selectProduct('${p.id}')">
+            <td>
+                ${p.images?.[0] ? `<img src="${p.images[0]}" width="40">` : ""}
+            </td>
+            <td>${p.name}</td>
+            <td>Rs ${p.price}</td>
+            <td>${p.discount}%</td>
+            <td>Rs ${Math.round(p.price - (p.price*p.discount/100))}</td>
+            <td>${p.category}</td>
+            <td>${p.stock}</td>
+            <td>
+                <button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button>
+            </td>
+        </tr>
+    `).join("");
 });
 
-/* --- ORDERS & FEES (NEW) --- */
-onSnapshot(collection(db, "orders"), (snap) => {
-    const list = qs("orderList");
-    if(list) {
-        const orders = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        list.innerHTML = orders.length ? orders.map(o => `
-            <tr>
-                <td>${o.id.slice(-5)}</td><td>${o.customerName}</td><td>${o.phone}</td>
-                <td>${o.district}</td><td>Rs ${o.totalBill}</td><td>${o.status}</td>
-                <td>-</td>
-            </tr>
-        `).join("") : '<tr><td colspan="7" style="text-align:center;">No recent orders found.</td></tr>';
-    }
-});
-
-onSnapshot(collection(db, "deliveryFees"), (snap) => {
-    const list = qs("deliveryList");
-    if(list) list.innerHTML = snap.docs.map(d => `<div class="admin-card">${d.data().district}: Rs ${d.data().cost}</div>`).join("");
-});
-
-/* --- CATEGORIES & SEARCH --- */
+/* =========================
+   CATEGORIES FIXED DELETE
+========================= */
 onSnapshot(collection(db, "categories"), (snap) => {
     const select = qs("pcategorySelect");
     const list = qs("activeCategoryList");
-    const cats = snap.docs.map(d => d.data().name);
-    if(select) select.innerHTML = '<option value="Other">Other</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join("");
-    if(list) list.innerHTML = snap.docs.map(doc => `
-        <div class="admin-card" style="display:flex; justify-content:space-between; margin:5px 0;">
-            <span>🏷 ${doc.data().name}</span>
-            <button onclick="deleteDoc(doc(db,'categories','${doc.id}'))" style="background:var(--danger); width:auto; color:white;">🗑</button>
+
+    const cats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    select.innerHTML =
+        `<option value="Other">Other</option>` +
+        cats.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
+
+    list.innerHTML = cats.map(c => `
+        <div class="admin-card">
+            ${c.name}
+            <button onclick="deleteCategory('${c.id}')">🗑</button>
         </div>
     `).join("");
 });
 
-window.addEventListener("DOMContentLoaded", () => {
-    const searchInput = qs("adminSearch");
-    if(searchInput) {
-        searchInput.addEventListener("input", (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = productsData.filter(p => p.name.toLowerCase().includes(val) || (p.category && p.category.toLowerCase().includes(val)));
-            renderTable(filtered);
-        });
-    }
-});
-
-/* --- UTILITIES --- */
-window.addCategory = async () => {
-    const name = qs("catName").value;
-    if(!name) return;
-    await addDoc(collection(db, "categories"), { name: name });
-    qs("catName").value = "";
-    showToast("Category Added!");
+window.deleteCategory = async (id) => {
+    await deleteDoc(doc(db, "categories", id));
+    showToast("Deleted category");
 };
 
+/* =========================
+   CATEGORY ADD
+========================= */
+window.addCategory = async () => {
+    const name = qs("catName").value;
+    if (!name) return;
+
+    await addDoc(collection(db, "categories"), { name });
+    qs("catName").value = "";
+    showToast("Category Added");
+};
+
+/* =========================
+   DELIVERY
+========================= */
 window.saveDeliveryFee = async () => {
     const district = qs("districtSelect").value;
     const cost = qs("deliveryCost").value;
-    if(!district || !cost) return showToast("Enter details!");
+
+    if (!district || !cost) return showToast("Fill fields");
+
     await addDoc(collection(db, "deliveryFees"), { district, cost });
-    showToast("Delivery Fee Saved!");
+    showToast("Saved");
 };
 
-window.downloadInventory = () => showToast("Downloading...");
-window.downloadSales = () => showToast("Downloading...");
-window.downloadReviews = () => showToast("Downloading...");
-window.updateCategory = () => showToast("Feature active.");
-window.logout = () => { localStorage.removeItem("admin"); window.location.href = "login.html"; };
+/* =========================
+   ORDERS
+========================= */
+onSnapshot(collection(db, "orders"), (snap) => {
+    const list = qs("orderList");
+
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    list.innerHTML = orders.length ? orders.map(o => `
+        <tr>
+            <td>${o.id.slice(-5)}</td>
+            <td>${o.customerName}</td>
+            <td>${o.phone}</td>
+            <td>${o.district}</td>
+            <td>Rs ${o.totalBill}</td>
+            <td>${o.status}</td>
+            <td>-</td>
+        </tr>
+    `).join("") : `<tr><td colspan="7">No orders</td></tr>`;
+});
+
+/* =========================
+   SEARCH FIX
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+    const search = qs("adminSearch");
+
+    search.addEventListener("input", (e) => {
+        const val = e.target.value.toLowerCase();
+
+        const filtered = productsData.filter(p =>
+            p.name.toLowerCase().includes(val) ||
+            (p.category || "").toLowerCase().includes(val)
+        );
+
+        qs("productListBody").innerHTML = filtered.map(p => `
+            <tr onclick="selectProduct('${p.id}')">
+                <td><img src="${p.images?.[0]||''}" width="40"></td>
+                <td>${p.name}</td>
+                <td>${p.price}</td>
+                <td>${p.discount}</td>
+                <td>${Math.round(p.price - (p.price*p.discount/100))}</td>
+                <td>${p.category}</td>
+                <td>${p.stock}</td>
+                <td>
+                    <button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button>
+                </td>
+            </tr>
+        `).join("");
+    });
+});
+
+/* =========================
+   LOGOUT
+========================= */
+window.logout = () => {
+    localStorage.removeItem("admin");
+    location.href = "login.html";
+};
