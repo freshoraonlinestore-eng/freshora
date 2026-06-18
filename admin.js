@@ -388,3 +388,13 @@ window.exportCSV = () => {
   a.download = "products.csv";
   a.click();
 };
+
+window.bulkDelete = async (ids) => {
+  if (!confirm("Delete selected products?")) return;
+
+  for (let id of ids) {
+    await deleteDoc(doc(db, "products", id));
+  }
+
+  toast("Bulk Deleted");
+};
