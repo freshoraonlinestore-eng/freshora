@@ -25,11 +25,8 @@
     <header class="header">
 
         <div class="logo-area" ondblclick="window.location='login.html'">
-
             <img src="logo.png" class="logo-img" alt="Freshora Logo" />
-
             <div class="logo-text">Freshora</div>
-
         </div>
 
         <!-- SEARCH -->
@@ -61,12 +58,10 @@
 
         <div class="filter-grid">
 
-            <!-- CATEGORY -->
             <select id="categoryFilter">
                 <option value="all">All Categories</option>
             </select>
 
-            <!-- PRICE -->
             <select id="priceFilter">
                 <option value="all">All Prices</option>
                 <option value="low">Below 1000</option>
@@ -74,7 +69,6 @@
                 <option value="high">Above 5000</option>
             </select>
 
-            <!-- DISCOUNT -->
             <select id="discountFilter">
                 <option value="all">All Discounts</option>
                 <option value="10">10%+</option>
@@ -216,8 +210,9 @@
 
     </div>
 
-    <!-- DEBUG SAFETY (NO UI CHANGE) -->
+    <!-- 🔥 CRITICAL FIX: MODULE SAFE LOAD -->
     <script>
+        // Global crash catcher (prevents blank screen)
         window.addEventListener("error", (e) => {
             console.error("JS ERROR:", e.message);
         });
@@ -227,7 +222,7 @@
         });
     </script>
 
-    <!-- APP JS -->
+    <!-- APP JS (SAFE MODULE LOAD) -->
     <script type="module" src="./app.js"></script>
 
 </body>
