@@ -1,3 +1,13 @@
+console.log("🚀 APP STARTED");
+
+window.addEventListener("error", (e) => {
+    console.error("❌ JS ERROR:", e.message, e.filename, e.lineno);
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+    console.error("❌ PROMISE ERROR:", e.reason);
+});
+
 import {
   db,
   collection,
