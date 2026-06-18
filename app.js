@@ -1,463 +1,294 @@
-import { db, collection, onSnapshot, addDoc } from "./firebase.js";
+import {
+  db,
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  updateDoc
+} from "./firebase.js";
 
 /* =========================
-STATE
+   STATE
 ========================= */
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let allProducts = [];
+let productsData = [];
+let cart = [];
+let currentProduct = null;
 let selectedRating = 0;
-let currentProductId = null;
-
-/* ⭐ NEW: reviews cache for product rating UI */
-let allReviews = [];
 
 /* =========================
-UTIL
+   HELPERS
 ========================= */
-function num(v) {
-    const n = Number(v);
-    return isNaN(n) ? 0 : n;
-}
+const qs = (id) => document.getElementById(id);
 
-function saveCart() {
-    localStorage.setItem("cart", JSON.stringify(cart));
-}
+function toast(msg) {
+    const t = qs("toast");
+    if (!t) return;
 
-function showToast(msg) {
-    const toast = document.getElementById("toast");
-    if (!toast) return;
-
-    toast.innerHTML = `
-        <i class="fa-solid fa-circle-check"></i>
-        <span>${msg}</span>
-    `;
-
-    toast.classList.add("show");
-
-    clearTimeout(window.toastTimeout);
-
-    window.toastTimeout = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2200);
+    t.innerText = msg;
+    t.style.display = "block";
+    setTimeout(() => (t.style.display = "none"), 2000);
 }
 
 /* =========================
-INIT
+   DARK MODE
 ========================= */
-window.addEventListener("DOMContentLoaded", () => {
+window.toggleDarkMode = () => {
+    document.body.classList.toggle("dark");
 
-    updateCartDisplay();
-
-    document.getElementById("searchInput")
-        ?.addEventListener("input", filterProducts);
-
-    document.getElementById("categoryFilter")
-        ?.addEventListener("change", filterProducts);
-
-    setupStarRating();
-    bindReviewButton();
-
-    document.getElementById("modalAddBtn")
-        ?.addEventListener("click", () => {
-
-        if (!currentProductId) return;
-
-        const p = allProducts.find(x => x.id === currentProductId);
-        if (!p) return;
-
-        const price = getFinalPrice(p);
-
-        addToCart(p.id, p.name, price, p.image);
-    });
-
-});
+    const icon = document.querySelector("#darkModeBtn i");
+    if (document.body.classList.contains("dark")) {
+        icon.classList.replace("fa-moon", "fa-sun");
+    } else {
+        icon.classList.replace("fa-sun", "fa-moon");
+    }
+};
 
 /* =========================
-PRICE
+   CART
 ========================= */
-function getFinalPrice(product) {
-    const price = num(product.price);
-    const discount = num(product.discount);
+window.toggleCart = () => {
+    qs("cartDrawer").classList.toggle("open");
+};
 
-    return discount > 0
-        ? Math.round(price - (price * discount / 100))
-        : price;
-}
+window.addToCart = (product) => {
+    const existing = cart.find(p => p.id === product.id);
 
-/* =========================
-CART DISPLAY
-========================= */
-window.updateCartDisplay = () => {
-
-    const cartItems = document.getElementById("cartItems");
-    const cartTotal = document.getElementById("cartTotal");
-    const floating = document.getElementById("floatingCartCount");
-
-    if (!cartItems) return;
-
-    let total = 0;
-    let totalQty = 0;
-
-    if (cart.length === 0) {
-
-        cartItems.innerHTML = `<p style="text-align:center;padding:20px;">Cart is empty</p>`;
-        if (cartTotal) cartTotal.innerText = "Total: Rs 0";
-        if (floating) floating.innerText = "0";
-
-        saveCart();
-        return;
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        cart.push({ ...product, qty: 1 });
     }
 
-    cartItems.innerHTML = cart.map((item, i) => {
-
-        const price = num(item.price);
-        const qty = num(item.qty);
-
-        total += price * qty;
-        totalQty += qty;
-
-        return `
-        <div class="cart-item">
-            <img src="${item.image}">
-            <div style="flex:1">
-                <h4>${item.name}</h4>
-                <p>Rs ${price * qty}</p>
-
-                <div class="qty-box">
-                    <button onclick="changeQty(${i},-1)">-</button>
-                    <span>${qty}</span>
-                    <button onclick="changeQty(${i},1)">+</button>
-                </div>
-            </div>
-
-            <button class="remove-btn" onclick="removeFromCart(${i})">✕</button>
-        </div>`;
-    }).join("");
-
-    if (cartTotal) cartTotal.innerText = `Total: Rs ${total}`;
-    if (floating) floating.innerText = totalQty;
-
-    saveCart();
-};
-
-/* =========================
-CART ACTIONS
-========================= */
-window.addToCart = (id, name, price, image) => {
-
-    const item = cart.find(i => i.id === id);
-
-    if (item) item.qty += 1;
-    else cart.push({ id, name, price: num(price), image, qty: 1 });
-
-    updateCartDisplay();
-    showToast("Added 🛒");
-};
-
-window.changeQty = (index, change) => {
-    if (!cart[index]) return;
-
-    cart[index].qty += change;
-
-    if (cart[index].qty <= 0) cart.splice(index, 1);
-
-    updateCartDisplay();
-};
-
-window.removeFromCart = (index) => {
-    cart.splice(index, 1);
-    updateCartDisplay();
-    showToast("Removed");
+    renderCart();
+    toast("Added to cart");
 };
 
 window.clearCart = () => {
     cart = [];
-    updateCartDisplay();
-    showToast("Cart cleared");
+    renderCart();
 };
 
 /* =========================
-FILTER
+   CART RENDER
 ========================= */
-window.filterProducts = () => {
+function renderCart() {
+    const box = qs("cartItems");
 
-    const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
-    const category = document.getElementById("categoryFilter")?.value || "all";
-
-    let filtered = [...allProducts];
-
-    filtered = filtered.filter(p =>
-        (p.name || "").toLowerCase().includes(search)
-    );
-
-    if (category !== "all") {
-        filtered = filtered.filter(p => p.category === category);
-    }
-
-    renderProducts(filtered);
-};
-
-/* =========================
-RENDER PRODUCTS + ⭐ RATING
-========================= */
-window.renderProducts = (products) => {
-
-    const grid = document.getElementById("products");
-    if (!grid) return;
-
-    if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
-        return;
-    }
-
-    grid.innerHTML = products.map(p => {
-
-        const price = num(p.price);
-        const discount = num(p.discount);
-        const finalPrice = getFinalPrice(p);
-
-        /* ⭐ rating calculation */
-        const reviews = allReviews.filter(r => r.productId === p.id);
-        const count = reviews.length;
-
-        const avg = count
-            ? (reviews.reduce((t, r) => t + num(r.rating), 0) / count).toFixed(1)
-            : 0;
-
-        return `
-        <div class="card">
-
-            ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
-
-            <img src="${p.image || ''}">
-
-            <div class="card-content">
-
-                <h3>${p.name || ''}</h3>
-
-                <div class="price-box">
-                    ${discount > 0 ? `<span class="old-price">Rs ${price}</span>` : ""}
-                    <span class="new-price">Rs ${finalPrice}</span>
-                </div>
-
-                <!-- ⭐ rating UI -->
-                <div class="product-rating">
-                    <i class="fa-solid fa-star"></i>
-                    ${avg}
-                    <span>(${count})</span>
-                </div>
-
-                <div class="card-buttons">
-                    <button onclick="openModal('${p.id}')">View</button>
-                    <button onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">Add</button>
-                </div>
-
-            </div>
-
-        </div>`;
-    }).join("");
-};
-
-/* =========================
-MODAL
-========================= */
-window.openModal = (id) => {
-
-    const p = allProducts.find(x => x.id === id);
-    if (!p) return;
-
-    currentProductId = id;
-
-    const images = p.images?.length ? p.images : [p.image];
-
-    document.getElementById("modalName").innerText = p.name || "";
-    document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
-    document.getElementById("modalDesc").innerText = p.description || "";
-
-    document.getElementById("galleryContainer").innerHTML = `
-        <img src="${images[0]}" class="main-img" id="mainModalImg">
-        <div class="thumbnail-grid">
-            ${images.map(img => `
-                <img src="${img}" class="thumbnail"
-                onclick="document.getElementById('mainModalImg').src='${img}'">
-            `).join("")}
+    box.innerHTML = cart.map(p => `
+        <div class="cart-item">
+            <span>${p.name}</span>
+            <span>${p.qty} x Rs ${p.price}</span>
         </div>
-    `;
+    `).join("");
 
-    document.getElementById("productModal")?.classList.add("show");
-
-    selectedRating = 0;
-    updateStars(0);
-};
-
-window.closeModal = () => {
-    document.getElementById("productModal")?.classList.remove("show");
-    currentProductId = null;
-    selectedRating = 0;
-};
-
-/* =========================
-STAR RATING
-========================= */
-function setupStarRating() {
-    setTimeout(() => {
-        document.querySelectorAll("#starRating i").forEach((star, i) => {
-            star.onclick = () => {
-                selectedRating = i + 1;
-                updateStars(selectedRating);
-            };
-        });
-    }, 300);
-}
-
-function updateStars(rating) {
-    document.querySelectorAll("#starRating i").forEach((star, i) => {
-        star.classList.toggle("fa-solid", i < rating);
-        star.classList.toggle("fa-regular", i >= rating);
-    });
+    const total = cart.reduce((a, b) => a + b.qty * b.price, 0);
+    qs("cartTotal").innerText = "Total: Rs " + total;
+    qs("floatingCartCount").innerText = cart.reduce((a, b) => a + b.qty, 0);
 }
 
 /* =========================
-REVIEWS
-========================= */
-function bindReviewButton() {
-
-    setTimeout(() => {
-
-        const btn = document.getElementById("reviewSubmitBtn");
-        if (!btn) return;
-
-        btn.onclick = async () => {
-
-            const text = document.getElementById("reviewText")?.value;
-
-            if (!text || selectedRating === 0) {
-                showToast("Add rating + review");
-                return;
-            }
-
-            if (!currentProductId) {
-                showToast("Open product first");
-                return;
-            }
-
-            await addDoc(collection(db, "reviews"), {
-                productId: currentProductId,
-                rating: selectedRating,
-                text,
-                createdAt: new Date().toISOString()
-            });
-
-            selectedRating = 0;
-            updateStars(0);
-            document.getElementById("reviewText").value = "";
-
-            showToast("Review added");
-        };
-
-    }, 300);
-}
-
-/* =========================
-CHECKOUT + WHATSAPP
+   CHECKOUT
 ========================= */
 window.checkout = async () => {
+    if (!cart.length) return toast("Cart empty");
 
-    const name = document.getElementById("cusName")?.value.trim();
-    const phone = document.getElementById("cusPhone")?.value.trim();
-    const address = document.getElementById("cusAddress")?.value.trim();
-
-    if (!name || !phone || !address) {
-        showToast("Fill all details");
-        return;
-    }
-
-    if (!cart.length) {
-        showToast("Cart empty");
-        return;
-    }
-
-    const orderId = "FR-" + Date.now();
-    const date = new Date().toLocaleString();
-
-    let subtotal = 0;
-
-    const itemsText = cart.map((item, i) => {
-        const total = num(item.price) * item.qty;
-        subtotal += total;
-        return `${i + 1}) ${item.name} x${item.qty} = LKR ${total}`;
-    }).join("\n");
-
-    const delivery = subtotal > 5000 ? 0 : 375;
-    const total = subtotal + delivery;
-
-    const message =
-`🟢 FRESHORA NEW ORDER 🟢
-
-📦 Order ID: ${orderId}
-📅 Date: ${date}
-
-👤 CUSTOMER DETAILS
-Name: ${name}
-Phone: ${phone}
-Address: ${address}
-
-🛒 ITEMS
-${itemsText}
-
-💰 BILL SUMMARY
-Subtotal: LKR ${subtotal}
-Delivery: LKR ${delivery}
-TOTAL: LKR ${total}`;
-
-    window.open(
-        `https://wa.me/94752425790?text=${encodeURIComponent(message)}`,
-        "_blank"
-    );
-
-    await addDoc(collection(db, "orders"), {
-        orderId,
-        customer: { name, phone, address },
+    const order = {
+        customerName: qs("cusName").value,
+        phone: qs("cusPhone").value,
+        address: qs("cusAddress").value,
         items: cart,
-        subtotal,
-        delivery,
-        total,
-        createdAt: new Date().toISOString()
-    });
+        totalBill: cart.reduce((a, b) => a + b.qty * b.price, 0),
+        status: "Pending",
+        createdAt: Date.now()
+    };
+
+    await addDoc(collection(db, "orders"), order);
 
     cart = [];
-    updateCartDisplay();
-    showToast("Order sent 🚀");
+    renderCart();
+
+    toast("Order placed!");
 };
 
 /* =========================
-UI
-========================= */
-window.toggleCart = () => {
-    document.getElementById("cartDrawer")?.classList.toggle("open");
-};
-
-window.toggleDarkMode = () => {
-    document.body.classList.toggle("dark");
-    const icon = document.querySelector("#darkModeBtn i");
-    if (!icon) return;
-    icon.classList.toggle("fa-sun");
-    icon.classList.toggle("fa-moon");
-};
-
-/* =========================
-FIREBASE
+   PRODUCTS LOAD
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
-    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderProducts(allProducts);
-    document.getElementById("loadingScreen")?.remove();
+    productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderProducts(productsData);
 });
 
 /* =========================
-REVIEWS SNAPSHOT (⭐ rating system)
+   RENDER PRODUCTS
 ========================= */
-onSnapshot(collection(db, "reviews"), (snap) => {
-    allReviews = snap.docs.map(d => d.data());
-    renderProducts(allProducts);
+function renderProducts(list) {
+    const box = qs("products");
+
+    box.innerHTML = list.map(p => {
+
+        const img = (p.images && p.images.length)
+            ? p.images[0]
+            : (p.image || "https://via.placeholder.com/200");
+
+        return `
+        <div class="product-card" onclick='openProduct("${p.id}")'>
+
+            <img src="${img}" />
+
+            <h3>${p.name}</h3>
+
+            <p>Rs ${p.price}</p>
+
+            <button onclick='event.stopPropagation(); addToCart(${JSON.stringify(p)})'>
+                Add
+            </button>
+
+        </div>
+        `;
+    }).join("");
+}
+
+/* =========================
+   OPEN PRODUCT MODAL
+========================= */
+window.openProduct = (id) => {
+    const p = productsData.find(x => x.id === id);
+    if (!p) return;
+
+    currentProduct = p;
+
+    qs("productModal").style.display = "block";
+
+    qs("modalName").innerText = p.name;
+    qs("modalPrice").innerText = "Rs " + p.price;
+    qs("modalDesc").innerText = p.description || "";
+
+    renderGallery(p.images || []);
+
+    loadReviews(id);
+};
+
+/* =========================
+   CLOSE MODAL
+========================= */
+window.closeModal = () => {
+    qs("productModal").style.display = "none";
+};
+
+/* =========================
+   GALLERY
+========================= */
+function renderGallery(images = []) {
+    const box = qs("galleryContainer");
+
+    if (!images.length) {
+        box.innerHTML = `<img src="https://via.placeholder.com/300" />`;
+        return;
+    }
+
+    box.innerHTML = images.map(img => `
+        <img src="${img}" style="width:100%;margin-bottom:5px;border-radius:10px;">
+    `).join("");
+}
+
+/* =========================
+   REVIEWS
+========================= */
+function loadReviews(productId) {
+    const box = qs("reviewList");
+    if (!box) return;
+
+    onSnapshot(collection(db, "reviews"), (snap) => {
+        const reviews = snap.docs
+            .map(d => d.data())
+            .filter(r => r.productId === productId);
+
+        box.innerHTML = reviews.map(r => `
+            <div class="review">
+                ⭐ ${r.text}
+            </div>
+        `).join("");
+    });
+}
+
+/* =========================
+   SUBMIT REVIEW
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+    qs("reviewSubmitBtn").addEventListener("click", async () => {
+        if (!currentProduct) return;
+
+        const text = qs("reviewText").value;
+        if (!text) return;
+
+        await addDoc(collection(db, "reviews"), {
+            productId: currentProduct.id,
+            text,
+            rating: selectedRating,
+            createdAt: Date.now()
+        });
+
+        qs("reviewText").value = "";
+        toast("Review added");
+    });
+});
+
+/* =========================
+   STARS
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("#starRating i").forEach(star => {
+        star.addEventListener("click", () => {
+            selectedRating = star.dataset.value;
+        });
+    });
+});
+
+/* =========================
+   FILTERS
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+
+    qs("categoryFilter").addEventListener("change", filterProducts);
+    qs("priceFilter").addEventListener("change", filterProducts);
+    qs("discountFilter").addEventListener("change", filterProducts);
+
+});
+
+function filterProducts() {
+    let filtered = [...productsData];
+
+    const cat = qs("categoryFilter").value;
+    const price = qs("priceFilter").value;
+    const disc = qs("discountFilter").value;
+
+    if (cat !== "all") {
+        filtered = filtered.filter(p => p.category === cat);
+    }
+
+    if (price === "low") filtered = filtered.filter(p => p.price < 1000);
+    if (price === "mid") filtered = filtered.filter(p => p.price >= 1000 && p.price < 5000);
+    if (price === "high") filtered = filtered.filter(p => p.price >= 5000);
+
+    if (disc === "10") filtered = filtered.filter(p => p.discount >= 10);
+    if (disc === "20") filtered = filtered.filter(p => p.discount >= 20);
+    if (disc === "50") filtered = filtered.filter(p => p.discount >= 50);
+
+    renderProducts(filtered);
+}
+
+/* =========================
+   SEARCH
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+    qs("searchInput").addEventListener("input", (e) => {
+        const val = e.target.value.toLowerCase();
+
+        const filtered = productsData.filter(p =>
+            p.name.toLowerCase().includes(val) ||
+            (p.category || "").toLowerCase().includes(val)
+        );
+
+        renderProducts(filtered);
+    });
 });
