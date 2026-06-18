@@ -1,174 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freshora Admin PRO V7</title>
+<!-- ADD inside body (important parts only) -->
 
-    <link rel="stylesheet" href="admin.css?v=7">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+<input id="adminSearch" placeholder="Search products...">
 
-<body>
+<!-- PRODUCT FORM -->
+<input id="pname" placeholder="Name">
+<input id="pprice" type="number" placeholder="Price">
+<input id="pdiscount" type="number" placeholder="Discount">
+<input id="pstock" type="number" placeholder="Stock">
+<textarea id="pdesc"></textarea>
+<input type="file" id="pimageFile" multiple>
+<select id="pcategorySelect"></select>
 
-<!-- TOP BAR -->
-<div class="topbar">
-    <h2><i class="fas fa-shield-halved"></i> Freshora Admin PRO V7</h2>
-    <button onclick="logout()" class="danger-btn">Logout</button>
-</div>
-
-<div class="admin-container">
-
-<!-- DASHBOARD CARDS -->
-<h3>📊 Dashboard</h3>
-<div class="grid-cards">
-
-    <div class="card">
-        <h4>Total Products</h4>
-        <p id="totalProducts">0</p>
-    </div>
-
-    <div class="card">
-        <h4>Total Stock</h4>
-        <p id="totalStock">0</p>
-    </div>
-
-    <div class="card">
-        <h4>Low Stock</h4>
-        <p id="lowStock">0</p>
-    </div>
-
-    <div class="card">
-        <h4>Total Revenue</h4>
-        <p id="totalRevenue">Rs 0</p>
-    </div>
-
-</div>
-
-<!-- ANALYTICS -->
-<h3>📈 Sales Analytics</h3>
-<div class="card">
-    <canvas id="analyticsChart"></canvas>
-</div>
-
-<!-- PRODUCT MANAGEMENT -->
-<h3>📦 Product Management</h3>
-
-<div class="card">
-
-    <input id="pname" placeholder="Product Name">
-    <input id="pprice" type="number" placeholder="Price">
-    <input id="pdiscount" type="number" placeholder="Discount %">
-    <input id="pstock" type="number" placeholder="Stock">
-
-    <textarea id="pdesc" placeholder="Description"></textarea>
-
-    <!-- 3 IMAGE UPLOAD -->
-    <label>Upload Images (Max 3)</label>
-    <input id="pimageFile" type="file" multiple>
-
-    <!-- PREVIEW -->
-    <div id="imagePreview" class="preview-box"></div>
-
-    <select id="pcategorySelect">
-        <option value="Other">Other</option>
-    </select>
-
-    <button onclick="uploadAndAddProduct()" class="primary-btn">Add Product</button>
-    <button onclick="updateSelected()" class="warning-btn">Update Product</button>
-    <button onclick="clearForm()">Clear</button>
-
-</div>
-
-<!-- SEARCH + FILTER -->
-<h3>🔍 Search & Filter</h3>
-<div class="card">
-    <input id="adminSearch" placeholder="Search product...">
-</div>
-
-<!-- PRODUCT TABLE -->
-<h3>📋 Products List</h3>
-<div class="card table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>Img</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Discount</th>
-                <th>Final</th>
-                <th>Category</th>
-                <th>Stock</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="productListBody"></tbody>
-    </table>
-</div>
+<button onclick="uploadAndAddProduct()">Add</button>
+<button onclick="updateSelected()">Update</button>
+<button onclick="clearForm()">Clear</button>
 
 <!-- ORDERS -->
-<h3>🛒 Live Orders</h3>
-<div class="card table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Phone</th>
-                <th>District</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="orderList"></tbody>
-    </table>
-</div>
+<tbody id="orderList"></tbody>
 
-<!-- CATEGORY -->
-<h3>🏷 Categories</h3>
-<div class="card">
-    <input id="catName" placeholder="Category Name">
-    <button onclick="addCategory()" class="primary-btn">Add</button>
+<!-- PAGINATION -->
+<button onclick="prevPage()">Prev</button>
+<button onclick="nextPage()">Next</button>
 
-    <div id="activeCategoryList"></div>
-</div>
+<!-- COUPON -->
+<input id="couponCode">
+<input id="couponDiscount">
+<button onclick="addCoupon()">Add Coupon</button>
 
-<!-- DELIVERY -->
-<h3>🚚 Delivery Settings</h3>
-<div class="card">
-    <select id="districtSelect">
-        <option value="">Select District</option>
-        <option value="Colombo">Colombo</option>
-    </select>
+<!-- BANNER -->
+<input type="file" id="bannerUpload">
+<button onclick="uploadBanner()">Upload Banner</button>
 
-    <input id="deliveryCost" type="number" placeholder="Cost">
-
-    <button onclick="saveDeliveryFee()" class="primary-btn">Save</button>
-
-    <div id="deliveryList"></div>
-</div>
-
-<!-- COUPONS -->
-<h3>🎟 Coupons</h3>
-<div class="card">
-    <input id="couponCode" placeholder="Coupon Code">
-    <input id="couponDiscount" type="number" placeholder="Discount %">
-    <button onclick="addCoupon()" class="primary-btn">Add Coupon</button>
-</div>
-
-<!-- BANNERS -->
-<h3>🖼 Banners</h3>
-<div class="card">
-    <input type="file" id="bannerUpload">
-    <button onclick="uploadBanner()" class="primary-btn">Upload Banner</button>
-</div>
-
-</div>
-
-<script type="module" src="firebase.js"></script>
-<script type="module" src="admin.js?v=7"></script>
-
-</body>
-</html>
+<!-- CHART -->
+<canvas id="analyticsChart"></canvas>
