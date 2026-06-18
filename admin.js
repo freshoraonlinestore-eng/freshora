@@ -5,16 +5,15 @@ import {
   onSnapshot,
   deleteDoc,
   doc,
-  updateDoc,
-  storage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL
+  updateDoc
 } from "./firebase.js";
 
 /* =========================
-   FRESHORA ADMIN SAFE V10
+   CONFIG
 ========================= */
+const CLOUD_NAME = "dayvblw7g";
+const UPLOAD_PRESET = "freshora_upload";
+const UPLOAD_FOLDER = "freshora/products";
 
 let productsData = [];
 let selectedProductId = null;
@@ -25,129 +24,74 @@ let selectedProductId = null;
 const qs = (id) => document.getElementById(id);
 
 function showToast(msg) {
-    let toast = document.querySelector(".admin-toast");
-
-    if (!toast) {
-        toast = document.createElement("div");
-        toast.className = "admin-toast";
-        toast.style = `
-            position:fixed;
-            bottom:20px;
-            left:50%;
-            transform:translateX(-50%);
-            background:#222;
-            color:#fff;
-            padding:10px 20px;
-            border-radius:20px;
-            z-index:99999;
-        `;
-        document.body.appendChild(toast);
+    let t = document.querySelector(".admin-toast");
+    if (!t) {
+        t = document.createElement("div");
+        t.className = "admin-toast";
+        t.style = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 20px;border-radius:20px;z-index:9999;";
+        document.body.appendChild(t);
     }
-
-    toast.innerText = msg;
-    toast.style.display = "block";
-    setTimeout(() => toast.style.display = "none", 2500);
+    t.innerText = msg;
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 2000);
 }
 
 /* =========================
-   IMAGE PREVIEW (NO UI CHANGE)
+   CLOUDINARY UPLOAD FIXED
 ========================= */
-const fileInput = qs("pimageFile");
-const previewContainer = qs("previewContainer");
-const progressBar = qs("uploadProgress");
-const statusText = qs("uploadStatus");
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+    formData.append("folder", UPLOAD_FOLDER);
 
-if (fileInput) {
-    fileInput.addEventListener("change", () => {
-        previewContainer.innerHTML = "";
-
-        Array.from(fileInput.files).slice(0, 3).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.style = `
-                    width:70px;
-                    height:70px;
-                    object-fit:cover;
-                    border-radius:8px;
-                    border:1px solid #ddd;
-                `;
-                previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        });
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData
     });
-}
 
-/* =========================
-   UPLOAD IMAGES (SAFE FIREBASE STORAGE)
-========================= */
-async function uploadImages(files) {
-    let urls = [];
+    const data = await res.json();
 
-    for (let i = 0; i < files.length && i < 3; i++) {
-        const file = files[i];
-
-        const storageRef = ref(storage, "products/" + Date.now() + "_" + file.name);
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        await new Promise((resolve, reject) => {
-            uploadTask.on(
-                "state_changed",
-                (snapshot) => {
-                    let percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-
-                    if (progressBar) progressBar.style.width = percent + "%";
-                    if (statusText) statusText.innerText = `Uploading ${Math.round(percent)}%`;
-                },
-                reject,
-                async () => {
-                    const url = await getDownloadURL(uploadTask.snapshot.ref);
-                    urls.push(url);
-                    resolve();
-                }
-            );
-        });
+    if (!data.secure_url) {
+        console.error(data);
+        throw new Error("Upload failed");
     }
 
-    return urls;
+    return data.secure_url;
 }
 
 /* =========================
-   ADD PRODUCT (UNCHANGED LOGIC + SAFE IMAGE SUPPORT)
+   PRODUCT ADD
 ========================= */
 window.uploadAndAddProduct = async () => {
-    const name = qs("pname").value;
-    if (!name) return showToast("Enter product name!");
+    const file = qs("pimageFile").files[0];
 
-    const files = fileInput?.files || [];
+    let imageUrl = "";
 
-    let images = [];
-    if (files.length > 0) {
-        images = await uploadImages(files);
+    if (file) {
+        imageUrl = await uploadToCloudinary(file);
     }
 
     await addDoc(collection(db, "products"), {
-        name,
+        name: qs("pname").value,
         price: Number(qs("pprice").value),
         discount: Number(qs("pdiscount").value || 0),
         stock: Number(qs("pstock").value || 0),
         category: qs("pcategorySelect").value,
         description: qs("pdesc").value,
-        images,
+        image: imageUrl,
         createdAt: Date.now()
     });
 
-    showToast("Product Added ✅");
+    showToast("Product Added");
     clearForm();
 };
 
 /* =========================
-   UPDATE PRODUCT (SAFE)
+   UPDATE PRODUCT
 ========================= */
 window.updateSelected = async () => {
-    if (!selectedProductId) return showToast("Select product first!");
+    if (!selectedProductId) return showToast("Select product first");
 
     await updateDoc(doc(db, "products", selectedProductId), {
         name: qs("pname").value,
@@ -166,7 +110,7 @@ window.updateSelected = async () => {
    DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
-    if (confirm("Delete product?")) {
+    if (confirm("Delete?")) {
         await deleteDoc(doc(db, "products", id));
         showToast("Deleted");
     }
@@ -185,10 +129,8 @@ window.selectProduct = (id) => {
     qs("pprice").value = p.price;
     qs("pdiscount").value = p.discount;
     qs("pstock").value = p.stock;
-    qs("pcategorySelect").value = p.category || "Other";
-    qs("pdesc").value = p.description || "";
-
-    showToast("Selected");
+    qs("pcategorySelect").value = p.category;
+    qs("pdesc").value = p.description;
 };
 
 /* =========================
@@ -196,20 +138,15 @@ window.selectProduct = (id) => {
 ========================= */
 window.clearForm = () => {
     ["pname","pprice","pdiscount","pstock","pdesc"].forEach(id => {
-        const el = qs(id);
-        if (el) el.value = "";
+        qs(id).value = "";
     });
 
-    if (fileInput) fileInput.value = "";
-    if (previewContainer) previewContainer.innerHTML = "";
-    if (progressBar) progressBar.style.width = "0%";
-    if (statusText) statusText.innerText = "";
-
+    qs("pimageFile").value = "";
     selectedProductId = null;
 };
 
 /* =========================
-   PRODUCTS LIVE SYNC
+   PRODUCTS LIST
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -218,104 +155,63 @@ onSnapshot(collection(db, "products"), (snap) => {
     qs("totalStock").innerText = productsData.reduce((a,b)=>a+(b.stock||0),0);
     qs("lowStock").innerText = productsData.filter(p => p.stock < 5).length;
 
-    const tbody = qs("productListBody");
-
-    tbody.innerHTML = productsData.map(p => `
+    qs("productListBody").innerHTML = productsData.map(p => `
         <tr onclick="selectProduct('${p.id}')">
-
-            <td>
-                ${p.images?.length
-                    ? p.images.map(img => `<img src="${img}" width="30" style="margin:2px;border-radius:4px;">`).join("")
-                    : "No Image"}
-            </td>
-
+            <td><img src="${p.image || ''}" width="40"></td>
             <td>${p.name}</td>
-            <td>Rs ${p.price}</td>
+            <td>${p.price}</td>
             <td>${p.discount}%</td>
-            <td>Rs ${Math.round(p.price - (p.price*p.discount/100))}</td>
+            <td>${Math.round(p.price - p.price*p.discount/100)}</td>
             <td>${p.category}</td>
             <td>${p.stock}</td>
-
-            <td>
-                <button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button>
-            </td>
-
+            <td><button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button></td>
         </tr>
     `).join("");
 });
 
 /* =========================
-   ORDERS (SAFE + STATUS + BILL HOOK)
+   DELIVERY FIXED (ADD / DELETE / UPDATE)
 ========================= */
-window.updateOrderStatus = async (id, status, order) => {
-    await updateDoc(doc(db, "orders", id), { status });
+window.saveDeliveryFee = async () => {
+    const district = qs("districtSelect").value;
+    const cost = qs("deliveryCost").value;
 
-    showToast("Status Updated");
+    if (!district || !cost) return showToast("Fill fields");
 
-    // WhatsApp hook safe (optional, no break)
-    if (order?.phone) {
-        const msg = `Order ${id}\nStatus: ${status}`;
-        const url = `https://wa.me/94${order.phone}?text=${encodeURIComponent(msg)}`;
-        window.open(url, "_blank");
-    }
+    await addDoc(collection(db, "deliveryFees"), {
+        district,
+        cost: Number(cost)
+    });
+
+    showToast("Saved");
 };
 
-window.viewBill = (o) => {
-    qs("billModal").style.display = "block";
-
-    qs("billContent").innerHTML = `
-        <p><b>ID:</b> ${o.id}</p>
-        <p><b>Name:</b> ${o.customerName}</p>
-        <p><b>Phone:</b> ${o.phone}</p>
-        <p><b>District:</b> ${o.district}</p>
-        <p><b>Total:</b> Rs ${o.totalBill}</p>
-        <p><b>Status:</b> ${o.status}</p>
-    `;
+window.deleteDelivery = async (id) => {
+    await deleteDoc(doc(db, "deliveryFees", id));
+    showToast("Deleted");
 };
 
-window.downloadBill = (order) => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.text("FRESHORA INVOICE", 20, 20);
-    doc.text("Order: " + order.id, 20, 40);
-    doc.text("Customer: " + order.customerName, 20, 50);
-    doc.text("Total: Rs " + order.totalBill, 20, 60);
-    doc.text("Status: " + order.status, 20, 70);
-
-    doc.save("invoice_" + order.id + ".pdf");
+window.updateDelivery = async (id, cost) => {
+    await updateDoc(doc(db, "deliveryFees", id), { cost: Number(cost) });
+    showToast("Updated");
 };
 
-onSnapshot(collection(db, "orders"), (snap) => {
-    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+onSnapshot(collection(db, "deliveryFees"), (snap) => {
+    qs("deliveryList").innerHTML = snap.docs.map(d => `
+        <div class="admin-card" style="display:flex;justify-content:space-between;">
+            <span>${d.data().district}</span>
 
-    qs("orderList").innerHTML = orders.map(o => `
-        <tr>
+            <input value="${d.data().cost}"
+                   onchange="updateDelivery('${d.id}', this.value)"
+                   style="width:80px;">
 
-            <td>${o.id.slice(-5)}</td>
-            <td>${o.customerName}</td>
-            <td>${o.phone}</td>
-            <td>${o.district}</td>
-            <td>Rs ${o.totalBill}</td>
-
-            <td>
-                <select onchange='updateOrderStatus("${o.id}", this.value, ${JSON.stringify(o)})'>
-                    <option ${o.status==="Pending"?"selected":""}>Pending</option>
-                    <option ${o.status==="Processing"?"selected":""}>Processing</option>
-                    <option ${o.status==="Delivered"?"selected":""}>Delivered</option>
-                </select>
-            </td>
-
-            <td>
-                <button onclick='viewBill(${JSON.stringify(o)})'>View</button>
-            </td>
-
-        </tr>
+            <button onclick="deleteDelivery('${d.id}')">🗑</button>
+        </div>
     `).join("");
 });
 
 /* =========================
-   CATEGORIES (SAFE)
+   CATEGORY FIXED (ADD / UPDATE / DELETE)
 ========================= */
 window.addCategory = async () => {
     const name = qs("catName").value;
@@ -323,7 +219,11 @@ window.addCategory = async () => {
 
     await addDoc(collection(db, "categories"), { name });
     qs("catName").value = "";
-    showToast("Category Added");
+};
+
+window.updateCategory = async (id, name) => {
+    await updateDoc(doc(db, "categories", id), { name });
+    showToast("Updated");
 };
 
 window.deleteCategory = async (id) => {
@@ -337,79 +237,103 @@ onSnapshot(collection(db, "categories"), (snap) => {
 
     const cats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    select.innerHTML =
-        `<option value="Other">Other</option>` +
+    select.innerHTML = `<option value="Other">Other</option>` +
         cats.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
 
     list.innerHTML = cats.map(c => `
         <div class="admin-card" style="display:flex;justify-content:space-between;">
-            <span>${c.name}</span>
+            <input value="${c.name}"
+                   onchange="updateCategory('${c.id}', this.value)">
             <button onclick="deleteCategory('${c.id}')">🗑</button>
         </div>
     `).join("");
 });
 
 /* =========================
-   DELIVERY (SAFE)
+   ORDERS + FULL BILL ITEMS FIXED
 ========================= */
-window.saveDeliveryFee = async () => {
-    const district = qs("districtSelect").value;
-    const cost = qs("deliveryCost").value;
+window.viewBill = (order) => {
 
-    if (!district || !cost) return showToast("Fill fields");
+    qs("billModal").style.display = "block";
 
-    await addDoc(collection(db, "deliveryFees"), { district, cost });
-    showToast("Saved");
+    const items = order.items || [];
+
+    qs("billContent").innerHTML = `
+        <p><b>Order ID:</b> ${order.id}</p>
+        <p><b>Name:</b> ${order.customerName}</p>
+        <p><b>Phone:</b> ${order.phone}</p>
+
+        <hr>
+
+        <h4>Items</h4>
+        ${items.map(i => `
+            <div>
+                ${i.name} x ${i.qty} = Rs ${i.price * i.qty}
+            </div>
+        `).join("")}
+
+        <hr>
+
+        <p><b>Total:</b> Rs ${order.totalBill}</p>
+        <p><b>Status:</b> ${order.status}</p>
+    `;
 };
 
-window.deleteDelivery = async (id) => {
-    await deleteDoc(doc(db, "deliveryFees", id));
-    showToast("Deleted");
+window.downloadBill = (order) => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("FRESHORA INVOICE", 20, 20);
+    doc.text("Order: " + order.id, 20, 40);
+
+    let y = 60;
+
+    (order.items || []).forEach(i => {
+        doc.text(`${i.name} x${i.qty} = Rs ${i.price * i.qty}`, 20, y);
+        y += 10;
+    });
+
+    doc.text("TOTAL: Rs " + order.totalBill, 20, y + 10);
+
+    doc.save("invoice_" + order.id + ".pdf");
 };
 
-onSnapshot(collection(db, "deliveryFees"), (snap) => {
-    const list = qs("deliveryList");
+/* =========================
+   ORDERS LIST
+========================= */
+onSnapshot(collection(db, "orders"), (snap) => {
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    list.innerHTML = snap.docs.map(d => `
-        <div class="admin-card" style="display:flex;justify-content:space-between;">
-            <span>${d.data().district} - Rs ${d.data().cost}</span>
-            <button onclick="deleteDelivery('${d.id}')">🗑</button>
-        </div>
+    qs("orderList").innerHTML = orders.map(o => `
+        <tr>
+            <td>${o.id.slice(-5)}</td>
+            <td>${o.customerName}</td>
+            <td>${o.phone}</td>
+            <td>${o.district}</td>
+            <td>Rs ${o.totalBill}</td>
+
+            <td>
+                <select onchange="updateOrderStatus('${o.id}', this.value)">
+                    <option ${o.status=="Pending"?"selected":""}>Pending</option>
+                    <option ${o.status=="Processing"?"selected":""}>Processing</option>
+                    <option ${o.status=="Delivered"?"selected":""}>Delivered</option>
+                </select>
+            </td>
+
+            <td>
+                <button onclick='viewBill(${JSON.stringify(o)})'>View</button>
+            </td>
+        </tr>
     `).join("");
 });
 
 /* =========================
-   SEARCH (SAFE)
+   ORDER STATUS
 ========================= */
-window.addEventListener("DOMContentLoaded", () => {
-    const search = qs("adminSearch");
-
-    if (!search) return;
-
-    search.addEventListener("input", (e) => {
-        const val = e.target.value.toLowerCase();
-
-        const filtered = productsData.filter(p =>
-            p.name.toLowerCase().includes(val) ||
-            (p.category || "").toLowerCase().includes(val)
-        );
-
-        qs("productListBody").innerHTML = filtered.map(p => `
-            <tr onclick="selectProduct('${p.id}')">
-                <td>${p.images?.[0] ? `<img src="${p.images[0]}" width="30">` : ""}</td>
-                <td>${p.name}</td>
-                <td>${p.price}</td>
-                <td>${p.discount}</td>
-                <td>${Math.round(p.price - (p.price*p.discount/100))}</td>
-                <td>${p.category}</td>
-                <td>${p.stock}</td>
-                <td>
-                    <button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button>
-                </td>
-            </tr>
-        `).join("");
-    });
-});
+window.updateOrderStatus = async (id, status) => {
+    await updateDoc(doc(db, "orders", id), { status });
+    showToast("Status Updated");
+};
 
 /* =========================
    LOGOUT
