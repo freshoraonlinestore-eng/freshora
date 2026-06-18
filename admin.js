@@ -398,3 +398,13 @@ window.bulkDelete = async (ids) => {
 
   toast("Bulk Deleted");
 };
+
+window.nextPage = () => {
+  currentPage++;
+  renderTable(products);
+};
+
+window.prevPage = () => {
+  if (currentPage > 1) currentPage--;
+  renderTable(products);
+};
