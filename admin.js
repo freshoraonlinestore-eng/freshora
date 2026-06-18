@@ -408,3 +408,13 @@ window.prevPage = () => {
   if (currentPage > 1) currentPage--;
   renderTable(products);
 };
+
+window.sendPush = async (title, body) => {
+  await addDoc(collection(db, "notifications"), {
+    title,
+    body,
+    createdAt: Date.now()
+  });
+
+  toast("Push Saved (FCM Ready)");
+};
