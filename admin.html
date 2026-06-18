@@ -1,35 +1,164 @@
-<!-- ADD inside body (important parts only) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<input id="adminSearch" placeholder="Search products...">
+<title>Freshora Admin Panel</title>
+
+<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body { font-family: Arial; background:#f4f8f4; margin:0; }
+.container { max-width:1100px; margin:auto; padding:20px; }
+
+.card { background:#fff; padding:15px; margin:10px 0; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+
+input,textarea,select {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+
+button {
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin:5px 0;
+  width:100%;
+}
+
+table { width:100%; border-collapse:collapse; }
+th,td { padding:10px; border-bottom:1px solid #ddd; text-align:left; }
+
+img { border-radius:5px; }
+
+.header {
+  text-align:center;
+  padding:10px;
+  color:#1f8f4d;
+  font-weight:bold;
+  font-size:22px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<i class="fa fa-shield"></i> Freshora Admin Dashboard
+</div>
+
+<!-- STATS -->
+<div class="card">
+<p>Total Products: <span id="totalProducts">0</span></p>
+<p>Total Stock: <span id="totalStock">0</span></p>
+<p>Low Stock: <span id="lowStock">0</span></p>
+<p>Total Revenue: <span id="totalRevenue">Rs 0</span></p>
+</div>
+
+<!-- SEARCH -->
+<div class="card">
+<input id="adminSearch" placeholder="Search products..." />
+</div>
 
 <!-- PRODUCT FORM -->
-<input id="pname" placeholder="Name">
+<div class="card">
+<h3>Products</h3>
+
+<input id="pname" placeholder="Product Name">
 <input id="pprice" type="number" placeholder="Price">
-<input id="pdiscount" type="number" placeholder="Discount">
+<input id="pdiscount" type="number" placeholder="Discount %">
 <input id="pstock" type="number" placeholder="Stock">
-<textarea id="pdesc"></textarea>
+<textarea id="pdesc" placeholder="Description"></textarea>
+
 <input type="file" id="pimageFile" multiple>
-<select id="pcategorySelect"></select>
 
-<button onclick="uploadAndAddProduct()">Add</button>
-<button onclick="updateSelected()">Update</button>
-<button onclick="clearForm()">Clear</button>
+<select id="pcategorySelect">
+  <option value="Other">Other</option>
+</select>
 
-<!-- ORDERS -->
-<tbody id="orderList"></tbody>
+<button onclick="uploadAndAddProduct()" style="background:#1f8f4d;color:white;">Add Product</button>
+<button onclick="updateSelected()" style="background:orange;color:white;">Update Product</button>
+<button onclick="clearForm()" style="background:#666;color:white;">Clear</button>
+</div>
 
-<!-- PAGINATION -->
+<!-- PRODUCTS TABLE -->
+<div class="card">
+<h3>Product List</h3>
+
+<table>
+<thead>
+<tr>
+<th>Img</th>
+<th>Name</th>
+<th>Price</th>
+<th>Discount</th>
+<th>Stock</th>
+<th>Category</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="productListBody"></tbody>
+</table>
+
 <button onclick="prevPage()">Prev</button>
 <button onclick="nextPage()">Next</button>
+</div>
+
+<!-- ORDERS -->
+<div class="card">
+<h3>Orders</h3>
+
+<table>
+<thead>
+<tr>
+<th>Customer</th>
+<th>Status</th>
+<th>Total</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="orderList"></tbody>
+</table>
+</div>
 
 <!-- COUPON -->
-<input id="couponCode">
-<input id="couponDiscount">
-<button onclick="addCoupon()">Add Coupon</button>
+<div class="card">
+<h3>Coupons</h3>
+<input id="couponCode" placeholder="Coupon Code">
+<input id="couponDiscount" type="number" placeholder="Discount %">
+<button onclick="addCoupon()" style="background:#1f8f4d;color:white;">Add Coupon</button>
+</div>
 
 <!-- BANNER -->
+<div class="card">
+<h3>Banner Upload</h3>
 <input type="file" id="bannerUpload">
-<button onclick="uploadBanner()">Upload Banner</button>
+<button onclick="uploadBanner()" style="background:#1f8f4d;color:white;">Upload Banner</button>
+</div>
 
 <!-- CHART -->
+<div class="card">
+<h3>Sales Chart</h3>
 <canvas id="analyticsChart"></canvas>
+</div>
+
+<!-- TOAST -->
+<div class="admin-toast"></div>
+
+</div>
+
+<script type="module" src="admin.js"></script>
+
+</body>
+</html>
