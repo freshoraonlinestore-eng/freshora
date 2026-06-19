@@ -8,12 +8,14 @@ let allProducts = [];
 let selectedRating = 0;
 let currentProductId = null;
 
-/* ⭐ REVIEWS */
 let allReviews = [];
 
-/* ❤️ PHASE 2 FEATURES */
+/* PHASE 2 */
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+
+/* PHASE 3 */
+let viewCount = JSON.parse(localStorage.getItem("viewCount")) || {};
 
 /* =========================
 UTIL
@@ -33,6 +35,10 @@ function saveWishlist() {
 
 function saveRecentlyViewed() {
     localStorage.setItem("recentlyViewed", JSON.stringify(recentlyViewed));
+}
+
+function saveViews() {
+    localStorage.setItem("viewCount", JSON.stringify(viewCount));
 }
 
 function showToast(msg) {
@@ -70,7 +76,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("modalAddBtn")
         ?.addEventListener("click", () => {
-
             if (!currentProductId) return;
 
             const p = allProducts.find(x => x.id === currentProductId);
@@ -95,7 +100,7 @@ function getFinalPrice(product) {
 }
 
 /* =========================
-CART SYSTEM
+CART
 ========================= */
 window.updateCartDisplay = () => {
 
@@ -157,17 +162,17 @@ window.addToCart = (id, name, price, image) => {
     showToast("Added 🛒");
 };
 
-window.changeQty = (index, change) => {
-    if (!cart[index]) return;
+window.changeQty = (i, change) => {
+    if (!cart[i]) return;
 
-    cart[index].qty += change;
-    if (cart[index].qty <= 0) cart.splice(index, 1);
+    cart[i].qty += change;
+    if (cart[i].qty <= 0) cart.splice(i, 1);
 
     updateCartDisplay();
 };
 
-window.removeFromCart = (index) => {
-    cart.splice(index, 1);
+window.removeFromCart = (i) => {
+    cart.splice(i, 1);
     updateCartDisplay();
     showToast("Removed");
 };
@@ -179,13 +184,11 @@ window.clearCart = () => {
 };
 
 /* =========================
-WISHLIST SYSTEM
+WISHLIST
 ========================= */
 window.toggleWishlist = (id) => {
 
-    const exists = wishlist.includes(id);
-
-    if (exists) {
+    if (wishlist.includes(id)) {
         wishlist = wishlist.filter(w => w !== id);
         showToast("Removed ❤️");
     } else {
@@ -198,17 +201,17 @@ window.toggleWishlist = (id) => {
 };
 
 /* =========================
-RECENTLY VIEWED
+RECENTLY VIEWED + TRACK
 ========================= */
-function addToRecentlyViewed(product) {
+function trackView(product) {
+
+    viewCount[product.id] = (viewCount[product.id] || 0) + 1;
+    saveViews();
 
     recentlyViewed = recentlyViewed.filter(p => p.id !== product.id);
-
     recentlyViewed.unshift(product);
 
-    if (recentlyViewed.length > 8) {
-        recentlyViewed.pop();
-    }
+    if (recentlyViewed.length > 8) recentlyViewed.pop();
 
     saveRecentlyViewed();
     renderRecentlyViewed();
@@ -220,7 +223,7 @@ window.renderRecentlyViewed = () => {
     if (!grid) return;
 
     if (!recentlyViewed.length) {
-        grid.innerHTML = `<p style="text-align:center;color:var(--muted)">No recently viewed</p>`;
+        grid.innerHTML = `<p style="color:var(--muted);text-align:center;">No recently viewed</p>`;
         return;
     }
 
@@ -242,9 +245,7 @@ window.filterProducts = () => {
 
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
 
-    let filtered = [...allProducts];
-
-    filtered = filtered.filter(p =>
+    let filtered = allProducts.filter(p =>
         (p.name || "").toLowerCase().includes(search)
     );
 
@@ -260,14 +261,13 @@ window.renderProducts = (products) => {
     if (!grid) return;
 
     if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
+        grid.innerHTML = `<p style="text-align:center;">No products</p>`;
         return;
     }
 
     grid.innerHTML = products.map(p => {
 
-        const finalPrice = getFinalPrice(p);
-
+        const price = getFinalPrice(p);
         const wish = wishlist.includes(p.id);
 
         return `
@@ -277,30 +277,25 @@ window.renderProducts = (products) => {
 
             <div class="card-content">
 
-                <h3>${p.name || ''}</h3>
+                <h3>${p.name}</h3>
 
                 <div class="price-box">
-                    <span class="new-price">Rs ${finalPrice}</span>
+                    <span class="new-price">Rs ${price}</span>
                 </div>
 
                 <div class="card-buttons">
-
                     <button onclick="openModal('${p.id}')">View</button>
-
-                    <button onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">
-                        Add
-                    </button>
-
+                    <button onclick="addToCart('${p.id}','${p.name}',${price},'${p.image}')">Add</button>
                 </div>
 
                 <button onclick="toggleWishlist('${p.id}')"
-                    style="margin-top:8px;width:100%;padding:8px;border:none;border-radius:8px;cursor:pointer;
-                    background:${wish ? '#ff3b30' : '#eee'};color:${wish ? '#fff' : '#111'}">
+                    style="margin-top:8px;width:100%;padding:8px;border:none;border-radius:8px;
+                    background:${wish ? '#ff3b30' : '#eee'};
+                    color:${wish ? '#fff' : '#111'}">
                     ${wish ? '❤️ Wishlisted' : '🤍 Wishlist'}
                 </button>
 
             </div>
-
         </div>`;
     }).join("");
 };
@@ -317,7 +312,7 @@ window.openModal = (id) => {
 
     const images = p.images?.length ? p.images : [p.image];
 
-    document.getElementById("modalName").innerText = p.name || "";
+    document.getElementById("modalName").innerText = p.name;
     document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
     document.getElementById("modalDesc").innerText = p.description || "";
 
@@ -330,7 +325,7 @@ window.openModal = (id) => {
     selectedRating = 0;
     updateStars(0);
 
-    addToRecentlyViewed(p);
+    trackView(p);
 };
 
 window.closeModal = () => {
@@ -339,7 +334,7 @@ window.closeModal = () => {
 };
 
 /* =========================
-RATING
+RATING + REVIEWS
 ========================= */
 function setupStarRating() {
     setTimeout(() => {
@@ -359,14 +354,13 @@ function updateStars(rating) {
     });
 }
 
-/* =========================
-REVIEWS
-========================= */
 function bindReviewButton() {
 
     setTimeout(() => {
 
         const btn = document.getElementById("reviewSubmitBtn");
+
+        if (!btn) return;
 
         btn.onclick = async () => {
 
@@ -385,6 +379,7 @@ function bindReviewButton() {
             });
 
             showToast("Review added");
+
             document.getElementById("reviewText").value = "";
             selectedRating = 0;
             updateStars(0);
@@ -404,5 +399,4 @@ onSnapshot(collection(db, "products"), (snap) => {
 
 onSnapshot(collection(db, "reviews"), (snap) => {
     allReviews = snap.docs.map(d => d.data());
-    renderProducts(allProducts);
 });
