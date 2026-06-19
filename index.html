@@ -1,213 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Freshora Online Store</title>
+<title>Freshora Store Pro</title>
 
-    <link rel="stylesheet" href="style.css?v=22" />
+<link rel="stylesheet" href="style.css?v=30">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-    <!-- Better mobile theme -->
-    <meta name="theme-color" content="#1f8f4d" />
 </head>
 
 <body>
 
-    <!-- TOP BANNER -->
-    <div class="top-banner">
-        Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products
-    </div>
+<!-- TOP BAR -->
+<div class="top-bar">
+  🛍️ Fresh Products | 🚚 Island Wide Delivery | 💰 LKR Pricing
+</div>
 
-    <!-- HEADER -->
-    <header class="header">
+<!-- HEADER -->
+<header class="header">
 
-        <div class="logo-area" ondblclick="window.location='login.html'">
-            <img src="logo.png" class="logo-img" alt="Freshora Logo" />
-            <div class="logo-text">Freshora</div>
-        </div>
+<div class="logo">Freshora</div>
 
-        <!-- SEARCH -->
-        <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Search products..."
-                autocomplete="off"
-            />
-        </div>
+<input type="text" id="searchInput" placeholder="Search products...">
 
-        <!-- DARK MODE -->
-        <button id="darkModeBtn" class="icon-btn" type="button">
-            <i class="fa-solid fa-moon"></i>
-        </button>
+<div class="header-icons">
 
-    </header>
+<button id="wishlistBtn">❤️</button>
+<button id="cartBtn">🛒<span id="cartCount">0</span></button>
 
-    <!-- FILTERS -->
-    <section class="advanced-search">
-        <div class="filter-grid">
+</div>
 
-            <select id="categoryFilter">
-                <option value="all">All Categories</option>
-            </select>
+</header>
 
-            <select id="priceFilter">
-                <option value="all">All Prices</option>
-                <option value="low">Below 1000</option>
-                <option value="mid">1000 - 5000</option>
-                <option value="high">Above 5000</option>
-            </select>
+<!-- CATEGORY -->
+<div class="categories" id="categoryBar"></div>
 
-            <select id="discountFilter">
-                <option value="all">All Discounts</option>
-                <option value="10">10%+</option>
-                <option value="20">20%+</option>
-                <option value="50">50%+</option>
-            </select>
+<!-- PRODUCT GRID -->
+<div class="product-grid" id="productGrid"></div>
 
-        </div>
-    </section>
+<!-- DELIVERY INFO -->
+<section class="delivery-info">
+<h3>🚚 Delivery Information</h3>
+<p>Fast delivery within 24-48 hours across Sri Lanka</p>
+</section>
 
-    <!-- PRODUCTS -->
-    <main id="products" class="products-grid"></main>
+<!-- SOCIAL -->
+<div class="social">
+<a href="#">Facebook</a>
+<a href="#">Instagram</a>
+<a href="#">WhatsApp</a>
+</div>
 
-    <!-- FLOATING CART -->
-    <button class="floating-cart" id="floatingCartBtn">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span id="floatingCartCount">0</span>
-    </button>
+<!-- CART PANEL -->
+<div class="cart-panel" id="cartPanel"></div>
 
-    <!-- CART DRAWER -->
-    <div id="cartDrawer" class="cart-drawer">
+<!-- PRODUCT MODAL -->
+<div class="modal" id="productModal">
 
-        <div class="cart-header">
-            <h2>Your Cart</h2>
-            <button class="icon-btn" id="closeCartBtn">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
+<div class="modal-content">
 
-        <div id="cartItems"></div>
+<span id="closeModal">✖</span>
 
-        <div class="sticky-checkout">
+<img id="modalImg">
 
-            <h3 id="cartTotal">Total: Rs 0</h3>
+<h2 id="modalTitle"></h2>
 
-            <div class="checkout-form">
-                <input type="text" id="cusName" placeholder="Your Name" />
-                <input type="tel" id="cusPhone" placeholder="Phone Number" />
-                <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
-            </div>
+<p id="modalPrice"></p>
 
-            <div class="checkout-actions">
+<p id="modalDesc"></p>
 
-                <button class="checkout-btn" id="checkoutBtn">
-                    Order Now
-                </button>
+<div class="rating">
+⭐ ⭐ ⭐ ⭐ ⭐
+</div>
 
-                <button class="clear-btn" id="clearCartBtn">
-                    Clear Cart
-                </button>
+<textarea id="reviewBox" placeholder="Write review..."></textarea>
 
-            </div>
+<button id="submitReview">Submit Review</button>
 
-        </div>
+<button id="whatsappOrder">Order via WhatsApp</button>
 
-    </div>
+</div>
 
-    <!-- PRODUCT MODAL -->
-    <div id="productModal" class="modal">
+</div>
 
-        <div class="modal-content">
-
-            <button class="close" id="closeModalBtn">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div id="galleryContainer" class="gallery-container"></div>
-
-            <h2 id="modalName"></h2>
-
-            <p id="modalPrice" style="font-weight:bold;font-size:18px;"></p>
-
-            <p id="modalDesc" style="color:var(--muted);font-size:14px;"></p>
-
-            <!-- RATING -->
-            <div class="rating-ui">
-                <span>Rate:</span>
-                <div class="stars-display" id="starRating">
-                    <i class="fa-regular fa-star" data-value="1"></i>
-                    <i class="fa-regular fa-star" data-value="2"></i>
-                    <i class="fa-regular fa-star" data-value="3"></i>
-                    <i class="fa-regular fa-star" data-value="4"></i>
-                    <i class="fa-regular fa-star" data-value="5"></i>
-                </div>
-            </div>
-
-            <textarea id="reviewText" placeholder="Write your review..."></textarea>
-
-            <button id="reviewSubmitBtn" class="checkout-btn">
-                Submit Review
-            </button>
-
-            <div id="reviewList"></div>
-
-            <button id="modalAddBtn"
-                style="margin-top:15px;width:100%;padding:12px;border:none;background:var(--primary);color:white;border-radius:10px;">
-                Add to Cart
-            </button>
-
-        </div>
-
-    </div>
-
-    <!-- LOADING -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loader"></div>
-    </div>
-
-    <!-- TOAST -->
-    <div id="toast" class="toast"></div>
-
-    <!-- SOCIAL -->
-    <div class="social-links">
-
-        <a href="https://facebook.com/" target="_blank" class="social-btn">
-            <i class="fa-brands fa-facebook-f"></i>
-        </a>
-
-        <a href="https://instagram.com/" target="_blank" class="social-btn">
-            <i class="fa-brands fa-instagram"></i>
-        </a>
-
-        <a href="https://tiktok.com/" target="_blank" class="social-btn">
-            <i class="fa-brands fa-tiktok"></i>
-        </a>
-
-        <a href="https://wa.me/94752425790" target="_blank" class="social-btn whatsapp">
-            <i class="fa-brands fa-whatsapp"></i>
-        </a>
-
-    </div>
-
-    <!-- SAFE ERROR CATCH -->
-    <script>
-        window.addEventListener("error", (e) => {
-            console.error("JS ERROR:", e.message);
-        });
-
-        window.addEventListener("unhandledrejection", (e) => {
-            console.error("PROMISE ERROR:", e.reason);
-        });
-    </script>
-
-    <!-- MAIN APP -->
-    <script type="module" src="./app.js"></script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
