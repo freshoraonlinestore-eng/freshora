@@ -4,58 +4,45 @@ import { db, collection, onSnapshot, addDoc } from "./firebase.js";
 STATE
 ========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let allProducts = [];
-let selectedRating = 0;
-let currentProductId = null;
-
-let allReviews = [];
-
-/* PHASE 2 */
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 
-/* PHASE 3 */
-let viewCount = JSON.parse(localStorage.getItem("viewCount")) || {};
+let allProducts = [];
+let allReviews = [];
+
+let currentProductId = null;
+let selectedRating = 0;
+
+/* =========================
+COUPON SYSTEM
+========================= */
+let appliedCoupon = null;
+
+const coupons = {
+    "FRESH10": 10,
+    "SAVE20": 20,
+    "WELCOME5": 5
+};
 
 /* =========================
 UTIL
 ========================= */
-function num(v) {
-    const n = Number(v);
-    return isNaN(n) ? 0 : n;
-}
-
-function saveCart() {
+const saveLocal = () => {
     localStorage.setItem("cart", JSON.stringify(cart));
-}
-
-function saveWishlist() {
     localStorage.setItem("wishlist", JSON.stringify(wishlist));
-}
-
-function saveRecentlyViewed() {
     localStorage.setItem("recentlyViewed", JSON.stringify(recentlyViewed));
-}
+};
 
-function saveViews() {
-    localStorage.setItem("viewCount", JSON.stringify(viewCount));
-}
+const num = (v) => Number(v) || 0;
 
-function showToast(msg) {
-    const toast = document.getElementById("toast");
-    if (!toast) return;
+function toast(msg) {
+    const t = document.getElementById("toast");
+    if (!t) return;
 
-    toast.innerHTML = `
-        <i class="fa-solid fa-circle-check"></i>
-        <span>${msg}</span>
-    `;
+    t.innerHTML = msg;
+    t.classList.add("show");
 
-    toast.classList.add("show");
-
-    clearTimeout(window.toastTimeout);
-    window.toastTimeout = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2200);
+    setTimeout(() => t.classList.remove("show"), 2000);
 }
 
 /* =========================
@@ -63,179 +50,47 @@ INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
 
-    updateCartDisplay();
+    updateCartUI();
 
-    document.getElementById("searchInput")
-        ?.addEventListener("input", filterProducts);
+    document.getElementById("searchInput")?.addEventListener("input", searchProducts);
+    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
 
-    document.getElementById("categoryFilter")
-        ?.addEventListener("change", filterProducts);
-
-    setupStarRating();
-    bindReviewButton();
-
-    document.getElementById("modalAddBtn")
-        ?.addEventListener("click", () => {
-            if (!currentProductId) return;
-
-            const p = allProducts.find(x => x.id === currentProductId);
-            if (!p) return;
-
-            addToCart(p.id, p.name, getFinalPrice(p), p.image);
-        });
-
-    renderRecentlyViewed();
+    setupReviews();
+    setupCoupon();
 });
 
 /* =========================
-PRICE
+SAFE PRICE CALC
 ========================= */
-function getFinalPrice(product) {
-    const price = num(product.price);
-    const discount = num(product.discount);
+function finalPrice(p) {
+    if (!p || !p.price) return 0;
 
-    return discount > 0
-        ? Math.round(price - (price * discount / 100))
-        : price;
+    let price = num(p.price);
+
+    if (p.discount) {
+        price -= (price * num(p.discount)) / 100;
+    }
+
+    if (appliedCoupon) {
+        price -= (price * appliedCoupon) / 100;
+    }
+
+    return Math.round(price);
 }
 
 /* =========================
-CART
+SEARCH
 ========================= */
-window.updateCartDisplay = () => {
+window.searchProducts = () => {
 
-    const cartItems = document.getElementById("cartItems");
-    const cartTotal = document.getElementById("cartTotal");
-    const floating = document.getElementById("floatingCartCount");
+    const q = document.getElementById("searchInput")?.value.toLowerCase() || "";
 
-    if (!cartItems) return;
+    const filtered = allProducts.filter(p =>
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.category || "").toLowerCase().includes(q)
+    );
 
-    let total = 0;
-    let qtyTotal = 0;
-
-    if (cart.length === 0) {
-        cartItems.innerHTML = `<p style="text-align:center;padding:20px;">Cart is empty</p>`;
-        if (cartTotal) cartTotal.innerText = "Total: Rs 0";
-        if (floating) floating.innerText = "0";
-        saveCart();
-        return;
-    }
-
-    cartItems.innerHTML = cart.map((item, i) => {
-
-        const price = num(item.price);
-        total += price * item.qty;
-        qtyTotal += item.qty;
-
-        return `
-        <div class="cart-item">
-            <img src="${item.image}">
-            <div style="flex:1">
-                <h4>${item.name}</h4>
-                <p>Rs ${price * item.qty}</p>
-
-                <div class="qty-box">
-                    <button onclick="changeQty(${i},-1)">-</button>
-                    <span>${item.qty}</span>
-                    <button onclick="changeQty(${i},1)">+</button>
-                </div>
-            </div>
-
-            <button class="remove-btn" onclick="removeFromCart(${i})">✕</button>
-        </div>`;
-    }).join("");
-
-    if (cartTotal) cartTotal.innerText = `Total: Rs ${total}`;
-    if (floating) floating.innerText = qtyTotal;
-
-    saveCart();
-};
-
-window.addToCart = (id, name, price, image) => {
-
-    const item = cart.find(i => i.id === id);
-
-    if (item) item.qty += 1;
-    else cart.push({ id, name, price: num(price), image, qty: 1 });
-
-    updateCartDisplay();
-    showToast("Added 🛒");
-};
-
-window.changeQty = (i, change) => {
-    if (!cart[i]) return;
-
-    cart[i].qty += change;
-    if (cart[i].qty <= 0) cart.splice(i, 1);
-
-    updateCartDisplay();
-};
-
-window.removeFromCart = (i) => {
-    cart.splice(i, 1);
-    updateCartDisplay();
-    showToast("Removed");
-};
-
-window.clearCart = () => {
-    cart = [];
-    updateCartDisplay();
-    showToast("Cart cleared");
-};
-
-/* =========================
-WISHLIST
-========================= */
-window.toggleWishlist = (id) => {
-
-    if (wishlist.includes(id)) {
-        wishlist = wishlist.filter(w => w !== id);
-        showToast("Removed ❤️");
-    } else {
-        wishlist.push(id);
-        showToast("Added ❤️");
-    }
-
-    saveWishlist();
-    renderProducts(allProducts);
-};
-
-/* =========================
-RECENTLY VIEWED + TRACK
-========================= */
-function trackView(product) {
-
-    viewCount[product.id] = (viewCount[product.id] || 0) + 1;
-    saveViews();
-
-    recentlyViewed = recentlyViewed.filter(p => p.id !== product.id);
-    recentlyViewed.unshift(product);
-
-    if (recentlyViewed.length > 8) recentlyViewed.pop();
-
-    saveRecentlyViewed();
-    renderRecentlyViewed();
-}
-
-window.renderRecentlyViewed = () => {
-
-    const grid = document.getElementById("recentlyViewedGrid");
-    if (!grid) return;
-
-    if (!recentlyViewed.length) {
-        grid.innerHTML = `<p style="color:var(--muted);text-align:center;">No recently viewed</p>`;
-        return;
-    }
-
-    grid.innerHTML = recentlyViewed.map(p => `
-        <div class="card">
-            <img src="${p.image}">
-            <div class="card-content">
-                <h3>${p.name}</h3>
-                <button onclick="openModal('${p.id}')">View</button>
-            </div>
-        </div>
-    `).join("");
+    renderProducts(filtered);
 };
 
 /* =========================
@@ -243,56 +98,64 @@ FILTER
 ========================= */
 window.filterProducts = () => {
 
-    const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const cat = document.getElementById("categoryFilter")?.value || "all";
 
-    let filtered = allProducts.filter(p =>
-        (p.name || "").toLowerCase().includes(search)
-    );
+    if (cat === "all") {
+        renderProducts(allProducts);
+        return;
+    }
 
+    const filtered = allProducts.filter(p => p.category === cat);
     renderProducts(filtered);
 };
 
 /* =========================
-RENDER PRODUCTS
+RENDER PRODUCTS (SAFE)
 ========================= */
-window.renderProducts = (products) => {
+window.renderProducts = (products = []) => {
 
     const grid = document.getElementById("products");
     if (!grid) return;
 
-    if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;">No products</p>`;
+    if (!Array.isArray(products) || products.length === 0) {
+        grid.innerHTML = `<p style="text-align:center;width:100%">No products found 😢</p>`;
         return;
     }
 
     grid.innerHTML = products.map(p => {
 
-        const price = getFinalPrice(p);
-        const wish = wishlist.includes(p.id);
+        const price = finalPrice(p);
+
+        const reviews = (allReviews || []).filter(r => r.productId === p.id);
+
+        const avg = reviews.length
+            ? (reviews.reduce((a, b) => a + num(b.rating), 0) / reviews.length).toFixed(1)
+            : 0;
 
         return `
         <div class="card">
+
+            ${p.discount ? `<div class="discount-badge">-${p.discount}%</div>` : ""}
 
             <img src="${p.image || ''}">
 
             <div class="card-content">
 
-                <h3>${p.name}</h3>
+                <h3>${p.name || 'No name'}</h3>
 
                 <div class="price-box">
                     <span class="new-price">Rs ${price}</span>
                 </div>
 
-                <div class="card-buttons">
-                    <button onclick="openModal('${p.id}')">View</button>
-                    <button onclick="addToCart('${p.id}','${p.name}',${price},'${p.image}')">Add</button>
+                <div class="product-rating">
+                    ⭐ ${avg} (${reviews.length})
                 </div>
 
-                <button onclick="toggleWishlist('${p.id}')"
-                    style="margin-top:8px;width:100%;padding:8px;border:none;border-radius:8px;
-                    background:${wish ? '#ff3b30' : '#eee'};
-                    color:${wish ? '#fff' : '#111'}">
-                    ${wish ? '❤️ Wishlisted' : '🤍 Wishlist'}
+                <button onclick="openProduct('${p.id}')">View</button>
+                <button onclick="addToCartById('${p.id}')">Add</button>
+
+                <button onclick="toggleWishlist('${p.id}')">
+                    ❤️ Wishlist
                 </button>
 
             </div>
@@ -301,102 +164,171 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL
+OPEN PRODUCT
 ========================= */
-window.openModal = (id) => {
+window.openProduct = (id) => {
 
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
 
     currentProductId = id;
 
-    const images = p.images?.length ? p.images : [p.image];
-
-    document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
-    document.getElementById("modalDesc").innerText = p.description || "";
-
-    document.getElementById("galleryContainer").innerHTML = `
-        <img src="${images[0]}" class="main-img" id="mainModalImg">
-    `;
+    recentlyViewed = [id, ...recentlyViewed.filter(x => x !== id)].slice(0, 10);
+    saveLocal();
 
     document.getElementById("productModal")?.classList.add("show");
 
-    selectedRating = 0;
-    updateStars(0);
+    document.getElementById("modalName").innerText = p.name || "";
+    document.getElementById("modalPrice").innerText = "Rs " + finalPrice(p);
+    document.getElementById("modalDesc").innerText = p.description || "";
 
-    trackView(p);
-};
-
-window.closeModal = () => {
-    document.getElementById("productModal")?.classList.remove("show");
-    currentProductId = null;
+    loadRelated(p.category, id);
 };
 
 /* =========================
-RATING + REVIEWS
+RELATED PRODUCTS
 ========================= */
-function setupStarRating() {
-    setTimeout(() => {
-        document.querySelectorAll("#starRating i").forEach((star, i) => {
-            star.onclick = () => {
-                selectedRating = i + 1;
-                updateStars(selectedRating);
-            };
-        });
-    }, 300);
+function loadRelated(category, id) {
+
+    const related = allProducts
+        .filter(p => p.category === category && p.id !== id)
+        .slice(0, 4);
+
+    let box = document.getElementById("relatedBox");
+
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "relatedBox";
+        document.querySelector(".modal-content")?.appendChild(box);
+    }
+
+    box.innerHTML =
+        `<h4>Related Products</h4>` +
+        related.map(p => `<p onclick="openProduct('${p.id}')">➡ ${p.name}</p>`).join("");
 }
 
-function updateStars(rating) {
-    document.querySelectorAll("#starRating i").forEach((star, i) => {
-        star.classList.toggle("fa-solid", i < rating);
-        star.classList.toggle("fa-regular", i >= rating);
+/* =========================
+CART
+========================= */
+window.addToCartById = (id) => {
+
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+
+    const item = cart.find(x => x.id === id);
+
+    if (item) item.qty += 1;
+    else cart.push({ id, name: p.name, price: finalPrice(p), qty: 1 });
+
+    saveLocal();
+    updateCartUI();
+    toast("Added 🛒");
+};
+
+window.updateCartUI = () => {
+
+    const el = document.getElementById("cartItems");
+    const count = document.getElementById("floatingCartCount");
+
+    let totalQty = 0;
+
+    if (!el) return;
+
+    el.innerHTML = cart.map(i => {
+        totalQty += i.qty;
+
+        return `
+        <div class="cart-item">
+            <h4>${i.name}</h4>
+            <p>Rs ${i.price * i.qty}</p>
+        </div>`;
+    }).join("");
+
+    if (count) count.innerText = totalQty;
+};
+
+/* =========================
+WISHLIST
+========================= */
+window.toggleWishlist = (id) => {
+
+    if (wishlist.includes(id)) {
+        wishlist = wishlist.filter(x => x !== id);
+        toast("Removed ❤️");
+    } else {
+        wishlist.push(id);
+        toast("Added ❤️");
+    }
+
+    saveLocal();
+};
+
+/* =========================
+COUPON
+========================= */
+function setupCoupon() {
+
+    const input = document.getElementById("couponInput");
+    if (!input) return;
+
+    input.addEventListener("change", () => {
+
+        const code = input.value.trim().toUpperCase();
+
+        if (coupons[code]) {
+            appliedCoupon = coupons[code];
+            toast("Coupon applied " + appliedCoupon + "%");
+        } else {
+            appliedCoupon = null;
+            toast("Invalid coupon");
+        }
     });
 }
 
-function bindReviewButton() {
+/* =========================
+REVIEWS (SAFE)
+========================= */
+function setupReviews() {
 
     setTimeout(() => {
 
-        const btn = document.getElementById("reviewSubmitBtn");
-
-        if (!btn) return;
-
-        btn.onclick = async () => {
+        document.getElementById("reviewSubmitBtn")?.addEventListener("click", async () => {
 
             const text = document.getElementById("reviewText")?.value;
 
-            if (!text || selectedRating === 0) {
-                showToast("Add rating + review");
+            if (!text || !selectedRating) {
+                toast("Add rating + review");
                 return;
             }
 
+            if (!currentProductId) return;
+
             await addDoc(collection(db, "reviews"), {
                 productId: currentProductId,
-                rating: selectedRating,
                 text,
-                createdAt: new Date().toISOString()
+                rating: selectedRating,
+                createdAt: Date.now()
             });
 
-            showToast("Review added");
+            toast("Review added");
+        });
 
-            document.getElementById("reviewText").value = "";
-            selectedRating = 0;
-            updateStars(0);
-        };
-
-    }, 300);
+    }, 500);
 }
 
 /* =========================
-FIREBASE
+FIREBASE LIVE SAFE LOAD
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
-    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() })) || [];
+
     renderProducts(allProducts);
-    document.getElementById("loadingScreen")?.remove();
 });
 
 onSnapshot(collection(db, "reviews"), (snap) => {
-    allReviews = snap.docs.map(d => d.data());
+
+    allReviews = snap.docs.map(d => d.data()) || [];
+
+    renderProducts(allProducts);
 });
