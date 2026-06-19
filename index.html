@@ -6,12 +6,13 @@
 
     <title>Freshora Online Store</title>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=21" />
+    <link rel="stylesheet" href="style.css?v=22" />
 
-    <!-- FONT AWESOME -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Better mobile theme -->
+    <meta name="theme-color" content="#1f8f4d" />
 </head>
 
 <body>
@@ -32,7 +33,6 @@
         <!-- SEARCH -->
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-
             <input
                 type="text"
                 id="searchInput"
@@ -42,12 +42,7 @@
         </div>
 
         <!-- DARK MODE -->
-        <button
-            id="darkModeBtn"
-            class="icon-btn"
-            type="button"
-            onclick="toggleDarkMode()">
-
+        <button id="darkModeBtn" class="icon-btn" type="button">
             <i class="fa-solid fa-moon"></i>
         </button>
 
@@ -55,7 +50,6 @@
 
     <!-- FILTERS -->
     <section class="advanced-search">
-
         <div class="filter-grid">
 
             <select id="categoryFilter">
@@ -77,14 +71,13 @@
             </select>
 
         </div>
-
     </section>
 
     <!-- PRODUCTS -->
     <main id="products" class="products-grid"></main>
 
     <!-- FLOATING CART -->
-    <button class="floating-cart" onclick="toggleCart()">
+    <button class="floating-cart" id="floatingCartBtn">
         <i class="fa-solid fa-cart-shopping"></i>
         <span id="floatingCartCount">0</span>
     </button>
@@ -94,8 +87,7 @@
 
         <div class="cart-header">
             <h2>Your Cart</h2>
-
-            <button class="icon-btn" onclick="toggleCart()">
+            <button class="icon-btn" id="closeCartBtn">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -107,20 +99,18 @@
             <h3 id="cartTotal">Total: Rs 0</h3>
 
             <div class="checkout-form">
-
                 <input type="text" id="cusName" placeholder="Your Name" />
                 <input type="tel" id="cusPhone" placeholder="Phone Number" />
                 <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
-
             </div>
 
             <div class="checkout-actions">
 
-                <button class="checkout-btn" onclick="checkout()">
+                <button class="checkout-btn" id="checkoutBtn">
                     Order Now
                 </button>
 
-                <button class="clear-btn" onclick="clearCart()">
+                <button class="clear-btn" id="clearCartBtn">
                     Clear Cart
                 </button>
 
@@ -135,11 +125,10 @@
 
         <div class="modal-content">
 
-            <button class="close" onclick="closeModal()">
+            <button class="close" id="closeModalBtn">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <!-- GALLERY -->
             <div id="galleryContainer" class="gallery-container"></div>
 
             <h2 id="modalName"></h2>
@@ -151,7 +140,6 @@
             <!-- RATING -->
             <div class="rating-ui">
                 <span>Rate:</span>
-
                 <div class="stars-display" id="starRating">
                     <i class="fa-regular fa-star" data-value="1"></i>
                     <i class="fa-regular fa-star" data-value="2"></i>
@@ -161,17 +149,14 @@
                 </div>
             </div>
 
-            <!-- REVIEW -->
             <textarea id="reviewText" placeholder="Write your review..."></textarea>
 
             <button id="reviewSubmitBtn" class="checkout-btn">
                 Submit Review
             </button>
 
-            <!-- REVIEW LIST -->
             <div id="reviewList"></div>
 
-            <!-- ADD TO CART -->
             <button id="modalAddBtn"
                 style="margin-top:15px;width:100%;padding:12px;border:none;background:var(--primary);color:white;border-radius:10px;">
                 Add to Cart
@@ -189,7 +174,7 @@
     <!-- TOAST -->
     <div id="toast" class="toast"></div>
 
-    <!-- SOCIAL LINKS -->
+    <!-- SOCIAL -->
     <div class="social-links">
 
         <a href="https://facebook.com/" target="_blank" class="social-btn">
@@ -210,9 +195,8 @@
 
     </div>
 
-    <!-- 🔥 CRITICAL FIX: MODULE SAFE LOAD -->
+    <!-- SAFE ERROR CATCH -->
     <script>
-        // Global crash catcher (prevents blank screen)
         window.addEventListener("error", (e) => {
             console.error("JS ERROR:", e.message);
         });
@@ -222,7 +206,7 @@
         });
     </script>
 
-    <!-- APP JS (SAFE MODULE LOAD) -->
+    <!-- MAIN APP -->
     <script type="module" src="./app.js"></script>
 
 </body>
