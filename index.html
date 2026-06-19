@@ -24,13 +24,9 @@
     <!-- HEADER -->
     <header class="header">
 
-        <div class="logo-area"
-             ondblclick="window.location='login.html'">
-
+        <div class="logo-area" ondblclick="window.location='login.html'">
             <img src="logo.png" class="logo-img" alt="Freshora Logo" />
-
             <div class="logo-text">Freshora</div>
-
         </div>
 
         <!-- SEARCH -->
@@ -51,12 +47,26 @@
             type="button"
             onclick="toggleDarkMode()"
             aria-label="Toggle Dark Mode">
-
             <i class="fa-solid fa-moon"></i>
-
         </button>
 
     </header>
+
+    <!-- =========================
+         FEATURED SECTION (PHASE 1)
+    ========================== -->
+    <section id="featuredSection" style="padding:10px 16px;">
+        <h3><i class="fa-solid fa-star"></i> Featured Products</h3>
+        <div id="featuredGrid" class="products-grid"></div>
+    </section>
+
+    <!-- =========================
+         TRENDING SECTION (PHASE 1)
+    ========================== -->
+    <section id="trendingSection" style="padding:10px 16px;">
+        <h3><i class="fa-solid fa-fire"></i> Trending Now</h3>
+        <div id="trendingGrid" class="products-grid"></div>
+    </section>
 
     <!-- FILTERS -->
     <section class="advanced-search">
@@ -82,17 +92,22 @@
     <!-- PRODUCTS -->
     <main id="products" class="products-grid"></main>
 
+    <!-- NO RESULTS UI (PHASE 1) -->
+    <div id="noResults" style="display:none;text-align:center;padding:30px;color:var(--muted);">
+        <i class="fa-solid fa-face-frown" style="font-size:30px;"></i>
+        <p>No products found</p>
+    </div>
+
+    <!-- RECENTLY VIEWED (PHASE 1 PLACEHOLDER) -->
+    <section id="recentlyViewedSection" style="padding:10px 16px;">
+        <h3><i class="fa-solid fa-clock"></i> Recently Viewed</h3>
+        <div id="recentlyViewedGrid" class="products-grid"></div>
+    </section>
+
     <!-- FLOATING CART -->
-    <button
-        class="floating-cart"
-        type="button"
-        onclick="toggleCart()"
-        aria-label="Open Cart">
-
+    <button class="floating-cart" type="button" onclick="toggleCart()" aria-label="Open Cart">
         <i class="fa-solid fa-cart-shopping"></i>
-
         <span id="floatingCartCount">0</span>
-
     </button>
 
     <!-- CART DRAWER -->
@@ -101,65 +116,33 @@
         <div class="cart-header">
             <h2>Your Cart</h2>
 
-            <button
-                class="icon-btn"
-                type="button"
-                onclick="toggleCart()"
-                aria-label="Close Cart">
-
+            <button class="icon-btn" type="button" onclick="toggleCart()">
                 <i class="fa-solid fa-xmark"></i>
-
             </button>
         </div>
 
-        <!-- CART ITEMS -->
         <div id="cartItems"></div>
 
-        <!-- CHECKOUT -->
         <div class="sticky-checkout">
 
             <h3 id="cartTotal">Total: Rs 0</h3>
 
             <div class="checkout-form">
 
-                <input
-                    type="text"
-                    id="cusName"
-                    placeholder="Your Name"
-                    autocomplete="name"
-                />
-
-                <input
-                    type="tel"
-                    id="cusPhone"
-                    placeholder="Phone Number"
-                    autocomplete="tel"
-                />
-
-                <textarea
-                    id="cusAddress"
-                    placeholder="Delivery Address"></textarea>
+                <input type="text" id="cusName" placeholder="Your Name" />
+                <input type="tel" id="cusPhone" placeholder="Phone Number" />
+                <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
 
             </div>
 
             <div class="checkout-actions">
 
-                <button
-                    class="checkout-btn"
-                    type="button"
-                    onclick="checkout()">
-
+                <button class="checkout-btn" type="button" onclick="checkout()">
                     Order Now
-
                 </button>
 
-                <button
-                    class="clear-btn"
-                    type="button"
-                    onclick="clearCart()">
-
+                <button class="clear-btn" type="button" onclick="clearCart()">
                     Clear Cart
-
                 </button>
 
             </div>
@@ -173,20 +156,12 @@
 
         <div class="modal-content">
 
-            <button
-                type="button"
-                class="close"
-                onclick="closeModal()"
-                aria-label="Close Modal">
-
+            <button type="button" class="close" onclick="closeModal()">
                 <i class="fa-solid fa-xmark"></i>
-
             </button>
 
-            <!-- IMAGE GALLERY -->
             <div id="galleryContainer" class="gallery-container"></div>
 
-            <!-- PRODUCT DETAILS -->
             <h2 id="modalName"></h2>
 
             <p id="modalPrice" style="font-weight:bold;font-size:18px;"></p>
@@ -195,7 +170,6 @@
 
             <!-- RATING -->
             <div class="rating-ui">
-
                 <span>Rate:</span>
 
                 <div class="stars-display" id="starRating">
@@ -205,43 +179,21 @@
                     <i class="fa-regular fa-star" data-value="4"></i>
                     <i class="fa-regular fa-star" data-value="5"></i>
                 </div>
-
             </div>
 
-            <!-- REVIEW -->
-            <textarea
-                id="reviewText"
-                placeholder="Write your review..."></textarea>
+            <textarea id="reviewText" placeholder="Write your review..."></textarea>
 
-            <button
-                id="reviewSubmitBtn"
-                class="checkout-btn"
-                type="button">
-
+            <button id="reviewSubmitBtn" class="checkout-btn">
                 Submit Review
-
             </button>
 
-            <!-- REVIEW LIST -->
             <div id="reviewList"></div>
 
-            <!-- ADD TO CART -->
             <button
                 id="modalAddBtn"
                 type="button"
-                style="
-                    margin-top:15px;
-                    padding:12px;
-                    width:100%;
-                    border-radius:10px;
-                    border:none;
-                    background:var(--primary);
-                    color:#fff;
-                    cursor:pointer;
-                ">
-
+                style="margin-top:15px;width:100%;padding:12px;border:none;border-radius:10px;background:var(--primary);color:#fff;cursor:pointer;">
                 Add to Cart
-
             </button>
 
         </div>
@@ -277,7 +229,7 @@
 
     </div>
 
-    <!-- APP JS -->
+    <!-- JS -->
     <script type="module" src="app.js?v=21"></script>
 
 </body>
