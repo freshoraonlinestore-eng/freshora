@@ -1,334 +1,326 @@
 import { db, collection, onSnapshot, addDoc } from "./firebase.js";
 
 /* =========================
+🚀 DEBUG START
+========================= */
+console.log("🚀 APP STARTED");
+
+/* =========================
 STATE
 ========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
-
 let allProducts = [];
 let allReviews = [];
-
-let currentProductId = null;
 let selectedRating = 0;
+let currentProductId = null;
 
 /* =========================
-COUPON SYSTEM
+UTILS
 ========================= */
-let appliedCoupon = null;
+function num(v) {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
+}
 
-const coupons = {
-    "FRESH10": 10,
-    "SAVE20": 20,
-    "WELCOME5": 5
-};
-
-/* =========================
-UTIL
-========================= */
-const saveLocal = () => {
+function saveCart() {
     localStorage.setItem("cart", JSON.stringify(cart));
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-    localStorage.setItem("recentlyViewed", JSON.stringify(recentlyViewed));
-};
+}
 
-const num = (v) => Number(v) || 0;
+function showToast(msg) {
+    const toast = document.getElementById("toast");
+    if (!toast) return;
 
-function toast(msg) {
-    const t = document.getElementById("toast");
-    if (!t) return;
+    toast.innerHTML = `
+        <i class="fa-solid fa-circle-check"></i> ${msg}
+    `;
 
-    t.innerHTML = msg;
-    t.classList.add("show");
+    toast.classList.add("show");
 
-    setTimeout(() => t.classList.remove("show"), 2000);
+    clearTimeout(window.__toast);
+    window.__toast = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
 }
 
 /* =========================
 INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
+    console.log("📄 DOM READY");
 
-    updateCartUI();
+    updateCartDisplay();
 
-    document.getElementById("searchInput")?.addEventListener("input", searchProducts);
+    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
     document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
 
-    setupReviews();
-    setupCoupon();
+    setupStars();
+    bindReview();
+
+    document.getElementById("modalAddBtn")?.addEventListener("click", () => {
+        if (!currentProductId) return;
+
+        const p = allProducts.find(x => x.id === currentProductId);
+        if (!p) return;
+
+        addToCart(p.id, p.name, getPrice(p), p.image);
+    });
 });
 
 /* =========================
-SAFE PRICE CALC
+PRICE
 ========================= */
-function finalPrice(p) {
-    if (!p || !p.price) return 0;
+function getPrice(p) {
+    const price = num(p.price);
+    const discount = num(p.discount);
 
-    let price = num(p.price);
-
-    if (p.discount) {
-        price -= (price * num(p.discount)) / 100;
-    }
-
-    if (appliedCoupon) {
-        price -= (price * appliedCoupon) / 100;
-    }
-
-    return Math.round(price);
+    return discount > 0
+        ? Math.round(price - price * discount / 100)
+        : price;
 }
 
 /* =========================
-SEARCH
+PRODUCTS LOAD (FIXED)
 ========================= */
-window.searchProducts = () => {
+onSnapshot(collection(db, "products"), (snap) => {
+    console.log("🔥 PRODUCTS LOADED:", snap.docs.length);
 
-    const q = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const filtered = allProducts.filter(p =>
-        (p.name || "").toLowerCase().includes(q) ||
-        (p.category || "").toLowerCase().includes(q)
-    );
+    renderProducts(allProducts);
 
-    renderProducts(filtered);
-};
+    document.getElementById("loadingScreen")?.remove();
+});
 
 /* =========================
-FILTER
+REVIEWS LOAD
 ========================= */
-window.filterProducts = () => {
-
-    const cat = document.getElementById("categoryFilter")?.value || "all";
-
-    if (cat === "all") {
-        renderProducts(allProducts);
-        return;
-    }
-
-    const filtered = allProducts.filter(p => p.category === cat);
-    renderProducts(filtered);
-};
+onSnapshot(collection(db, "reviews"), (snap) => {
+    allReviews = snap.docs.map(d => d.data());
+    renderProducts(allProducts);
+});
 
 /* =========================
-RENDER PRODUCTS (SAFE)
+RENDER PRODUCTS
 ========================= */
-window.renderProducts = (products = []) => {
-
+window.renderProducts = (products) => {
     const grid = document.getElementById("products");
     if (!grid) return;
 
-    if (!Array.isArray(products) || products.length === 0) {
-        grid.innerHTML = `<p style="text-align:center;width:100%">No products found 😢</p>`;
+    if (!products.length) {
+        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
         return;
     }
 
     grid.innerHTML = products.map(p => {
 
-        const price = finalPrice(p);
+        const price = num(p.price);
+        const final = getPrice(p);
 
-        const reviews = (allReviews || []).filter(r => r.productId === p.id);
+        const reviews = allReviews.filter(r => r.productId === p.id);
+        const count = reviews.length;
 
-        const avg = reviews.length
-            ? (reviews.reduce((a, b) => a + num(b.rating), 0) / reviews.length).toFixed(1)
+        const avg = count
+            ? (reviews.reduce((a, b) => a + num(b.rating), 0) / count).toFixed(1)
             : 0;
 
         return `
         <div class="card">
-
-            ${p.discount ? `<div class="discount-badge">-${p.discount}%</div>` : ""}
-
             <img src="${p.image || ''}">
 
             <div class="card-content">
-
-                <h3>${p.name || 'No name'}</h3>
+                <h3>${p.name || ''}</h3>
 
                 <div class="price-box">
-                    <span class="new-price">Rs ${price}</span>
+                    <span class="new-price">Rs ${final}</span>
                 </div>
 
                 <div class="product-rating">
-                    ⭐ ${avg} (${reviews.length})
+                    ⭐ ${avg} (${count})
                 </div>
 
-                <button onclick="openProduct('${p.id}')">View</button>
-                <button onclick="addToCartById('${p.id}')">Add</button>
-
-                <button onclick="toggleWishlist('${p.id}')">
-                    ❤️ Wishlist
-                </button>
-
+                <div class="card-buttons">
+                    <button onclick="openModal('${p.id}')">View</button>
+                    <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">Add</button>
+                </div>
             </div>
         </div>`;
     }).join("");
 };
 
 /* =========================
-OPEN PRODUCT
+FILTER
 ========================= */
-window.openProduct = (id) => {
+window.filterProducts = () => {
+    const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const cat = document.getElementById("categoryFilter")?.value || "all";
 
+    let filtered = [...allProducts];
+
+    filtered = filtered.filter(p =>
+        (p.name || "").toLowerCase().includes(search)
+    );
+
+    if (cat !== "all") {
+        filtered = filtered.filter(p => p.category === cat);
+    }
+
+    renderProducts(filtered);
+};
+
+/* =========================
+CART SYSTEM
+========================= */
+window.addToCart = (id, name, price, image) => {
+    const item = cart.find(i => i.id === id);
+
+    if (item) item.qty++;
+    else cart.push({ id, name, price: num(price), image, qty: 1 });
+
+    updateCartDisplay();
+    showToast("Added 🛒");
+};
+
+window.changeQty = (i, c) => {
+    if (!cart[i]) return;
+
+    cart[i].qty += c;
+
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+
+    updateCartDisplay();
+};
+
+window.removeFromCart = (i) => {
+    cart.splice(i, 1);
+    updateCartDisplay();
+};
+
+window.clearCart = () => {
+    cart = [];
+    updateCartDisplay();
+    showToast("Cleared");
+};
+
+window.updateCartDisplay = () => {
+    const el = document.getElementById("cartItems");
+    const totalEl = document.getElementById("cartTotal");
+    const countEl = document.getElementById("floatingCartCount");
+
+    let total = 0;
+    let qty = 0;
+
+    if (!cart.length) {
+        el.innerHTML = "Cart empty";
+        if (totalEl) totalEl.innerText = "Total: Rs 0";
+        if (countEl) countEl.innerText = "0";
+        saveCart();
+        return;
+    }
+
+    el.innerHTML = cart.map((i, index) => {
+        total += i.price * i.qty;
+        qty += i.qty;
+
+        return `
+        <div class="cart-item">
+            <img src="${i.image}">
+            <div>
+                <h4>${i.name}</h4>
+                <p>Rs ${i.price * i.qty}</p>
+
+                <div class="qty-box">
+                    <button onclick="changeQty(${index},-1)">-</button>
+                    <span>${i.qty}</span>
+                    <button onclick="changeQty(${index},1)">+</button>
+                </div>
+            </div>
+
+            <button onclick="removeFromCart(${index})">✕</button>
+        </div>`;
+    }).join("");
+
+    if (totalEl) totalEl.innerText = `Total: Rs ${total}`;
+    if (countEl) countEl.innerText = qty;
+
+    saveCart();
+};
+
+/* =========================
+MODAL
+========================= */
+window.openModal = (id) => {
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
 
     currentProductId = id;
 
-    recentlyViewed = [id, ...recentlyViewed.filter(x => x !== id)].slice(0, 10);
-    saveLocal();
+    document.getElementById("modalName").innerText = p.name;
+    document.getElementById("modalPrice").innerText = "Rs " + getPrice(p);
+    document.getElementById("modalDesc").innerText = p.description || "";
 
     document.getElementById("productModal")?.classList.add("show");
 
-    document.getElementById("modalName").innerText = p.name || "";
-    document.getElementById("modalPrice").innerText = "Rs " + finalPrice(p);
-    document.getElementById("modalDesc").innerText = p.description || "";
-
-    loadRelated(p.category, id);
+    selectedRating = 0;
 };
 
 /* =========================
-RELATED PRODUCTS
+STARS + REVIEWS
 ========================= */
-function loadRelated(category, id) {
-
-    const related = allProducts
-        .filter(p => p.category === category && p.id !== id)
-        .slice(0, 4);
-
-    let box = document.getElementById("relatedBox");
-
-    if (!box) {
-        box = document.createElement("div");
-        box.id = "relatedBox";
-        document.querySelector(".modal-content")?.appendChild(box);
-    }
-
-    box.innerHTML =
-        `<h4>Related Products</h4>` +
-        related.map(p => `<p onclick="openProduct('${p.id}')">➡ ${p.name}</p>`).join("");
-}
-
-/* =========================
-CART
-========================= */
-window.addToCartById = (id) => {
-
-    const p = allProducts.find(x => x.id === id);
-    if (!p) return;
-
-    const item = cart.find(x => x.id === id);
-
-    if (item) item.qty += 1;
-    else cart.push({ id, name: p.name, price: finalPrice(p), qty: 1 });
-
-    saveLocal();
-    updateCartUI();
-    toast("Added 🛒");
-};
-
-window.updateCartUI = () => {
-
-    const el = document.getElementById("cartItems");
-    const count = document.getElementById("floatingCartCount");
-
-    let totalQty = 0;
-
-    if (!el) return;
-
-    el.innerHTML = cart.map(i => {
-        totalQty += i.qty;
-
-        return `
-        <div class="cart-item">
-            <h4>${i.name}</h4>
-            <p>Rs ${i.price * i.qty}</p>
-        </div>`;
-    }).join("");
-
-    if (count) count.innerText = totalQty;
-};
-
-/* =========================
-WISHLIST
-========================= */
-window.toggleWishlist = (id) => {
-
-    if (wishlist.includes(id)) {
-        wishlist = wishlist.filter(x => x !== id);
-        toast("Removed ❤️");
-    } else {
-        wishlist.push(id);
-        toast("Added ❤️");
-    }
-
-    saveLocal();
-};
-
-/* =========================
-COUPON
-========================= */
-function setupCoupon() {
-
-    const input = document.getElementById("couponInput");
-    if (!input) return;
-
-    input.addEventListener("change", () => {
-
-        const code = input.value.trim().toUpperCase();
-
-        if (coupons[code]) {
-            appliedCoupon = coupons[code];
-            toast("Coupon applied " + appliedCoupon + "%");
-        } else {
-            appliedCoupon = null;
-            toast("Invalid coupon");
-        }
-    });
-}
-
-/* =========================
-REVIEWS (SAFE)
-========================= */
-function setupReviews() {
-
+function setupStars() {
     setTimeout(() => {
+        document.querySelectorAll("#starRating i").forEach((s, i) => {
+            s.onclick = () => {
+                selectedRating = i + 1;
+            };
+        });
+    }, 300);
+}
 
-        document.getElementById("reviewSubmitBtn")?.addEventListener("click", async () => {
+function bindReview() {
+    setTimeout(() => {
+        const btn = document.getElementById("reviewSubmitBtn");
 
-            const text = document.getElementById("reviewText")?.value;
+        btn.onclick = async () => {
+            const text = document.getElementById("reviewText").value;
 
-            if (!text || !selectedRating) {
-                toast("Add rating + review");
+            if (!text || !selectedRating || !currentProductId) {
+                showToast("Add rating + review");
                 return;
             }
 
-            if (!currentProductId) return;
-
             await addDoc(collection(db, "reviews"), {
                 productId: currentProductId,
-                text,
                 rating: selectedRating,
+                text,
                 createdAt: Date.now()
             });
 
-            toast("Review added");
-        });
+            document.getElementById("reviewText").value = "";
+            selectedRating = 0;
 
-    }, 500);
+            showToast("Review added");
+        };
+    }, 300);
 }
 
 /* =========================
-FIREBASE LIVE SAFE LOAD
+UI
 ========================= */
-onSnapshot(collection(db, "products"), (snap) => {
+window.toggleCart = () => {
+    document.getElementById("cartDrawer")?.classList.toggle("open");
+};
 
-    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() })) || [];
+window.toggleDarkMode = () => {
+    document.body.classList.toggle("dark");
+};
 
-    renderProducts(allProducts);
+/* =========================
+ERROR HANDLER (IMPORTANT FIX)
+========================= */
+window.addEventListener("error", (e) => {
+    console.error("❌ JS ERROR:", e.message);
 });
 
-onSnapshot(collection(db, "reviews"), (snap) => {
-
-    allReviews = snap.docs.map(d => d.data()) || [];
-
-    renderProducts(allProducts);
+window.addEventListener("unhandledrejection", (e) => {
+    console.error("❌ PROMISE ERROR:", e.reason);
 });
