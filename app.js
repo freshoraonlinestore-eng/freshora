@@ -10,11 +10,11 @@ let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 let allProducts = [];
 let allReviews = [];
 
-let selectedRating = 0;
 let currentProductId = null;
+let selectedRating = 0;
 
 /* =========================
-COUPON SYSTEM (NEW)
+COUPON SYSTEM
 ========================= */
 let appliedCoupon = null;
 
@@ -27,13 +27,13 @@ const coupons = {
 /* =========================
 UTIL
 ========================= */
-const save = () => {
+const saveLocal = () => {
     localStorage.setItem("cart", JSON.stringify(cart));
     localStorage.setItem("wishlist", JSON.stringify(wishlist));
     localStorage.setItem("recentlyViewed", JSON.stringify(recentlyViewed));
 };
 
-const num = v => Number(v) || 0;
+const num = (v) => Number(v) || 0;
 
 function toast(msg) {
     const t = document.getElementById("toast");
@@ -52,87 +52,82 @@ window.addEventListener("DOMContentLoaded", () => {
 
     updateCartUI();
 
-    document.getElementById("searchInput")?.addEventListener("input", smartSearch);
+    document.getElementById("searchInput")?.addEventListener("input", searchProducts);
     document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
 
-    setupStars();
-    bindReview();
-
-    setupCouponInput();
-
-    document.getElementById("modalAddBtn")?.addEventListener("click", () => {
-        const p = allProducts.find(x => x.id === currentProductId);
-        if (p) addToCart(p);
-    });
+    setupReviews();
+    setupCoupon();
 });
 
 /* =========================
-SMART SEARCH (AUTO SUGGEST)
+SAFE PRICE CALC
 ========================= */
-window.smartSearch = () => {
-    const q = document.getElementById("searchInput").value.toLowerCase();
+function finalPrice(p) {
+    if (!p || !p.price) return 0;
 
-    if (!q) return renderProducts(allProducts);
+    let price = num(p.price);
 
-    const results = allProducts.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
-    );
-
-    if (!results.length) {
-        document.getElementById("products").innerHTML =
-            `<p style="text-align:center;width:100%">
-                No results 😢 Try different keywords
-            </p>`;
-        return;
+    if (p.discount) {
+        price -= (price * num(p.discount)) / 100;
     }
 
-    renderProducts(results);
+    if (appliedCoupon) {
+        price -= (price * appliedCoupon) / 100;
+    }
+
+    return Math.round(price);
+}
+
+/* =========================
+SEARCH
+========================= */
+window.searchProducts = () => {
+
+    const q = document.getElementById("searchInput")?.value.toLowerCase() || "";
+
+    const filtered = allProducts.filter(p =>
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.category || "").toLowerCase().includes(q)
+    );
+
+    renderProducts(filtered);
 };
 
 /* =========================
 FILTER
 ========================= */
 window.filterProducts = () => {
-    const cat = document.getElementById("categoryFilter").value;
 
-    let list = [...allProducts];
+    const cat = document.getElementById("categoryFilter")?.value || "all";
 
-    if (cat !== "all") {
-        list = list.filter(p => p.category === cat);
+    if (cat === "all") {
+        renderProducts(allProducts);
+        return;
     }
 
-    renderProducts(list);
+    const filtered = allProducts.filter(p => p.category === cat);
+    renderProducts(filtered);
 };
 
 /* =========================
-TRENDING PRODUCTS (NEW)
+RENDER PRODUCTS (SAFE)
 ========================= */
-function getTrendingProducts() {
-    return [...allProducts]
-        .sort((a, b) => (b.views || 0) - (a.views || 0))
-        .slice(0, 6);
-}
-
-/* =========================
-FEATURED PRODUCTS (NEW)
-========================= */
-function getFeaturedProducts() {
-    return allProducts.filter(p => p.discount >= 10).slice(0, 6);
-}
-
-/* =========================
-PRODUCT RENDER (UPGRADED)
-========================= */
-window.renderProducts = (products) => {
+window.renderProducts = (products = []) => {
 
     const grid = document.getElementById("products");
+    if (!grid) return;
+
+    if (!Array.isArray(products) || products.length === 0) {
+        grid.innerHTML = `<p style="text-align:center;width:100%">No products found 😢</p>`;
+        return;
+    }
 
     grid.innerHTML = products.map(p => {
 
         const price = finalPrice(p);
 
-        const reviews = allReviews.filter(r => r.productId === p.id);
+        const reviews = (allReviews || []).filter(r => r.productId === p.id);
+
         const avg = reviews.length
             ? (reviews.reduce((a, b) => a + num(b.rating), 0) / reviews.length).toFixed(1)
             : 0;
@@ -142,11 +137,11 @@ window.renderProducts = (products) => {
 
             ${p.discount ? `<div class="discount-badge">-${p.discount}%</div>` : ""}
 
-            <img src="${p.image}">
+            <img src="${p.image || ''}">
 
             <div class="card-content">
 
-                <h3>${p.name}</h3>
+                <h3>${p.name || 'No name'}</h3>
 
                 <div class="price-box">
                     <span class="new-price">Rs ${price}</span>
@@ -157,7 +152,6 @@ window.renderProducts = (products) => {
                 </div>
 
                 <button onclick="openProduct('${p.id}')">View</button>
-
                 <button onclick="addToCartById('${p.id}')">Add</button>
 
                 <button onclick="toggleWishlist('${p.id}')">
@@ -170,7 +164,7 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-PRODUCT OPEN + VIEW TRACKING
+OPEN PRODUCT
 ========================= */
 window.openProduct = (id) => {
 
@@ -179,23 +173,20 @@ window.openProduct = (id) => {
 
     currentProductId = id;
 
-    p.views = (p.views || 0) + 1; // trending boost
-
     recentlyViewed = [id, ...recentlyViewed.filter(x => x !== id)].slice(0, 10);
+    saveLocal();
 
-    save();
+    document.getElementById("productModal")?.classList.add("show");
 
-    document.getElementById("productModal").classList.add("show");
-
-    document.getElementById("modalName").innerText = p.name;
+    document.getElementById("modalName").innerText = p.name || "";
     document.getElementById("modalPrice").innerText = "Rs " + finalPrice(p);
-    document.getElementById("modalDesc").innerText = p.description;
+    document.getElementById("modalDesc").innerText = p.description || "";
 
     loadRelated(p.category, id);
 };
 
 /* =========================
-RELATED PRODUCTS (SMART)
+RELATED PRODUCTS
 ========================= */
 function loadRelated(category, id) {
 
@@ -203,79 +194,36 @@ function loadRelated(category, id) {
         .filter(p => p.category === category && p.id !== id)
         .slice(0, 4);
 
-    const box = document.getElementById("relatedBox") || createRelatedBox();
+    let box = document.getElementById("relatedBox");
+
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "relatedBox";
+        document.querySelector(".modal-content")?.appendChild(box);
+    }
 
     box.innerHTML =
         `<h4>Related Products</h4>` +
-        related.map(p =>
-            `<p onclick="openProduct('${p.id}')">➡ ${p.name}</p>`
-        ).join("");
-}
-
-function createRelatedBox() {
-    const div = document.createElement("div");
-    div.id = "relatedBox";
-    document.querySelector(".modal-content").appendChild(div);
-    return div;
+        related.map(p => `<p onclick="openProduct('${p.id}')">➡ ${p.name}</p>`).join("");
 }
 
 /* =========================
-COUPON SYSTEM (NEW)
-========================= */
-function setupCouponInput() {
-    const el = document.getElementById("couponInput");
-    if (!el) return;
-
-    el.addEventListener("change", () => {
-        const code = el.value.trim().toUpperCase();
-
-        if (coupons[code]) {
-            appliedCoupon = coupons[code];
-            toast(`Coupon applied: ${appliedCoupon}% OFF`);
-        } else {
-            appliedCoupon = null;
-            toast("Invalid coupon");
-        }
-    });
-}
-
-/* =========================
-PRICE CALC (WITH COUPON)
-========================= */
-function finalPrice(p) {
-
-    let price = p.price;
-
-    if (p.discount) {
-        price = price - (price * p.discount / 100);
-    }
-
-    if (appliedCoupon) {
-        price = price - (price * appliedCoupon / 100);
-    }
-
-    return Math.round(price);
-}
-
-/* =========================
-CART SYSTEM
+CART
 ========================= */
 window.addToCartById = (id) => {
+
     const p = allProducts.find(x => x.id === id);
-    if (p) addToCart(p);
-};
+    if (!p) return;
 
-function addToCart(p) {
-
-    const item = cart.find(x => x.id === p.id);
+    const item = cart.find(x => x.id === id);
 
     if (item) item.qty += 1;
-    else cart.push({ id: p.id, name: p.name, price: finalPrice(p), qty: 1 });
+    else cart.push({ id, name: p.name, price: finalPrice(p), qty: 1 });
 
-    save();
+    saveLocal();
     updateCartUI();
     toast("Added 🛒");
-}
+};
 
 window.updateCartUI = () => {
 
@@ -283,6 +231,8 @@ window.updateCartUI = () => {
     const count = document.getElementById("floatingCartCount");
 
     let totalQty = 0;
+
+    if (!el) return;
 
     el.innerHTML = cart.map(i => {
         totalQty += i.qty;
@@ -294,49 +244,64 @@ window.updateCartUI = () => {
         </div>`;
     }).join("");
 
-    count.innerText = totalQty;
-    save();
+    if (count) count.innerText = totalQty;
 };
 
 /* =========================
 WISHLIST
 ========================= */
 window.toggleWishlist = (id) => {
-    wishlist.includes(id)
-        ? wishlist = wishlist.filter(x => x !== id)
-        : wishlist.push(id);
 
-    save();
-    toast("Wishlist updated ❤️");
+    if (wishlist.includes(id)) {
+        wishlist = wishlist.filter(x => x !== id);
+        toast("Removed ❤️");
+    } else {
+        wishlist.push(id);
+        toast("Added ❤️");
+    }
+
+    saveLocal();
 };
 
 /* =========================
-REVIEWS
+COUPON
 ========================= */
-function setupStars() {
-    setTimeout(() => {
-        document.querySelectorAll("#starRating i").forEach((s, i) => {
-            s.onclick = () => {
-                selectedRating = i + 1;
-                updateStars();
-            };
-        });
-    }, 400);
-}
+function setupCoupon() {
 
-function updateStars() {
-    document.querySelectorAll("#starRating i").forEach((s, i) => {
-        s.className = i < selectedRating ? "fa-solid fa-star" : "fa-regular fa-star";
+    const input = document.getElementById("couponInput");
+    if (!input) return;
+
+    input.addEventListener("change", () => {
+
+        const code = input.value.trim().toUpperCase();
+
+        if (coupons[code]) {
+            appliedCoupon = coupons[code];
+            toast("Coupon applied " + appliedCoupon + "%");
+        } else {
+            appliedCoupon = null;
+            toast("Invalid coupon");
+        }
     });
 }
 
-function bindReview() {
+/* =========================
+REVIEWS (SAFE)
+========================= */
+function setupReviews() {
+
     setTimeout(() => {
-        document.getElementById("reviewSubmitBtn").onclick = async () => {
 
-            const text = document.getElementById("reviewText").value;
+        document.getElementById("reviewSubmitBtn")?.addEventListener("click", async () => {
 
-            if (!text || !selectedRating) return toast("Add rating");
+            const text = document.getElementById("reviewText")?.value;
+
+            if (!text || !selectedRating) {
+                toast("Add rating + review");
+                return;
+            }
+
+            if (!currentProductId) return;
 
             await addDoc(collection(db, "reviews"), {
                 productId: currentProductId,
@@ -346,19 +311,24 @@ function bindReview() {
             });
 
             toast("Review added");
-        };
+        });
+
     }, 500);
 }
 
 /* =========================
-FIREBASE LIVE
+FIREBASE LIVE SAFE LOAD
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
-    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() })) || [];
+
     renderProducts(allProducts);
 });
 
 onSnapshot(collection(db, "reviews"), (snap) => {
-    allReviews = snap.docs.map(d => d.data());
+
+    allReviews = snap.docs.map(d => d.data()) || [];
+
     renderProducts(allProducts);
 });
