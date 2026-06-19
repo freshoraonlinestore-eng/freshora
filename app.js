@@ -4,58 +4,34 @@ import { db, collection, onSnapshot, addDoc } from "./firebase.js";
 STATE
 ========================= */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let allProducts = [];
-let selectedRating = 0;
-let currentProductId = null;
-
-let allReviews = [];
-
-/* PHASE 2 */
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 
-/* PHASE 3 */
-let viewCount = JSON.parse(localStorage.getItem("viewCount")) || {};
+let allProducts = [];
+let allReviews = [];
+
+let selectedRating = 0;
+let currentProductId = null;
 
 /* =========================
 UTIL
 ========================= */
-function num(v) {
-    const n = Number(v);
-    return isNaN(n) ? 0 : n;
-}
-
-function saveCart() {
+const save = () => {
     localStorage.setItem("cart", JSON.stringify(cart));
-}
-
-function saveWishlist() {
     localStorage.setItem("wishlist", JSON.stringify(wishlist));
-}
-
-function saveRecentlyViewed() {
     localStorage.setItem("recentlyViewed", JSON.stringify(recentlyViewed));
-}
+};
 
-function saveViews() {
-    localStorage.setItem("viewCount", JSON.stringify(viewCount));
-}
+const num = v => Number(v) || 0;
 
-function showToast(msg) {
-    const toast = document.getElementById("toast");
-    if (!toast) return;
+function toast(msg) {
+    const t = document.getElementById("toast");
+    if (!t) return;
 
-    toast.innerHTML = `
-        <i class="fa-solid fa-circle-check"></i>
-        <span>${msg}</span>
-    `;
+    t.innerHTML = `<i class="fa-solid fa-check"></i> ${msg}`;
+    t.classList.add("show");
 
-    toast.classList.add("show");
-
-    clearTimeout(window.toastTimeout);
-    window.toastTimeout = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2200);
+    setTimeout(() => t.classList.remove("show"), 2000);
 }
 
 /* =========================
@@ -63,217 +39,76 @@ INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
 
-    updateCartDisplay();
+    updateCartUI();
 
-    document.getElementById("searchInput")
-        ?.addEventListener("input", filterProducts);
+    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
+    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
 
-    document.getElementById("categoryFilter")
-        ?.addEventListener("change", filterProducts);
+    setupStars();
+    bindReview();
 
-    setupStarRating();
-    bindReviewButton();
+    document.getElementById("modalAddBtn")?.addEventListener("click", () => {
+        const p = allProducts.find(x => x.id === currentProductId);
+        if (p) addToCart(p);
+    });
 
-    document.getElementById("modalAddBtn")
-        ?.addEventListener("click", () => {
-            if (!currentProductId) return;
-
-            const p = allProducts.find(x => x.id === currentProductId);
-            if (!p) return;
-
-            addToCart(p.id, p.name, getFinalPrice(p), p.image);
-        });
-
-    renderRecentlyViewed();
+    renderWishlist();
 });
 
 /* =========================
 PRICE
 ========================= */
-function getFinalPrice(product) {
-    const price = num(product.price);
-    const discount = num(product.discount);
-
-    return discount > 0
-        ? Math.round(price - (price * discount / 100))
-        : price;
+function finalPrice(p) {
+    return p.discount > 0
+        ? Math.round(p.price - (p.price * p.discount / 100))
+        : p.price;
 }
 
 /* =========================
-CART
-========================= */
-window.updateCartDisplay = () => {
-
-    const cartItems = document.getElementById("cartItems");
-    const cartTotal = document.getElementById("cartTotal");
-    const floating = document.getElementById("floatingCartCount");
-
-    if (!cartItems) return;
-
-    let total = 0;
-    let qtyTotal = 0;
-
-    if (cart.length === 0) {
-        cartItems.innerHTML = `<p style="text-align:center;padding:20px;">Cart is empty</p>`;
-        if (cartTotal) cartTotal.innerText = "Total: Rs 0";
-        if (floating) floating.innerText = "0";
-        saveCart();
-        return;
-    }
-
-    cartItems.innerHTML = cart.map((item, i) => {
-
-        const price = num(item.price);
-        total += price * item.qty;
-        qtyTotal += item.qty;
-
-        return `
-        <div class="cart-item">
-            <img src="${item.image}">
-            <div style="flex:1">
-                <h4>${item.name}</h4>
-                <p>Rs ${price * item.qty}</p>
-
-                <div class="qty-box">
-                    <button onclick="changeQty(${i},-1)">-</button>
-                    <span>${item.qty}</span>
-                    <button onclick="changeQty(${i},1)">+</button>
-                </div>
-            </div>
-
-            <button class="remove-btn" onclick="removeFromCart(${i})">✕</button>
-        </div>`;
-    }).join("");
-
-    if (cartTotal) cartTotal.innerText = `Total: Rs ${total}`;
-    if (floating) floating.innerText = qtyTotal;
-
-    saveCart();
-};
-
-window.addToCart = (id, name, price, image) => {
-
-    const item = cart.find(i => i.id === id);
-
-    if (item) item.qty += 1;
-    else cart.push({ id, name, price: num(price), image, qty: 1 });
-
-    updateCartDisplay();
-    showToast("Added 🛒");
-};
-
-window.changeQty = (i, change) => {
-    if (!cart[i]) return;
-
-    cart[i].qty += change;
-    if (cart[i].qty <= 0) cart.splice(i, 1);
-
-    updateCartDisplay();
-};
-
-window.removeFromCart = (i) => {
-    cart.splice(i, 1);
-    updateCartDisplay();
-    showToast("Removed");
-};
-
-window.clearCart = () => {
-    cart = [];
-    updateCartDisplay();
-    showToast("Cart cleared");
-};
-
-/* =========================
-WISHLIST
-========================= */
-window.toggleWishlist = (id) => {
-
-    if (wishlist.includes(id)) {
-        wishlist = wishlist.filter(w => w !== id);
-        showToast("Removed ❤️");
-    } else {
-        wishlist.push(id);
-        showToast("Added ❤️");
-    }
-
-    saveWishlist();
-    renderProducts(allProducts);
-};
-
-/* =========================
-RECENTLY VIEWED + TRACK
-========================= */
-function trackView(product) {
-
-    viewCount[product.id] = (viewCount[product.id] || 0) + 1;
-    saveViews();
-
-    recentlyViewed = recentlyViewed.filter(p => p.id !== product.id);
-    recentlyViewed.unshift(product);
-
-    if (recentlyViewed.length > 8) recentlyViewed.pop();
-
-    saveRecentlyViewed();
-    renderRecentlyViewed();
-}
-
-window.renderRecentlyViewed = () => {
-
-    const grid = document.getElementById("recentlyViewedGrid");
-    if (!grid) return;
-
-    if (!recentlyViewed.length) {
-        grid.innerHTML = `<p style="color:var(--muted);text-align:center;">No recently viewed</p>`;
-        return;
-    }
-
-    grid.innerHTML = recentlyViewed.map(p => `
-        <div class="card">
-            <img src="${p.image}">
-            <div class="card-content">
-                <h3>${p.name}</h3>
-                <button onclick="openModal('${p.id}')">View</button>
-            </div>
-        </div>
-    `).join("");
-};
-
-/* =========================
-FILTER
+PRODUCT FILTER + SEARCH
 ========================= */
 window.filterProducts = () => {
+    const q = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const cat = document.getElementById("categoryFilter")?.value || "all";
 
-    const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    let list = [...allProducts];
 
-    let filtered = allProducts.filter(p =>
-        (p.name || "").toLowerCase().includes(search)
-    );
+    list = list.filter(p => p.name.toLowerCase().includes(q));
 
-    renderProducts(filtered);
+    if (cat !== "all") {
+        list = list.filter(p => p.category === cat);
+    }
+
+    if (!list.length) {
+        document.getElementById("products").innerHTML =
+            `<p style="text-align:center;width:100%">No products found 😢</p>`;
+        return;
+    }
+
+    renderProducts(list);
 };
 
 /* =========================
-RENDER PRODUCTS
+PRODUCT RENDER
 ========================= */
 window.renderProducts = (products) => {
 
     const grid = document.getElementById("products");
-    if (!grid) return;
-
-    if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;">No products</p>`;
-        return;
-    }
 
     grid.innerHTML = products.map(p => {
 
-        const price = getFinalPrice(p);
-        const wish = wishlist.includes(p.id);
+        const price = finalPrice(p);
+        const reviews = allReviews.filter(r => r.productId === p.id);
+        const avg = reviews.length
+            ? (reviews.reduce((a, b) => a + num(b.rating), 0) / reviews.length).toFixed(1)
+            : 0;
 
         return `
         <div class="card">
 
-            <img src="${p.image || ''}">
+            ${p.discount ? `<div class="discount-badge">-${p.discount}%</div>` : ""}
+
+            <img src="${p.image}">
 
             <div class="card-content">
 
@@ -283,16 +118,18 @@ window.renderProducts = (products) => {
                     <span class="new-price">Rs ${price}</span>
                 </div>
 
+                <div class="product-rating">
+                    ⭐ ${avg} (${reviews.length})
+                </div>
+
                 <div class="card-buttons">
-                    <button onclick="openModal('${p.id}')">View</button>
-                    <button onclick="addToCart('${p.id}','${p.name}',${price},'${p.image}')">Add</button>
+                    <button onclick="openProduct('${p.id}')">View</button>
+                    <button onclick="addToCartById('${p.id}')">Add</button>
                 </div>
 
                 <button onclick="toggleWishlist('${p.id}')"
-                    style="margin-top:8px;width:100%;padding:8px;border:none;border-radius:8px;
-                    background:${wish ? '#ff3b30' : '#eee'};
-                    color:${wish ? '#fff' : '#111'}">
-                    ${wish ? '❤️ Wishlisted' : '🤍 Wishlist'}
+                        style="margin-top:8px;background:#eee;width:100%;">
+                    ❤️ Wishlist
                 </button>
 
             </div>
@@ -301,102 +138,173 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-MODAL
+WISHLIST
 ========================= */
-window.openModal = (id) => {
+window.toggleWishlist = (id) => {
+    if (wishlist.includes(id)) {
+        wishlist = wishlist.filter(x => x !== id);
+        toast("Removed from wishlist");
+    } else {
+        wishlist.push(id);
+        toast("Added to wishlist ❤️");
+    }
+    save();
+    renderWishlist();
+};
+
+function renderWishlist() {
+    console.log("Wishlist:", wishlist);
+}
+
+/* =========================
+RECENTLY VIEWED
+========================= */
+function addRecentlyViewed(id) {
+    recentlyViewed = [id, ...recentlyViewed.filter(x => x !== id)].slice(0, 10);
+    save();
+}
+
+/* =========================
+OPEN PRODUCT
+========================= */
+window.openProduct = (id) => {
 
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
 
     currentProductId = id;
 
-    const images = p.images?.length ? p.images : [p.image];
+    addRecentlyViewed(id);
 
     document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
-    document.getElementById("modalDesc").innerText = p.description || "";
+    document.getElementById("modalPrice").innerText = "Rs " + finalPrice(p);
+    document.getElementById("modalDesc").innerText = p.description;
 
-    document.getElementById("galleryContainer").innerHTML = `
-        <img src="${images[0]}" class="main-img" id="mainModalImg">
-    `;
+    document.getElementById("productModal").classList.add("show");
 
-    document.getElementById("productModal")?.classList.add("show");
-
-    selectedRating = 0;
-    updateStars(0);
-
-    trackView(p);
-};
-
-window.closeModal = () => {
-    document.getElementById("productModal")?.classList.remove("show");
-    currentProductId = null;
+    loadRelated(p.category, id);
 };
 
 /* =========================
-RATING + REVIEWS
+RELATED PRODUCTS
 ========================= */
-function setupStarRating() {
+function loadRelated(category, id) {
+    const related = allProducts.filter(p => p.category === category && p.id !== id).slice(0, 4);
+
+    if (!document.getElementById("relatedBox")) {
+        const div = document.createElement("div");
+        div.id = "relatedBox";
+        div.innerHTML = "<h4>Related Products</h4><div id='relatedList'></div>";
+        document.querySelector(".modal-content").appendChild(div);
+    }
+
+    document.getElementById("relatedList").innerHTML =
+        related.map(p => `<p onclick="openProduct('${p.id}')">➡ ${p.name}</p>`).join("");
+}
+
+/* =========================
+CART
+========================= */
+window.addToCartById = (id) => {
+    const p = allProducts.find(x => x.id === id);
+    if (p) addToCart(p);
+};
+
+function addToCart(p) {
+    const item = cart.find(x => x.id === p.id);
+
+    if (item) item.qty += 1;
+    else cart.push({ id: p.id, name: p.name, price: finalPrice(p), qty: 1 });
+
+    save();
+    updateCartUI();
+    toast("Added to cart 🛒");
+}
+
+window.updateCartUI = () => {
+
+    const el = document.getElementById("cartItems");
+    const count = document.getElementById("floatingCartCount");
+
+    let totalQty = 0;
+
+    el.innerHTML = cart.map((i, idx) => {
+        totalQty += i.qty;
+
+        return `
+        <div class="cart-item">
+            <div>
+                <h4>${i.name}</h4>
+                <p>Rs ${i.price * i.qty}</p>
+
+                <div class="qty-box">
+                    <button onclick="changeQty(${idx},-1)">-</button>
+                    <span>${i.qty}</span>
+                    <button onclick="changeQty(${idx},1)">+</button>
+                </div>
+            </div>
+        </div>`;
+    }).join("");
+
+    count.innerText = totalQty;
+    save();
+};
+
+window.changeQty = (i, v) => {
+    cart[i].qty += v;
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+    updateCartUI();
+};
+
+/* =========================
+REVIEWS
+========================= */
+function setupStars() {
     setTimeout(() => {
-        document.querySelectorAll("#starRating i").forEach((star, i) => {
-            star.onclick = () => {
+        document.querySelectorAll("#starRating i").forEach((s, i) => {
+            s.onclick = () => {
                 selectedRating = i + 1;
-                updateStars(selectedRating);
+                updateStars();
             };
         });
     }, 300);
 }
 
-function updateStars(rating) {
-    document.querySelectorAll("#starRating i").forEach((star, i) => {
-        star.classList.toggle("fa-solid", i < rating);
-        star.classList.toggle("fa-regular", i >= rating);
+function updateStars() {
+    document.querySelectorAll("#starRating i").forEach((s, i) => {
+        s.className = i < selectedRating ? "fa-solid fa-star" : "fa-regular fa-star";
     });
 }
 
-function bindReviewButton() {
-
+function bindReview() {
     setTimeout(() => {
+        document.getElementById("reviewSubmitBtn").onclick = async () => {
 
-        const btn = document.getElementById("reviewSubmitBtn");
+            const text = document.getElementById("reviewText").value;
 
-        if (!btn) return;
-
-        btn.onclick = async () => {
-
-            const text = document.getElementById("reviewText")?.value;
-
-            if (!text || selectedRating === 0) {
-                showToast("Add rating + review");
-                return;
-            }
+            if (!text || !selectedRating) return toast("Add review + rating");
 
             await addDoc(collection(db, "reviews"), {
                 productId: currentProductId,
-                rating: selectedRating,
                 text,
-                createdAt: new Date().toISOString()
+                rating: selectedRating,
+                createdAt: Date.now()
             });
 
-            showToast("Review added");
-
-            document.getElementById("reviewText").value = "";
-            selectedRating = 0;
-            updateStars(0);
+            toast("Review added");
         };
-
-    }, 300);
+    }, 500);
 }
 
 /* =========================
-FIREBASE
+FIREBASE LIVE DATA
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderProducts(allProducts);
-    document.getElementById("loadingScreen")?.remove();
 });
 
 onSnapshot(collection(db, "reviews"), (snap) => {
     allReviews = snap.docs.map(d => d.data());
+    renderProducts(allProducts);
 });
