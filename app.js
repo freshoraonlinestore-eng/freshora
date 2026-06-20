@@ -1,9 +1,9 @@
-import { db, collection, onSnapshot, addDoc } from "./firebase.js";
-
-/* =========================
-🚀 INIT DEBUG
-========================= */
-console.log("🚀 APP LOADED");
+import {
+    db,
+    collection,
+    onSnapshot,
+    addDoc
+} from "./firebase.js";
 
 /* =========================
 STATE
@@ -11,12 +11,14 @@ STATE
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 let allReviews = [];
-let currentProductId = null;
 let selectedRating = 0;
+let currentProductId = null;
 
 /* =========================
 UTILS
 ========================= */
+const $ = (id) => document.getElementById(id);
+
 function num(v) {
     const n = Number(v);
     return isNaN(n) ? 0 : n;
@@ -26,32 +28,37 @@ function saveCart() {
     localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-function showToast(msg) {
-    const toast = document.getElementById("toast");
-    if (!toast) return;
+function toast(msg) {
+    const t = $("toast");
+    if (!t) return;
 
-    toast.innerHTML = msg;
-    toast.classList.add("show");
+    t.innerHTML = `<i class="fa-solid fa-check"></i> ${msg}`;
+    t.classList.add("show");
 
-    clearTimeout(window.__t);
-    window.__t = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2000);
+    setTimeout(() => t.classList.remove("show"), 2000);
 }
 
 /* =========================
 INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
-    console.log("📄 DOM READY");
 
-    updateCartDisplay();
+    $("searchInput")?.addEventListener("input", filterProducts);
+    $("categoryFilter")?.addEventListener("change", filterProducts);
 
-    document.getElementById("searchInput")?.addEventListener("input", filterProducts);
-    document.getElementById("categoryFilter")?.addEventListener("change", filterProducts);
+    $("modalAddBtn")?.addEventListener("click", () => {
+        if (!currentProductId) return;
 
-    setupStars();
+        const p = allProducts.find(x => x.id === currentProductId);
+        if (!p) return;
+
+        addToCart(p.id, p.name, getFinalPrice(p), p.image);
+    });
+
     bindReview();
+    setupStars();
+
+    updateCartUI();
 });
 
 /* =========================
@@ -62,43 +69,132 @@ function getFinalPrice(p) {
     const discount = num(p.discount);
 
     return discount > 0
-        ? Math.round(price - price * discount / 100)
+        ? Math.round(price - (price * discount / 100))
         : price;
 }
 
 /* =========================
-FIREBASE PRODUCTS
+CART
 ========================= */
-onSnapshot(collection(db, "products"), (snap) => {
-    console.log("🔥 PRODUCTS:", snap.docs.length);
+window.addToCart = (id, name, price, image) => {
 
-    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderProducts(allProducts);
+    const item = cart.find(i => i.id === id);
 
-    document.getElementById("loadingScreen")?.remove();
-});
+    if (item) item.qty += 1;
+    else cart.push({ id, name, price, image, qty: 1 });
+
+    saveCart();
+    updateCartUI();
+    toast("Added to cart");
+};
+
+window.changeQty = (i, v) => {
+    if (!cart[i]) return;
+
+    cart[i].qty += v;
+
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+
+    saveCart();
+    updateCartUI();
+};
+
+window.removeFromCart = (i) => {
+    cart.splice(i, 1);
+    saveCart();
+    updateCartUI();
+};
+
+window.clearCart = () => {
+    cart = [];
+    saveCart();
+    updateCartUI();
+};
 
 /* =========================
-FIREBASE REVIEWS
+CART UI
 ========================= */
-onSnapshot(collection(db, "reviews"), (snap) => {
-    allReviews = snap.docs.map(d => d.data());
-    renderProducts(allProducts);
-});
+window.updateCartUI = () => {
 
-/* =========================
-RENDER PRODUCTS
-========================= */
-window.renderProducts = (products) => {
-    const grid = document.getElementById("products");
-    if (!grid) return;
+    const box = $("cartItems");
+    const totalBox = $("cartTotal");
+    const badge = $("floatingCartCount");
 
-    if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
+    if (!box) return;
+
+    if (cart.length === 0) {
+        box.innerHTML = `<p style="text-align:center">Cart Empty</p>`;
+        if (totalBox) totalBox.innerText = "Total: Rs 0";
+        if (badge) badge.innerText = "0";
         return;
     }
 
-    grid.innerHTML = products.map(p => {
+    let total = 0;
+    let qty = 0;
+
+    box.innerHTML = cart.map((c, i) => {
+        total += c.price * c.qty;
+        qty += c.qty;
+
+        return `
+        <div class="cart-item">
+            <img src="${c.image}">
+            <div style="flex:1">
+                <h4>${c.name}</h4>
+                <p>Rs ${c.price * c.qty}</p>
+
+                <div class="qty-box">
+                    <button onclick="changeQty(${i},-1)">-</button>
+                    <span>${c.qty}</span>
+                    <button onclick="changeQty(${i},1)">+</button>
+                </div>
+            </div>
+
+            <button class="remove-btn" onclick="removeFromCart(${i})">✕</button>
+        </div>`;
+    }).join("");
+
+    if (totalBox) totalBox.innerText = `Total: Rs ${total}`;
+    if (badge) badge.innerText = qty;
+};
+
+/* =========================
+FILTER
+========================= */
+window.filterProducts = () => {
+
+    const q = ($("searchInput")?.value || "").toLowerCase();
+    const cat = $("categoryFilter")?.value || "all";
+
+    let list = [...allProducts];
+
+    if (q) {
+        list = list.filter(p =>
+            (p.name || "").toLowerCase().includes(q)
+        );
+    }
+
+    if (cat !== "all") {
+        list = list.filter(p => p.category === cat);
+    }
+
+    renderProducts(list);
+};
+
+/* =========================
+PRODUCT RENDER
+========================= */
+window.renderProducts = (list) => {
+
+    const grid = $("products");
+    if (!grid) return;
+
+    if (!list.length) {
+        grid.innerHTML = `<p style="text-align:center;width:100%">No Products Found</p>`;
+        return;
+    }
+
+    grid.innerHTML = list.map(p => {
 
         const final = getFinalPrice(p);
 
@@ -109,10 +205,12 @@ window.renderProducts = (products) => {
 
         return `
         <div class="card">
+
             <img src="${p.image || ''}">
 
             <div class="card-content">
-                <h3>${p.name || ''}</h3>
+
+                <h3>${p.name}</h3>
 
                 <div class="price-box">
                     <span class="new-price">Rs ${final}</span>
@@ -126,172 +224,64 @@ window.renderProducts = (products) => {
                     <button onclick="openModal('${p.id}')">View</button>
                     <button onclick="addToCart('${p.id}','${p.name}',${final},'${p.image}')">Add</button>
                 </div>
+
             </div>
         </div>`;
     }).join("");
 };
 
 /* =========================
-FILTER
-========================= */
-window.filterProducts = () => {
-    const s = document.getElementById("searchInput")?.value.toLowerCase() || "";
-    const c = document.getElementById("categoryFilter")?.value || "all";
-
-    let filtered = [...allProducts];
-
-    filtered = filtered.filter(p =>
-        (p.name || "").toLowerCase().includes(s)
-    );
-
-    if (c !== "all") {
-        filtered = filtered.filter(p => p.category === c);
-    }
-
-    renderProducts(filtered);
-};
-
-/* =========================
-CART SYSTEM
-========================= */
-window.addToCart = (id, name, price, image) => {
-    const item = cart.find(i => i.id === id);
-
-    if (item) item.qty++;
-    else cart.push({ id, name, price: num(price), image, qty: 1 });
-
-    updateCartDisplay();
-    showToast("Added 🛒");
-};
-
-window.changeQty = (i, c) => {
-    if (!cart[i]) return;
-
-    cart[i].qty += c;
-
-    if (cart[i].qty <= 0) cart.splice(i, 1);
-
-    updateCartDisplay();
-};
-
-window.removeFromCart = (i) => {
-    cart.splice(i, 1);
-    updateCartDisplay();
-};
-
-window.clearCart = () => {
-    cart = [];
-    updateCartDisplay();
-    showToast("Cart cleared");
-};
-
-window.updateCartDisplay = () => {
-    const el = document.getElementById("cartItems");
-    const totalEl = document.getElementById("cartTotal");
-    const countEl = document.getElementById("floatingCartCount");
-
-    let total = 0;
-    let qty = 0;
-
-    if (!cart.length) {
-        el.innerHTML = "Cart empty";
-        if (totalEl) totalEl.innerText = "Total: Rs 0";
-        if (countEl) countEl.innerText = "0";
-        saveCart();
-        return;
-    }
-
-    el.innerHTML = cart.map((i, index) => {
-        total += i.price * i.qty;
-        qty += i.qty;
-
-        return `
-        <div class="cart-item">
-            <img src="${i.image}">
-            <div>
-                <h4>${i.name}</h4>
-                <p>Rs ${i.price * i.qty}</p>
-
-                <div class="qty-box">
-                    <button onclick="changeQty(${index},-1)">-</button>
-                    <span>${i.qty}</span>
-                    <button onclick="changeQty(${index},1)">+</button>
-                </div>
-            </div>
-
-            <button onclick="removeFromCart(${index})">✕</button>
-        </div>`;
-    }).join("");
-
-    if (totalEl) totalEl.innerText = `Total: Rs ${total}`;
-    if (countEl) countEl.innerText = qty;
-
-    saveCart();
-};
-
-/* =========================
-MODAL FIXED
+MODAL
 ========================= */
 window.openModal = (id) => {
+
     const p = allProducts.find(x => x.id === id);
     if (!p) return;
 
     currentProductId = id;
 
-    document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
-    document.getElementById("modalDesc").innerText = p.description || "";
+    $("productModal").classList.add("show");
 
-    document.getElementById("productModal")?.classList.add("show");
+    $("modalName").innerText = p.name;
+    $("modalPrice").innerText = "Rs " + getFinalPrice(p);
+    $("modalDesc").innerText = p.description || "";
 
-    selectedRating = 0;
-    updateStars(0);
-};
+    $("galleryContainer").innerHTML = `
+        <img src="${p.image}" class="main-img">
+    `;
 
-window.closeModal = () => {
-    document.getElementById("productModal")?.classList.remove("show");
+    loadReviews();
 };
 
 /* =========================
-STARS FIXED
+REVIEWS
 ========================= */
 function setupStars() {
+
     setTimeout(() => {
         document.querySelectorAll("#starRating i").forEach((s, i) => {
             s.onclick = () => {
                 selectedRating = i + 1;
-                updateStars(selectedRating);
+
+                document.querySelectorAll("#starRating i").forEach((x, j) => {
+                    x.classList.toggle("fa-solid", j < selectedRating);
+                    x.classList.toggle("fa-regular", j >= selectedRating);
+                });
             };
         });
     }, 300);
 }
 
-function updateStars(rating) {
-    document.querySelectorAll("#starRating i").forEach((s, i) => {
-        if (i < rating) {
-            s.classList.add("fa-solid");
-            s.classList.remove("fa-regular");
-        } else {
-            s.classList.add("fa-regular");
-            s.classList.remove("fa-solid");
-        }
-    });
-}
-
-/* =========================
-REVIEWS FIXED
-========================= */
 function bindReview() {
+
     setTimeout(() => {
-        const btn = document.getElementById("reviewSubmitBtn");
 
-        btn.onclick = async () => {
-            const text = document.getElementById("reviewText")?.value;
+        $("reviewSubmitBtn")?.addEventListener("click", async () => {
 
-            if (!text || !selectedRating || !currentProductId) {
-                showToast("Add rating + review");
-                return;
-            }
+            const text = $("reviewText")?.value;
+
+            if (!currentProductId) return toast("Open product first");
+            if (!text || selectedRating === 0) return toast("Add rating + review");
 
             await addDoc(collection(db, "reviews"), {
                 productId: currentProductId,
@@ -300,67 +290,72 @@ function bindReview() {
                 createdAt: Date.now()
             });
 
-            document.getElementById("reviewText").value = "";
+            $("reviewText").value = "";
             selectedRating = 0;
 
-            showToast("Review added");
-        };
+            toast("Review added");
+        });
+
     }, 300);
 }
 
 /* =========================
-CHECKOUT FIXED (IMPORTANT)
+LOAD REVIEWS
 ========================= */
-window.checkout = () => {
-    const name = document.getElementById("cusName")?.value;
-    const phone = document.getElementById("cusPhone")?.value;
-    const address = document.getElementById("cusAddress")?.value;
+function loadReviews() {
 
-    if (!name || !phone || !address) {
-        showToast("Fill all details");
-        return;
-    }
+    const box = $("reviewList");
+    if (!box) return;
 
-    if (!cart.length) {
-        showToast("Cart empty");
-        return;
-    }
+    const r = allReviews.filter(x => x.productId === currentProductId);
 
-    let subtotal = 0;
+    box.innerHTML = r.map(x => `
+        <div class="review-item">
+            ⭐ ${x.rating} - ${x.text}
+        </div>
+    `).join("");
+}
 
-    const items = cart.map(i => {
-        const t = i.price * i.qty;
-        subtotal += t;
-        return `${i.name} x${i.qty} = Rs ${t}`;
-    }).join("\n");
+/* =========================
+CHECKOUT
+========================= */
+window.checkout = async () => {
 
-    const delivery = subtotal > 5000 ? 0 : 375;
-    const total = subtotal + delivery;
+    const name = $("cusName")?.value;
+    const phone = $("cusPhone")?.value;
+    const address = $("cusAddress")?.value;
 
-    const msg = `
-🟢 ORDER
+    if (!name || !phone || !address) return toast("Fill all fields");
+    if (!cart.length) return toast("Cart empty");
 
-Name: ${name}
-Phone: ${phone}
-Address: ${address}
+    const order = {
+        customerName: name,
+        phone,
+        address,
+        items: cart,
+        total: cart.reduce((a, b) => a + b.price * b.qty, 0),
+        createdAt: Date.now()
+    };
 
-Items:
-${items}
+    window.open(
+        `https://wa.me/94752425790?text=${encodeURIComponent(JSON.stringify(order))}`,
+        "_blank"
+    );
 
-Total: Rs ${total}
-`;
-
-    window.open(`https://wa.me/94752425790?text=${encodeURIComponent(msg)}`);
+    await addDoc(collection(db, "orders"), order);
 
     cart = [];
-    updateCartDisplay();
+    saveCart();
+    updateCartUI();
+
+    toast("Order sent");
 };
 
 /* =========================
 UI
 ========================= */
 window.toggleCart = () => {
-    document.getElementById("cartDrawer")?.classList.toggle("open");
+    $("cartDrawer")?.classList.toggle("open");
 };
 
 window.toggleDarkMode = () => {
@@ -368,8 +363,19 @@ window.toggleDarkMode = () => {
 };
 
 /* =========================
-ERROR HANDLER
+FIREBASE
 ========================= */
-window.addEventListener("error", e => {
-    console.error("❌ ERROR:", e.message);
+onSnapshot(collection(db, "products"), (snap) => {
+    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    renderProducts(allProducts);
+    $("loadingScreen")?.remove();
+});
+
+onSnapshot(collection(db, "reviews"), (snap) => {
+    allReviews = snap.docs.map(d => d.data());
+
+    renderProducts(allProducts);
+
+    if (currentProductId) loadReviews();
 });
