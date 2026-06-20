@@ -12,7 +12,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- PDF LIB (SAFE ADD - does not break anything) -->
+<!-- PDF LIB -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 </head>
@@ -28,7 +28,10 @@
 
     <!-- ================= LOGOUT ================= -->
     <div style="text-align:center;">
-        <button onclick="logout()" style="background:red;color:white;padding:10px 15px;border:none;border-radius:8px;">
+        <button type="button"
+            onclick="logout()"
+            style="background:red;color:white;padding:10px 15px;border:none;border-radius:8px;">
+
             <i class="fas fa-right-from-bracket"></i> Logout
         </button>
     </div>
@@ -39,7 +42,10 @@
     <div class="admin-card">
         <p><i class="fas fa-box"></i> Products: <span id="totalProducts">0</span></p>
         <p><i class="fas fa-cubes"></i> Total Stock: <span id="totalStock">0</span></p>
-        <p style="color:red;"><i class="fas fa-triangle-exclamation"></i> Low Stock: <span id="lowStock">0</span></p>
+        <p style="color:red;">
+            <i class="fas fa-triangle-exclamation"></i>
+            Low Stock: <span id="lowStock">0</span>
+        </p>
     </div>
 
     <!-- ================= DELIVERY ================= -->
@@ -56,7 +62,7 @@
 
         <input id="deliveryCost" type="number" placeholder="Delivery Cost">
 
-        <button onclick="saveDeliveryFee()">
+        <button type="button" onclick="saveDeliveryFee()">
             <i class="fas fa-plus"></i> Save
         </button>
 
@@ -83,10 +89,10 @@
         <!-- MULTI IMAGE -->
         <input id="pimageFile" type="file" multiple accept="image/*">
 
-        <!-- PREVIEW (SAFE - JS uses it) -->
+        <!-- PREVIEW -->
         <div id="previewContainer" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"></div>
 
-        <!-- PROGRESS BAR -->
+        <!-- PROGRESS -->
         <div style="width:100%;background:#eee;height:8px;border-radius:10px;margin-top:10px;">
             <div id="uploadProgress" style="width:0%;height:8px;background:green;border-radius:10px;"></div>
         </div>
@@ -95,15 +101,21 @@
 
         <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
 
-            <button onclick="uploadAndAddProduct()" style="background:green;color:white;">
+            <button type="button"
+                onclick="uploadAndAddProduct()"
+                style="background:green;color:white;">
+
                 <i class="fas fa-plus"></i> Add
             </button>
 
-            <button onclick="updateSelected()" style="background:orange;color:white;">
+            <button type="button"
+                onclick="updateSelected()"
+                style="background:orange;color:white;">
+
                 <i class="fas fa-pen"></i> Update
             </button>
 
-            <button onclick="clearForm()">
+            <button type="button" onclick="clearForm()">
                 <i class="fas fa-broom"></i> Clear
             </button>
 
@@ -116,7 +128,8 @@
 
     <div class="admin-card">
         <input id="catName" placeholder="New Category">
-        <button onclick="addCategory()">
+
+        <button type="button" onclick="addCategory()">
             <i class="fas fa-plus"></i> Add
         </button>
     </div>
@@ -143,7 +156,9 @@
             </thead>
 
             <tbody id="orderList">
-                <tr><td colspan="7" style="text-align:center;">No Orders</td></tr>
+                <tr>
+                    <td colspan="7" style="text-align:center;">No Orders</td>
+                </tr>
             </tbody>
 
         </table>
@@ -180,12 +195,14 @@
 
     <!-- ================= ANALYTICS ================= -->
     <h3><i class="fas fa-chart-line"></i> Sales Analytics</h3>
+
     <canvas id="analyticsChart"></canvas>
 
 </div>
 
-<!-- ================= BILL MODAL (SAFE ADD) ================= -->
-<div id="billModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000aa;z-index:9999;">
+<!-- ================= BILL MODAL ================= -->
+<div id="billModal"
+     style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000aa;z-index:9999;">
 
     <div style="background:white;max-width:420px;margin:50px auto;padding:20px;border-radius:10px;">
 
@@ -195,11 +212,12 @@
 
         <div style="display:flex;gap:10px;margin-top:10px;">
 
-            <button onclick="downloadBill(currentOrder)">
+            <button type="button" onclick="downloadBill(currentOrder)">
                 <i class="fas fa-file-pdf"></i> PDF
             </button>
 
-            <button onclick="document.getElementById('billModal').style.display='none'">
+            <button type="button"
+                onclick="document.getElementById('billModal').style.display='none'">
                 Close
             </button>
 
@@ -209,7 +227,7 @@
 
 </div>
 
-<!-- ================= SCRIPT ================= -->
+<!-- SCRIPT -->
 <script type="module" src="admin.js?v=10"></script>
 
 </body>
