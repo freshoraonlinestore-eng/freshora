@@ -1,428 +1,306 @@
+import { db, collection, onSnapshot, addDoc } from "./firebase.js";
+
 /* =========================
-FRESHORA COMPLETE PREMIUM UI
-PHASE 1 UPDATED CSS (SAFE ENHANCED)
+STATE
 ========================= */
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let allProducts = [];
+let selectedRating = 0;
+let currentProductId = null;
+let allReviews = [];
 
-/* ROOT */
-:root{
-  --bg:#f5f7fb;
-  --card:#ffffff;
-  --text:#111111;
-  --muted:#777777;
-
-  --primary:#1f8f4d;
-  --green:#25d366;
-  --danger:#ff3b30;
-
-  --border:#dfeee3;
-  --radius:16px;
-
-  --shadow:0 10px 25px rgba(31,143,77,0.10);
+/* =========================
+UTIL
+========================= */
+function num(v) {
+    const n = Number(v);
+    return isNaN(n) ? 0 : n;
 }
 
-/* DARK MODE */
-body.dark{
-  --bg:#0d1510;
-  --card:#17201a;
-  --text:#ffffff;
-  --muted:#9fb3a4;
-  --border:#27362b;
+function saveCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-/* RESET */
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:"Segoe UI",sans-serif;
-}
+function showToast(msg) {
+    const toast = document.getElementById("toast");
+    if (!toast) return;
 
-html{
-  scroll-behavior:smooth;
-}
+    toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${msg}</span>`;
+    toast.classList.add("show");
 
-body{
-  background:
-    linear-gradient(to bottom, rgba(37,211,102,0.04), transparent 220px),
-    var(--bg);
-
-  color:var(--text);
-  transition:.3s;
-  overflow-x:hidden;
-}
-
-/* TOP BANNER */
-.top-banner{
-  background:#111;
-  color:#fff;
-  text-align:center;
-  padding:8px;
-  font-size:13px;
-}
-
-/* HEADER */
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-
-  padding:12px 16px;
-  position:sticky;
-  top:0;
-  z-index:1000;
-
-  background:rgba(255,255,255,0.75);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-
-  border-bottom:1px solid var(--border);
-  box-shadow:var(--shadow);
-}
-
-body.dark .header{
-  background:rgba(20,25,22,0.75);
-}
-
-/* LOGO */
-.logo-area{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  cursor:pointer;
-  padding:4px 8px;
-  border-radius:14px;
-  transition:.25s;
-}
-
-.logo-area:hover{
-  background:rgba(37,211,102,0.08);
-}
-
-.logo-img{
-  width:42px;
-  height:42px;
-  border-radius:10px;
-  object-fit:cover;
-  border:2px solid rgba(37,211,102,0.18);
-  box-shadow:0 5px 15px rgba(37,211,102,0.12);
-}
-
-.logo-text{
-  font-size:18px;
-  font-weight:800;
-  color:var(--primary);
-}
-
-/* SEARCH */
-.search-box{
-  flex:1;
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  padding:8px 10px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:var(--card);
-  box-shadow:0 5px 14px rgba(0,0,0,0.04);
-}
-
-.search-box:focus-within{
-  border-color:var(--green);
-  box-shadow:0 0 0 4px rgba(37,211,102,0.12);
-}
-
-.search-box input{
-  width:100%;
-  border:none;
-  outline:none;
-  background:transparent;
-  color:var(--text);
-}
-
-/* FILTERS */
-.advanced-search{
-  padding:10px;
-}
-
-.filter-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-
-.filter-grid select{
-  padding:10px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--card);
-  color:var(--text);
-}
-
-/* PRODUCTS GRID */
-.products-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:16px;
-  padding:16px;
-}
-
-/* CARD */
-.card{
-  position:relative;
-  overflow:hidden;
-
-  background:var(--card);
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
-
-  transition:.25s;
-}
-
-.card:hover{
-  transform:translateY(-6px);
-}
-
-/* IMAGE */
-.card img{
-  width:100%;
-  height:160px;
-  object-fit:cover;
-}
-
-/* CONTENT */
-.card-content{
-  padding:12px;
-}
-
-.card h3{
-  font-size:15px;
-  margin-bottom:6px;
-}
-
-/* PRICE */
-.price-box{
-  display:flex;
-  gap:8px;
-}
-
-.old-price{
-  text-decoration:line-through;
-  color:var(--muted);
-  font-size:12px;
-}
-
-.new-price{
-  color:var(--primary);
-  font-weight:700;
-}
-
-/* DISCOUNT BADGE */
-.discount-badge{
-  position:absolute;
-  top:10px;
-  left:10px;
-
-  background:linear-gradient(135deg,#22c55e,#15803d);
-  color:#fff;
-  padding:4px 8px;
-  border-radius:6px;
-  font-size:12px;
-}
-
-/* ⭐ RATING */
-.product-rating{
-  display:flex;
-  gap:6px;
-  margin-top:8px;
-  font-size:13px;
-  color:#ffb400;
+    clearTimeout(window.toastTimeout);
+    window.toastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
 }
 
 /* =========================
-❤️ WISHLIST BUTTON
+INIT
 ========================= */
-.card button.wishlist-btn{
-  position:absolute;
-  top:10px;
-  right:10px;
+window.addEventListener("DOMContentLoaded", () => {
 
-  width:32px;
-  height:32px;
-  border:none;
-  border-radius:50%;
-  cursor:pointer;
+    updateCartDisplay();
 
-  background:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+    document.getElementById("searchInput")
+        ?.addEventListener("input", filterProducts);
 
-  box-shadow:0 5px 10px rgba(0,0,0,0.1);
+    document.getElementById("categoryFilter")
+        ?.addEventListener("change", filterProducts);
+
+    setupStarRating();
+    bindReviewButton();
+
+    document.getElementById("modalAddBtn")
+        ?.addEventListener("click", () => {
+            if (!currentProductId) return;
+            const p = allProducts.find(x => x.id === currentProductId);
+            if (!p) return;
+
+            const price = getFinalPrice(p);
+            addToCart(p.id, p.name, price, p.image);
+        });
+});
+
+/* =========================
+PRICE
+========================= */
+function getFinalPrice(product) {
+    const price = num(product.price);
+    const discount = num(product.discount);
+
+    return discount > 0
+        ? Math.round(price - (price * discount / 100))
+        : price;
 }
 
-.card button.wishlist-active{
-  background:#ff3b30;
-  color:#fff;
+/* =========================
+CART SAFE (NO UI BREAK)
+========================= */
+window.updateCartDisplay = () => {
+
+    const cartItems = document.getElementById("cartItems");
+    const cartTotal = document.getElementById("cartTotal");
+    const floating = document.getElementById("floatingCartCount");
+
+    if (!cartItems) return;
+
+    let total = 0;
+    let totalQty = 0;
+
+    if (cart.length === 0) {
+        cartItems.innerHTML = `<p style="text-align:center;padding:20px;">Cart is empty</p>`;
+        if (cartTotal) cartTotal.innerText = "Total: Rs 0";
+        if (floating) floating.innerText = "0";
+        saveCart();
+        return;
+    }
+
+    cartItems.innerHTML = cart.map((item, i) => {
+
+        const price = num(item.price);
+        const qty = num(item.qty);
+
+        total += price * qty;
+        totalQty += qty;
+
+        return `
+        <div class="cart-item">
+            <img src="${item.image}">
+            <div style="flex:1">
+                <h4>${item.name}</h4>
+                <p>Rs ${price * qty}</p>
+
+                <div class="qty-box">
+                    <button onclick="changeQty(${i},-1)">-</button>
+                    <span>${qty}</span>
+                    <button onclick="changeQty(${i},1)">+</button>
+                </div>
+            </div>
+
+            <button class="remove-btn" onclick="removeFromCart(${i})">✕</button>
+        </div>`;
+    }).join("");
+
+    if (cartTotal) cartTotal.innerText = `Total: Rs ${total}`;
+    if (floating) floating.innerText = totalQty;
+
+    saveCart();
+};
+
+/* =========================
+CART ACTIONS
+========================= */
+window.addToCart = (id, name, price, image) => {
+    const item = cart.find(i => i.id === id);
+    if (item) item.qty += 1;
+    else cart.push({ id, name, price: num(price), image, qty: 1 });
+
+    updateCartDisplay();
+    showToast("Added 🛒");
+};
+
+window.changeQty = (i, c) => {
+    if (!cart[i]) return;
+    cart[i].qty += c;
+    if (cart[i].qty <= 0) cart.splice(i, 1);
+    updateCartDisplay();
+};
+
+window.removeFromCart = (i) => {
+    cart.splice(i, 1);
+    updateCartDisplay();
+    showToast("Removed");
+};
+
+window.clearCart = () => {
+    cart = [];
+    updateCartDisplay();
+    showToast("Cart cleared");
+};
+
+/* =========================
+FILTER SAFE
+========================= */
+window.filterProducts = () => {
+
+    const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
+    const category = document.getElementById("categoryFilter")?.value || "all";
+
+    let filtered = [...allProducts];
+
+    filtered = filtered.filter(p =>
+        (p.name || "").toLowerCase().includes(search)
+    );
+
+    if (category !== "all") {
+        filtered = filtered.filter(p => p.category === category);
+    }
+
+    renderProducts(filtered);
+};
+
+/* =========================
+RENDER (NO STYLE CHANGE)
+========================= */
+window.renderProducts = (products) => {
+
+    const grid = document.getElementById("products");
+    if (!grid) return;
+
+    if (!products.length) {
+        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
+        return;
+    }
+
+    grid.innerHTML = products.map(p => {
+
+        const price = num(p.price);
+        const discount = num(p.discount);
+        const finalPrice = getFinalPrice(p);
+
+        const reviews = allReviews.filter(r => r.productId === p.id);
+        const count = reviews.length;
+
+        const avg = count
+            ? (reviews.reduce((t, r) => t + num(r.rating), 0) / count).toFixed(1)
+            : 0;
+
+        return `
+        <div class="card">
+            ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
+            <img src="${p.image || ''}">
+
+            <div class="card-content">
+                <h3>${p.name || ''}</h3>
+
+                <div class="price-box">
+                    ${discount > 0 ? `<span class="old-price">Rs ${price}</span>` : ""}
+                    <span class="new-price">Rs ${finalPrice}</span>
+                </div>
+
+                <div class="product-rating">
+                    <i class="fa-solid fa-star"></i>
+                    ${avg} <span>(${count})</span>
+                </div>
+
+                <div class="card-buttons">
+                    <button onclick="openModal('${p.id}')">View</button>
+                    <button onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')">Add</button>
+                </div>
+            </div>
+        </div>`;
+    }).join("");
+};
+
+/* =========================
+MODAL (UNCHANGED UI)
+========================= */
+window.openModal = (id) => {
+
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+
+    currentProductId = id;
+
+    const images = p.images?.length ? p.images : [p.image];
+
+    document.getElementById("modalName").innerText = p.name || "";
+    document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
+    document.getElementById("modalDesc").innerText = p.description || "";
+
+    document.getElementById("galleryContainer").innerHTML = `
+        <img src="${images[0]}" class="main-img" id="mainModalImg">
+        <div class="thumbnail-grid">
+            ${images.map(img => `
+                <img src="${img}" class="thumbnail"
+                onclick="document.getElementById('mainModalImg').src='${img}'">
+            `).join("")}
+        </div>
+    `;
+
+    document.getElementById("productModal")?.classList.add("show");
+
+    selectedRating = 0;
+    updateStars(0);
+};
+
+window.closeModal = () => {
+    document.getElementById("productModal")?.classList.remove("show");
+    currentProductId = null;
+    selectedRating = 0;
+};
+
+/* =========================
+STARS
+========================= */
+function setupStarRating() {
+    setTimeout(() => {
+        document.querySelectorAll("#starRating i").forEach((star, i) => {
+            star.onclick = () => {
+                selectedRating = i + 1;
+                updateStars(selectedRating);
+            };
+        });
+    }, 300);
 }
 
-/* CARD BUTTONS */
-.card-buttons{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
+function updateStars(rating) {
+    document.querySelectorAll("#starRating i").forEach((star, i) => {
+        star.classList.toggle("fa-solid", i < rating);
+        star.classList.toggle("fa-regular", i >= rating);
+    });
 }
 
-.card-buttons button{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:700;
-}
+/* =========================
+FIREBASE (UNCHANGED)
+========================= */
+onSnapshot(collection(db, "products"), (snap) => {
+    allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderProducts(allProducts);
+    document.getElementById("loadingScreen")?.remove();
+});
 
-.card-buttons button:first-child{
-  background:#eef8f0;
-  color:var(--primary);
-}
-
-.card-buttons button:last-child{
-  background:linear-gradient(135deg,#22c55e,#15803d);
-  color:#fff;
-}
-
-/* FLOATING CART */
-.floating-cart{
-  position:fixed;
-  bottom:25px;
-  right:25px;
-
-  width:55px;
-  height:55px;
-  border-radius:50%;
-
-  background:linear-gradient(135deg,#22c55e,#15803d);
-  color:#fff;
-  border:none;
-
-  box-shadow:var(--shadow);
-}
-
-/* CART */
-.cart-drawer{
-  position:fixed;
-  top:0;
-  right:-100%;
-
-  width:350px;
-  height:100%;
-
-  background:var(--card);
-  transition:.3s;
-  z-index:2000;
-}
-
-.cart-drawer.open{
-  right:0;
-}
-
-/* CART ITEMS */
-.cart-item{
-  display:flex;
-  gap:10px;
-  padding:12px;
-  background:var(--bg);
-  margin:10px;
-  border-radius:10px;
-}
-
-/* MODAL */
-.modal{
-  position:fixed;
-  inset:0;
-  display:none;
-  background:rgba(0,0,0,0.6);
-  justify-content:center;
-  align-items:center;
-}
-
-.modal.show{
-  display:flex;
-}
-
-.modal-content{
-  width:90%;
-  max-width:400px;
-  background:var(--card);
-  padding:20px;
-  border-radius:16px;
-}
-
-/* REVIEW */
-#reviewText{
-  width:100%;
-  min-height:100px;
-  padding:10px;
-  border-radius:10px;
-}
-
-/* TOAST */
-.toast{
-  position:fixed;
-  bottom:80px;
-  left:50%;
-  transform:translateX(-50%);
-
-  background:#111;
-  color:#fff;
-
-  padding:10px 20px;
-  border-radius:20px;
-
-  opacity:0;
-  transition:.3s;
-}
-
-.toast.show{
-  opacity:1;
-}
-
-/* SOCIAL */
-.social-links{
-  position:fixed;
-  left:15px;
-  bottom:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.social-btn{
-  width:45px;
-  height:45px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  background:var(--card);
-  border:1px solid var(--border);
-}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  .filter-grid{
-    grid-template-columns:1fr;
-  }
-
-  .products-grid{
-    grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  }
-
-  .cart-drawer{
-    width:100%;
-  }
-}
+onSnapshot(collection(db, "reviews"), (snap) => {
+    allReviews = snap.docs.map(d => d.data());
+    renderProducts(allProducts);
+});
