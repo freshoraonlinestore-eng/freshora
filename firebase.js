@@ -11,11 +11,8 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-  getAuth
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ✅ ADD THIS (MISSING STORAGE FIX) */
 import {
   getStorage,
   ref,
@@ -40,19 +37,23 @@ const firebaseConfig = {
 INIT
 ========================= */
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
 const auth = getAuth(app);
-const storage = getStorage(app); // ✅ IMPORTANT FIX
+const storage = getStorage(app);
 
 /* =========================
-EXPORT EVERYTHING
+EXPORT
 ========================= */
 export {
   app,
+
+  /* core */
   db,
   auth,
-  storage,   // ✅ REQUIRED for image upload
+  storage,
 
+  /* firestore */
   collection,
   addDoc,
   onSnapshot,
@@ -61,7 +62,7 @@ export {
   updateDoc,
   getDocs,
 
-  /* storage functions */
+  /* storage */
   ref,
   uploadBytesResumable,
   getDownloadURL,
