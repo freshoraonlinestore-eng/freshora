@@ -7,8 +7,6 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let allProducts = [];
 let selectedRating = 0;
 let currentProductId = null;
-
-/* ⭐ NEW: reviews cache for product rating UI */
 let allReviews = [];
 
 /* =========================
@@ -60,15 +58,15 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("modalAddBtn")
         ?.addEventListener("click", () => {
 
-        if (!currentProductId) return;
+            if (!currentProductId) return;
 
-        const p = allProducts.find(x => x.id === currentProductId);
-        if (!p) return;
+            const p = allProducts.find(x => x.id === currentProductId);
+            if (!p) return;
 
-        const price = getFinalPrice(p);
+            const price = getFinalPrice(p);
 
-        addToCart(p.id, p.name, price, p.image);
-    });
+            addToCart(p.id, p.name, price, p.image);
+        });
 
 });
 
@@ -76,8 +74,8 @@ window.addEventListener("DOMContentLoaded", () => {
 PRICE
 ========================= */
 function getFinalPrice(product) {
-    const price = num(product.price);
-    const discount = num(product.discount);
+    const price = num(product?.price);
+    const discount = num(product?.discount);
 
     return discount > 0
         ? Math.round(price - (price * discount / 100))
@@ -198,14 +196,14 @@ window.filterProducts = () => {
 };
 
 /* =========================
-RENDER PRODUCTS + ⭐ RATING
+RENDER PRODUCTS
 ========================= */
 window.renderProducts = (products) => {
 
     const grid = document.getElementById("products");
     if (!grid) return;
 
-    if (!products.length) {
+    if (!products?.length) {
         grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
         return;
     }
@@ -216,8 +214,7 @@ window.renderProducts = (products) => {
         const discount = num(p.discount);
         const finalPrice = getFinalPrice(p);
 
-        /* ⭐ rating calculation */
-        const reviews = allReviews.filter(r => r.productId === p.id);
+        const reviews = allReviews.filter(r => r?.productId === p.id);
         const count = reviews.length;
 
         const avg = count
@@ -240,7 +237,6 @@ window.renderProducts = (products) => {
                     <span class="new-price">Rs ${finalPrice}</span>
                 </div>
 
-                <!-- ⭐ rating UI -->
                 <div class="product-rating">
                     <i class="fa-solid fa-star"></i>
                     ${avg}
@@ -268,7 +264,7 @@ window.openModal = (id) => {
 
     currentProductId = id;
 
-    const images = p.images?.length ? p.images : [p.image];
+    const images = (p.images && p.images.length) ? p.images : [p.image];
 
     document.getElementById("modalName").innerText = p.name || "";
     document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
@@ -300,14 +296,13 @@ window.closeModal = () => {
 STAR RATING
 ========================= */
 function setupStarRating() {
-    setTimeout(() => {
-        document.querySelectorAll("#starRating i").forEach((star, i) => {
-            star.onclick = () => {
-                selectedRating = i + 1;
-                updateStars(selectedRating);
-            };
-        });
-    }, 300);
+    const stars = document.querySelectorAll("#starRating i");
+    stars.forEach((star, i) => {
+        star.onclick = () => {
+            selectedRating = i + 1;
+            updateStars(selectedRating);
+        };
+    });
 }
 
 function updateStars(rating) {
@@ -322,44 +317,40 @@ REVIEWS
 ========================= */
 function bindReviewButton() {
 
-    setTimeout(() => {
+    const btn = document.getElementById("reviewSubmitBtn");
+    if (!btn) return;
 
-        const btn = document.getElementById("reviewSubmitBtn");
-        if (!btn) return;
+    btn.onclick = async () => {
 
-        btn.onclick = async () => {
+        const text = document.getElementById("reviewText")?.value?.trim();
 
-            const text = document.getElementById("reviewText")?.value;
+        if (!text || selectedRating === 0) {
+            showToast("Add rating + review");
+            return;
+        }
 
-            if (!text || selectedRating === 0) {
-                showToast("Add rating + review");
-                return;
-            }
+        if (!currentProductId) {
+            showToast("Open product first");
+            return;
+        }
 
-            if (!currentProductId) {
-                showToast("Open product first");
-                return;
-            }
+        await addDoc(collection(db, "reviews"), {
+            productId: currentProductId,
+            rating: selectedRating,
+            text,
+            createdAt: new Date().toISOString()
+        });
 
-            await addDoc(collection(db, "reviews"), {
-                productId: currentProductId,
-                rating: selectedRating,
-                text,
-                createdAt: new Date().toISOString()
-            });
+        selectedRating = 0;
+        updateStars(0);
+        document.getElementById("reviewText").value = "";
 
-            selectedRating = 0;
-            updateStars(0);
-            document.getElementById("reviewText").value = "";
-
-            showToast("Review added");
-        };
-
-    }, 300);
+        showToast("Review added");
+    };
 }
 
 /* =========================
-CHECKOUT + WHATSAPP
+CHECKOUT
 ========================= */
 window.checkout = async () => {
 
@@ -454,9 +445,6 @@ onSnapshot(collection(db, "products"), (snap) => {
     document.getElementById("loadingScreen")?.remove();
 });
 
-/* =========================
-REVIEWS SNAPSHOT (⭐ rating system)
-========================= */
 onSnapshot(collection(db, "reviews"), (snap) => {
     allReviews = snap.docs.map(d => d.data());
     renderProducts(allProducts);
