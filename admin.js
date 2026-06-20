@@ -9,7 +9,7 @@ import {
 } from "./firebase.js";
 
 /* =========================
-   CONFIG
+CONFIG
 ========================= */
 const CLOUD_NAME = "dayvblw7g";
 const UPLOAD_PRESET = "freshora_upload";
@@ -19,7 +19,7 @@ let productsData = [];
 let selectedProductId = null;
 
 /* =========================
-   HELPERS
+HELPERS
 ========================= */
 const qs = (id) => document.getElementById(id);
 
@@ -28,16 +28,30 @@ function showToast(msg) {
     if (!t) {
         t = document.createElement("div");
         t.className = "admin-toast";
-        t.style = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 20px;border-radius:20px;z-index:9999;";
+        t.style = `
+            position:fixed;
+            bottom:20px;
+            left:50%;
+            transform:translateX(-50%);
+            background:#222;
+            color:#fff;
+            padding:10px 20px;
+            border-radius:20px;
+            z-index:9999;
+        `;
         document.body.appendChild(t);
     }
     t.innerText = msg;
     t.style.display = "block";
-    setTimeout(() => t.style.display = "none", 2000);
+
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => {
+        t.style.display = "none";
+    }, 2000);
 }
 
 /* =========================
-   CLOUDINARY UPLOAD FIXED
+CLOUDINARY UPLOAD
 ========================= */
 async function uploadToCloudinary(file) {
     const formData = new FormData();
@@ -52,7 +66,7 @@ async function uploadToCloudinary(file) {
 
     const data = await res.json();
 
-    if (!data.secure_url) {
+    if (!data?.secure_url) {
         console.error(data);
         throw new Error("Upload failed");
     }
@@ -61,45 +75,48 @@ async function uploadToCloudinary(file) {
 }
 
 /* =========================
-   PRODUCT ADD
+PRODUCT ADD
 ========================= */
 window.uploadAndAddProduct = async () => {
-    const file = qs("pimageFile").files[0];
+    try {
+        const file = qs("pimageFile")?.files?.[0];
 
-    let imageUrl = "";
+        let imageUrl = "";
+        if (file) imageUrl = await uploadToCloudinary(file);
 
-    if (file) {
-        imageUrl = await uploadToCloudinary(file);
+        await addDoc(collection(db, "products"), {
+            name: qs("pname")?.value || "",
+            price: Number(qs("pprice")?.value || 0),
+            discount: Number(qs("pdiscount")?.value || 0),
+            stock: Number(qs("pstock")?.value || 0),
+            category: qs("pcategorySelect")?.value || "Other",
+            description: qs("pdesc")?.value || "",
+            image: imageUrl,
+            createdAt: Date.now()
+        });
+
+        showToast("Product Added");
+        clearForm();
+
+    } catch (err) {
+        console.error(err);
+        showToast("Upload Failed");
     }
-
-    await addDoc(collection(db, "products"), {
-        name: qs("pname").value,
-        price: Number(qs("pprice").value),
-        discount: Number(qs("pdiscount").value || 0),
-        stock: Number(qs("pstock").value || 0),
-        category: qs("pcategorySelect").value,
-        description: qs("pdesc").value,
-        image: imageUrl,
-        createdAt: Date.now()
-    });
-
-    showToast("Product Added");
-    clearForm();
 };
 
 /* =========================
-   UPDATE PRODUCT
+UPDATE PRODUCT
 ========================= */
 window.updateSelected = async () => {
     if (!selectedProductId) return showToast("Select product first");
 
     await updateDoc(doc(db, "products", selectedProductId), {
-        name: qs("pname").value,
-        price: Number(qs("pprice").value),
-        discount: Number(qs("pdiscount").value),
-        stock: Number(qs("pstock").value),
-        category: qs("pcategorySelect").value,
-        description: qs("pdesc").value
+        name: qs("pname").value || "",
+        price: Number(qs("pprice").value || 0),
+        discount: Number(qs("pdiscount").value || 0),
+        stock: Number(qs("pstock").value || 0),
+        category: qs("pcategorySelect").value || "Other",
+        description: qs("pdesc").value || ""
     });
 
     showToast("Updated");
@@ -107,17 +124,18 @@ window.updateSelected = async () => {
 };
 
 /* =========================
-   DELETE PRODUCT
+DELETE PRODUCT
 ========================= */
 window.deleteProduct = async (id) => {
-    if (confirm("Delete?")) {
+    if (!id) return;
+    if (confirm("Delete product?")) {
         await deleteDoc(doc(db, "products", id));
         showToast("Deleted");
     }
 };
 
 /* =========================
-   SELECT PRODUCT
+SELECT PRODUCT
 ========================= */
 window.selectProduct = (id) => {
     const p = productsData.find(x => x.id === id);
@@ -125,56 +143,74 @@ window.selectProduct = (id) => {
 
     selectedProductId = id;
 
-    qs("pname").value = p.name;
-    qs("pprice").value = p.price;
-    qs("pdiscount").value = p.discount;
-    qs("pstock").value = p.stock;
-    qs("pcategorySelect").value = p.category;
-    qs("pdesc").value = p.description;
+    qs("pname").value = p.name || "";
+    qs("pprice").value = p.price || 0;
+    qs("pdiscount").value = p.discount || 0;
+    qs("pstock").value = p.stock || 0;
+    qs("pcategorySelect").value = p.category || "Other";
+    qs("pdesc").value = p.description || "";
 };
 
 /* =========================
-   CLEAR FORM
+CLEAR FORM
 ========================= */
 window.clearForm = () => {
     ["pname","pprice","pdiscount","pstock","pdesc"].forEach(id => {
-        qs(id).value = "";
+        const el = qs(id);
+        if (el) el.value = "";
     });
 
-    qs("pimageFile").value = "";
+    const file = qs("pimageFile");
+    if (file) file.value = "";
+
     selectedProductId = null;
 };
 
 /* =========================
-   PRODUCTS LIST
+PRODUCTS LIST
 ========================= */
 onSnapshot(collection(db, "products"), (snap) => {
     productsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    qs("totalProducts").innerText = productsData.length;
-    qs("totalStock").innerText = productsData.reduce((a,b)=>a+(b.stock||0),0);
-    qs("lowStock").innerText = productsData.filter(p => p.stock < 5).length;
+    const totalProducts = qs("totalProducts");
+    const totalStock = qs("totalStock");
+    const lowStock = qs("lowStock");
 
-    qs("productListBody").innerHTML = productsData.map(p => `
+    if (totalProducts) totalProducts.innerText = productsData.length;
+
+    if (totalStock) {
+        totalStock.innerText = productsData.reduce((a,b)=>a+(b.stock||0),0);
+    }
+
+    if (lowStock) {
+        lowStock.innerText = productsData.filter(p => (p.stock||0) < 5).length;
+    }
+
+    const body = qs("productListBody");
+    if (!body) return;
+
+    body.innerHTML = productsData.map(p => `
         <tr onclick="selectProduct('${p.id}')">
             <td><img src="${p.image || ''}" width="40"></td>
-            <td>${p.name}</td>
-            <td>${p.price}</td>
-            <td>${p.discount}%</td>
-            <td>${Math.round(p.price - p.price*p.discount/100)}</td>
-            <td>${p.category}</td>
-            <td>${p.stock}</td>
-            <td><button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button></td>
+            <td>${p.name || ""}</td>
+            <td>${p.price || 0}</td>
+            <td>${p.discount || 0}%</td>
+            <td>${Math.round((p.price||0) - (p.price||0)*(p.discount||0)/100)}</td>
+            <td>${p.category || ""}</td>
+            <td>${p.stock || 0}</td>
+            <td>
+                <button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button>
+            </td>
         </tr>
     `).join("");
 });
 
 /* =========================
-   DELIVERY FIXED (ADD / DELETE / UPDATE)
+DELIVERY SYSTEM
 ========================= */
 window.saveDeliveryFee = async () => {
-    const district = qs("districtSelect").value;
-    const cost = qs("deliveryCost").value;
+    const district = qs("districtSelect")?.value;
+    const cost = qs("deliveryCost")?.value;
 
     if (!district || !cost) return showToast("Fill fields");
 
@@ -187,21 +223,27 @@ window.saveDeliveryFee = async () => {
 };
 
 window.deleteDelivery = async (id) => {
+    if (!id) return;
     await deleteDoc(doc(db, "deliveryFees", id));
     showToast("Deleted");
 };
 
 window.updateDelivery = async (id, cost) => {
-    await updateDoc(doc(db, "deliveryFees", id), { cost: Number(cost) });
+    await updateDoc(doc(db, "deliveryFees", id), {
+        cost: Number(cost || 0)
+    });
     showToast("Updated");
 };
 
 onSnapshot(collection(db, "deliveryFees"), (snap) => {
-    qs("deliveryList").innerHTML = snap.docs.map(d => `
-        <div class="admin-card" style="display:flex;justify-content:space-between;">
-            <span>${d.data().district}</span>
+    const list = qs("deliveryList");
+    if (!list) return;
 
-            <input value="${d.data().cost}"
+    list.innerHTML = snap.docs.map(d => `
+        <div class="admin-card" style="display:flex;justify-content:space-between;">
+            <span>${d.data().district || ""}</span>
+
+            <input value="${d.data().cost || 0}"
                    onchange="updateDelivery('${d.id}', this.value)"
                    style="width:80px;">
 
@@ -211,10 +253,10 @@ onSnapshot(collection(db, "deliveryFees"), (snap) => {
 });
 
 /* =========================
-   CATEGORY FIXED (ADD / UPDATE / DELETE)
+CATEGORIES
 ========================= */
 window.addCategory = async () => {
-    const name = qs("catName").value;
+    const name = qs("catName")?.value;
     if (!name) return;
 
     await addDoc(collection(db, "categories"), { name });
@@ -235,9 +277,12 @@ onSnapshot(collection(db, "categories"), (snap) => {
     const list = qs("activeCategoryList");
     const select = qs("pcategorySelect");
 
+    if (!list || !select) return;
+
     const cats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    select.innerHTML = `<option value="Other">Other</option>` +
+    select.innerHTML =
+        `<option value="Other">Other</option>` +
         cats.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
 
     list.innerHTML = cats.map(c => `
@@ -250,32 +295,34 @@ onSnapshot(collection(db, "categories"), (snap) => {
 });
 
 /* =========================
-   ORDERS + FULL BILL ITEMS FIXED
+ORDERS SAFE RENDER FIX
 ========================= */
 window.viewBill = (order) => {
+    const modal = qs("billModal");
+    if (!modal) return;
 
-    qs("billModal").style.display = "block";
+    modal.style.display = "block";
 
-    const items = order.items || [];
+    const items = order?.items || [];
 
     qs("billContent").innerHTML = `
-        <p><b>Order ID:</b> ${order.id}</p>
-        <p><b>Name:</b> ${order.customerName}</p>
-        <p><b>Phone:</b> ${order.phone}</p>
+        <p><b>Order ID:</b> ${order?.id || ""}</p>
+        <p><b>Name:</b> ${order?.customerName || ""}</p>
+        <p><b>Phone:</b> ${order?.phone || ""}</p>
 
         <hr>
 
         <h4>Items</h4>
         ${items.map(i => `
             <div>
-                ${i.name} x ${i.qty} = Rs ${i.price * i.qty}
+                ${i.name} x${i.qty} = Rs ${i.price * i.qty}
             </div>
         `).join("")}
 
         <hr>
 
-        <p><b>Total:</b> Rs ${order.totalBill}</p>
-        <p><b>Status:</b> ${order.status}</p>
+        <p><b>Total:</b> Rs ${order?.totalBill || 0}</p>
+        <p><b>Status:</b> ${order?.status || "Pending"}</p>
     `;
 };
 
@@ -284,33 +331,36 @@ window.downloadBill = (order) => {
     const doc = new jsPDF();
 
     doc.text("FRESHORA INVOICE", 20, 20);
-    doc.text("Order: " + order.id, 20, 40);
+    doc.text("Order: " + (order?.id || ""), 20, 40);
 
     let y = 60;
 
-    (order.items || []).forEach(i => {
+    (order?.items || []).forEach(i => {
         doc.text(`${i.name} x${i.qty} = Rs ${i.price * i.qty}`, 20, y);
         y += 10;
     });
 
-    doc.text("TOTAL: Rs " + order.totalBill, 20, y + 10);
+    doc.text("TOTAL: Rs " + (order?.totalBill || 0), 20, y + 10);
 
-    doc.save("invoice_" + order.id + ".pdf");
+    doc.save("invoice_" + (order?.id || "order") + ".pdf");
 };
 
 /* =========================
-   ORDERS LIST
+ORDERS
 ========================= */
 onSnapshot(collection(db, "orders"), (snap) => {
     const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    qs("orderList").innerHTML = orders.map(o => `
+    const body = qs("orderList");
+    if (!body) return;
+
+    body.innerHTML = orders.map(o => `
         <tr>
-            <td>${o.id.slice(-5)}</td>
-            <td>${o.customerName}</td>
-            <td>${o.phone}</td>
-            <td>${o.district}</td>
-            <td>Rs ${o.totalBill}</td>
+            <td>${(o.id || "").slice(-5)}</td>
+            <td>${o.customerName || ""}</td>
+            <td>${o.phone || ""}</td>
+            <td>${o.district || ""}</td>
+            <td>Rs ${o.totalBill || 0}</td>
 
             <td>
                 <select onchange="updateOrderStatus('${o.id}', this.value)">
@@ -321,22 +371,23 @@ onSnapshot(collection(db, "orders"), (snap) => {
             </td>
 
             <td>
-                <button onclick='viewBill(${JSON.stringify(o)})'>View</button>
+                <button onclick="viewBill(${JSON.stringify(o).replace(/"/g,'&quot;')})">View</button>
             </td>
         </tr>
     `).join("");
 });
 
 /* =========================
-   ORDER STATUS
+ORDER STATUS
 ========================= */
 window.updateOrderStatus = async (id, status) => {
+    if (!id) return;
     await updateDoc(doc(db, "orders", id), { status });
     showToast("Status Updated");
 };
 
 /* =========================
-   LOGOUT
+LOGOUT
 ========================= */
 window.logout = () => {
     localStorage.removeItem("admin");
