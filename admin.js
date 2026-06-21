@@ -6,8 +6,7 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  getDocs,
-  getDoc
+  getDocs
 } from "./firebase.js";
 
 /* =========================
@@ -98,7 +97,7 @@ function showNotification(order) {
 }
 
 /* =========================
-📱 SEND STATUS UPDATE WHATSAPP (AUTO)
+📱 SEND STATUS UPDATE WHATSAPP (FIXED - no getDoc)
 ========================= */
 function sendStatusUpdateWhatsApp(order, newStatus) {
   if (!order) return;
@@ -387,7 +386,12 @@ onSnapshot(collection(db, "products"), (snap) => {
     qs("totalProducts").innerText = productsData.length;
     qs("totalStock").innerText = productsData.reduce((a,b)=>a + (b.stock || 0), 0);
     qs("lowStock").innerText = productsData.filter(p => (p.stock || 0) < 5).length;
-    qs("totalOrders").innerText = ordersData.length;
+    
+    // ✅ Check if element exists before updating
+    const totalOrdersEl = document.getElementById("totalOrders");
+    if (totalOrdersEl) {
+        totalOrdersEl.innerText = ordersData.length;
+    }
 
     qs("productListBody").innerHTML = productsData.map(p => {
         let tags = '';
@@ -625,15 +629,10 @@ window.updateOrderStatus = async (id, status) => {
     await updateDoc(doc(db, "orders", id), { status });
     showToast(`Status updated to ${status}`);
 
-    // 🔹 Get updated order and send WhatsApp
-    try {
-        const orderSnap = await getDoc(doc(db, "orders", id));
-        if (orderSnap.exists()) {
-            const order = { id: orderSnap.id, ...orderSnap.data() };
-            sendStatusUpdateWhatsApp(order, status);
-        }
-    } catch (e) {
-        console.warn("Could not send WhatsApp:", e);
+    // 🔹 Find the order in ordersData and send WhatsApp
+    const order = ordersData.find(o => o.id === id);
+    if (order) {
+        sendStatusUpdateWhatsApp(order, status);
     }
 };
 
