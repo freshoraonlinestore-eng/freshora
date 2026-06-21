@@ -221,6 +221,13 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
+        .form-group input[readonly] {
+            background: #f1f5f9;
+            color: #0f172a;
+            font-weight: 500;
+            cursor: default;
+        }
+
         .form-group textarea {
             resize: vertical;
             min-height: 60px;
@@ -543,6 +550,15 @@
             border-radius: 10px;
             font-size: 10px;
             font-weight: 600;
+        }
+
+        .item-info .meta .barcode-badge {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 0 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-family: monospace;
         }
 
         .item-qty-badge {
@@ -1129,6 +1145,12 @@
                 <form id="addForm" autocomplete="off">
                     <input type="hidden" id="editId" value="" />
 
+                    <!-- 🔢 Dedicated Barcode Field -->
+                    <div class="form-group">
+                        <label>🔢 Barcode Number</label>
+                        <input type="text" id="itemBarcode" placeholder="Scanned or manually entered barcode" readonly />
+                    </div>
+
                     <div class="form-group">
                         <label>Item Name *</label>
                         <input type="text" id="itemName" placeholder="e.g. Cologne Spray" required />
@@ -1386,6 +1408,7 @@
                         price: 4500,
                         category: 'Cosmetics',
                         desc: '3.4FL OZ · 100ml · OSCal Pad 90',
+                        barcode: '1234567890123',
                         images: [],
                         status: 'active',
                         createdAt: new Date().toISOString(),
@@ -1400,6 +1423,7 @@
             // Ensure each item has all fields
             items = items.map(it => ({
                 ...it,
+                barcode: it.barcode || '',
                 images: it.images || [],
                 status: it.status || 'active',
                 desc: it.desc || '',
@@ -1527,7 +1551,8 @@
             let filtered = items.filter(it => {
                 const matchName = it.name.toLowerCase().includes(search);
                 const matchCat = catFilter === 'all' || it.category === catFilter;
-                return matchName && matchCat && it.status !== 'inactive';
+                const matchBarcode = it.barcode && it.barcode.includes(search);
+                return (matchName || matchBarcode) && matchCat && it.status !== 'inactive';
             });
 
             // Sort
@@ -1562,6 +1587,8 @@
                 const qtyClass = low ? 'item-qty-badge low' : 'item-qty-badge';
                 const thumb = item.images && item.images[0] ? item.images[0] : null;
                 const catName = item.category || 'Uncategorized';
+                const barcodeDisplay = item.barcode ? `<span class="barcode-badge">🔢 ${escapeHtml(item.barcode)}</span>` :
+                    '';
 
                 return `
                     <div class="item-card" data-id="${item.id}">
@@ -1573,6 +1600,7 @@
                             <div class="meta">
                                 <span class="cat-badge">${escapeHtml(catName)}</span>
                                 <span>💰 ${formatCurrency(item.price)}</span>
+                                ${barcodeDisplay}
                                 ${item.desc ? `<span>📝 ${escapeHtml(item.desc.substring(0,30))}${item.desc.length>30?'…':''}</span>` : ''}
                             </div>
                         </div>
@@ -1757,6 +1785,7 @@
             document.getElementById('formTitle').textContent = '➕ Add New Item';
             document.getElementById('submitBtn').textContent = '💾 Save Item';
             document.getElementById('cancelEditBtn').style.display = 'none';
+            document.getElementById('itemBarcode').value = '';
             // Clear images
             clearImagePreviews();
             editingId = null;
@@ -1790,6 +1819,7 @@
             document.getElementById('submitBtn').textContent = '💾 Update Item';
             document.getElementById('cancelEditBtn').style.display = 'inline-flex';
 
+            document.getElementById('itemBarcode').value = item.barcode || '';
             document.getElementById('itemName').value = item.name || '';
             document.getElementById('itemQty').value = item.qty || 0;
             document.getElementById('itemPrice').value = item.price || 0;
@@ -1882,6 +1912,7 @@
         function handleFormSubmit(e) {
             e.preventDefault();
 
+            const barcode = document.getElementById('itemBarcode').value.trim();
             const name = document.getElementById('itemName').value.trim();
             const qty = parseInt(document.getElementById('itemQty').value) || 0;
             const price = parseFloat(document.getElementById('itemPrice').value) || 0;
@@ -1913,6 +1944,7 @@
                 }
                 items[idx] = {
                     ...items[idx],
+                    barcode: barcode,
                     name,
                     qty,
                     price,
@@ -1930,6 +1962,7 @@
             } else {
                 const newItem = {
                     id: generateId(),
+                    barcode: barcode,
                     name,
                     qty,
                     price,
@@ -1947,6 +1980,7 @@
                 showToast(`✅ "${name}" added!`);
                 document.getElementById('addForm').reset();
                 clearImagePreviews();
+                document.getElementById('itemBarcode').value = '';
                 if (categories.length > 0) document.getElementById('itemCategory').value = categories[0].name;
                 switchTab('inventory');
             }
@@ -2002,6 +2036,7 @@
             document.getElementById('detailBody').innerHTML = `
                 <div style="display:grid; gap:8px; font-size:14px;">
                     <div style="display:flex; gap:20px; flex-wrap:wrap; background:#f8fafc; padding:12px; border-radius:10px;">
+                        <div><strong>🔢 Barcode:</strong> ${escapeHtml(item.barcode || '—')}</div>
                         <div><strong>Quantity:</strong> ${item.qty}</div>
                         <div><strong>Price:</strong> LKR ${formatCurrency(item.price)}</div>
                         <div><strong>Category:</strong> ${escapeHtml(item.category || '—')}</div>
@@ -2115,11 +2150,11 @@
                 showToast('No items to export.', 'error');
                 return;
             }
-            let csv = 'Name,Category,Quantity,Price,Value,Status,Description\n';
+            let csv = 'Barcode,Name,Category,Quantity,Price,Value,Status,Description\n';
             items.forEach(i => {
                 const val = i.qty * i.price;
                 csv +=
-                    `"${i.name}","${i.category||''}",${i.qty},${i.price},${val},"${i.status||'active'}","${i.desc||''}"\n`;
+                    `"${i.barcode||''}","${i.name}","${i.category||''}",${i.qty},${i.price},${val},"${i.status||'active'}","${i.desc||''}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -2268,16 +2303,16 @@
             scanResultBox.classList.add('show');
             showToast(`✅ Scanned: ${decodedText}`, 'success');
 
-            // Pre-fill the Add form with barcode data
+            // Pre-fill the Add form with barcode data (including the dedicated barcode field)
+            document.getElementById('itemBarcode').value = decodedText;
             document.getElementById('itemName').value = `Item ${decodedText.slice(-6)}`;
             document.getElementById('itemDesc').value = `Barcode: ${decodedText}`;
             document.getElementById('itemQty').value = '1';
-            // Optionally set category to first available
             if (categories.length > 0) {
                 document.getElementById('itemCategory').value = categories[0].name;
             }
             // Switch to Add tab so user can complete or adjust
-            // But we'll let user decide: we can provide a button "Add to Inventory" that switches.
+            switchTab('add');
         }
 
         function onScanError(err) {
@@ -2291,11 +2326,15 @@
                 return;
             }
             // Ensure the Add form is pre-filled
+            document.getElementById('itemBarcode').value = lastScannedCode;
             const name = document.getElementById('itemName').value.trim() || `Item ${lastScannedCode.slice(-6)}`;
             document.getElementById('itemName').value = name;
             document.getElementById('itemDesc').value = `Barcode: ${lastScannedCode}`;
             if (!document.getElementById('itemQty').value || document.getElementById('itemQty').value === '0') {
                 document.getElementById('itemQty').value = '1';
+            }
+            if (categories.length > 0 && !document.getElementById('itemCategory').value) {
+                document.getElementById('itemCategory').value = categories[0].name;
             }
             // Switch to Add tab
             switchTab('add');
@@ -2316,6 +2355,7 @@
             lastScannedCode = code;
             scannedCodeEl.textContent = code;
             scanResultBox.classList.add('show');
+            document.getElementById('itemBarcode').value = code;
             document.getElementById('itemName').value = `Item ${code.slice(-6)}`;
             document.getElementById('itemDesc').value = `Barcode: ${code}`;
             document.getElementById('itemQty').value = '1';
@@ -2377,6 +2417,7 @@
             // ── Quick fill ──
             document.getElementById('quickAddBtn').addEventListener('click', function() {
                 resetForm();
+                document.getElementById('itemBarcode').value = '1234567890123';
                 document.getElementById('itemName').value = 'COLÖGNE SPRAY';
                 document.getElementById('itemQty').value = '10';
                 document.getElementById('itemPrice').value = '4500';
