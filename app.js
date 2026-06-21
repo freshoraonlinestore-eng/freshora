@@ -147,12 +147,14 @@ window.updateCartDisplay = () => {
         </div>`;
     }).join("");
 
+    // ✅ COUPON DISCOUNT
     let discountAmount = 0;
     if (appliedCoupon) {
         discountAmount = Math.min(total * (appliedCoupon.discount / 100), appliedCoupon.maxDiscount || total);
         total = total - discountAmount;
     }
 
+    // ✅ DELIVERY FEE
     let delivery = 0;
     if (total > 5000) {
         delivery = 0;
@@ -214,7 +216,7 @@ window.clearCart = () => {
 };
 
 /* =========================
-COUPON
+✅ COUPON - FIXED
 ========================= */
 const COUPONS = {
     "SAVE10": { discount: 10, maxDiscount: 500 },
@@ -226,23 +228,35 @@ window.applyCoupon = () => {
     const code = document.getElementById("couponInput").value.trim().toUpperCase();
     const msg = document.getElementById("couponMessage");
 
+    // Clear previous coupon if any
     if (!code) {
+        appliedCoupon = null;
         msg.innerText = "Enter a coupon code";
         msg.style.color = "red";
+        updateCartDisplay();
         return;
     }
 
+    // Check if coupon exists
     if (COUPONS[code]) {
+        // ✅ Set the coupon
         appliedCoupon = COUPONS[code];
-        msg.innerText = `Coupon applied! ${appliedCoupon.discount}% off`;
+        appliedCoupon.code = code; // Store the code for display
+        
+        msg.innerText = `✅ Coupon applied! ${appliedCoupon.discount}% off (Max Rs ${appliedCoupon.maxDiscount})`;
         msg.style.color = "green";
+        
+        // ✅ Update cart display immediately
         updateCartDisplay();
-        showToast("Coupon applied!");
+        showToast(`🎉 Coupon "${code}" applied!`);
+        
+        console.log("✅ Coupon Applied:", appliedCoupon);
     } else {
         appliedCoupon = null;
-        msg.innerText = "Invalid coupon code";
+        msg.innerText = "❌ Invalid coupon code";
         msg.style.color = "red";
         updateCartDisplay();
+        showToast("Invalid coupon code");
     }
 };
 
@@ -661,7 +675,7 @@ function loadDistricts() {
 }
 
 /* =========================
-CHECKOUT (WITH CUSTOMER NOTIFICATION + SOUND)
+✅ CHECKOUT (WITH COUPON FIX)
 ========================= */
 window.checkout = async () => {
 
@@ -693,6 +707,7 @@ window.checkout = async () => {
     let total = subtotal;
     let discountAmount = 0;
 
+    // ✅ Apply coupon if exists
     if (appliedCoupon) {
         discountAmount = Math.min(subtotal * (appliedCoupon.discount / 100), appliedCoupon.maxDiscount || subtotal);
         total = subtotal - discountAmount;
@@ -718,7 +733,7 @@ ${itemsText}
 
 💰 BILL SUMMARY
 Subtotal: LKR ${subtotal}
-${appliedCoupon ? `Coupon (${appliedCoupon.discount}%): -LKR ${discountAmount.toFixed(0)}\n` : ''}Delivery: LKR ${delivery}
+${appliedCoupon ? `Coupon (${appliedCoupon.code || 'Unknown'} ${appliedCoupon.discount}%): -LKR ${discountAmount.toFixed(0)}\n` : ''}Delivery: LKR ${delivery}
 TOTAL: LKR ${finalTotal}`;
 
     // Send WhatsApp
@@ -738,7 +753,7 @@ TOTAL: LKR ${finalTotal}`;
         items: cart,
         subtotal,
         discount: discountAmount,
-        coupon: appliedCoupon ? Object.keys(COUPONS).find(k => COUPONS[k] === appliedCoupon) : null,
+        coupon: appliedCoupon ? appliedCoupon.code || 'Unknown' : null,
         delivery,
         total: finalTotal,
         status: "Pending",
@@ -789,7 +804,7 @@ function sendOrderSuccessNotification(orderId) {
 function playOrderSuccessSound() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const frequencies = [523, 659, 784]; // C, E, G
+        const frequencies = [523, 659, 784];
         frequencies.forEach((freq, index) => {
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
