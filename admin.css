@@ -124,3 +124,19 @@ img { border-radius: 6px; }
 .category-item span { flex: 1; }
 .category-item input { width: 150px; margin: 0; }
 .category-item button { width: auto; padding: 6px 12px; margin: 0; }
+
+/* Report modal */
+#reportModal > div {
+  background: white;
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 25px;
+  border-radius: 12px;
+}
+#reportContent {
+  font-size: 14px;
+  line-height: 1.8;
+}
+#reportContent div {
+  padding: 4px 0;
+}
