@@ -1,4 +1,4 @@
-import { db, collection, onSnapshot, addDoc, doc, updateDoc, getDoc } from "./firebase.js";
+import { db, collection, onSnapshot, addDoc, doc, updateDoc, getDoc, getDocs } from "./firebase.js";
 
 /* =========================
 STATE
@@ -587,18 +587,23 @@ function updateWishlistUI() {
 DELIVERY DISTRICTS
 ========================= */
 async function loadDistricts() {
-    const snapshot = await getDocs(collection(db, "deliveryFees"));
-    deliveryDistricts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    const select = document.getElementById("cusDistrict");
-    if (!select) return;
-    select.innerHTML = `<option value="">Select District</option>`;
-    deliveryDistricts.forEach(d => {
-        const opt = document.createElement("option");
-        opt.value = d.district;
-        opt.textContent = `${d.district} (Rs ${d.cost})`;
-        select.appendChild(opt);
-    });
-    select.addEventListener("change", updateCartDisplay);
+    try {
+        const snapshot = await getDocs(collection(db, "deliveryFees"));
+        deliveryDistricts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const select = document.getElementById("cusDistrict");
+        if (!select) return;
+        select.innerHTML = `<option value="">Select District</option>`;
+        deliveryDistricts.forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.district;
+            opt.textContent = `${d.district} (Rs ${d.cost})`;
+            select.appendChild(opt);
+        });
+        select.addEventListener("change", updateCartDisplay);
+    } catch (e) {
+        console.warn("Could not load delivery districts", e);
+        // Fallback: empty select or use default
+    }
 }
 
 /* =========================
@@ -724,6 +729,10 @@ onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderProducts(allProducts);
     document.getElementById("loadingScreen")?.remove();
+}, (error) => {
+    console.error("Products snapshot error:", error);
+    document.getElementById("loadingScreen")?.remove();
+    showToast("Error loading products");
 });
 
 // Categories
@@ -738,6 +747,8 @@ onSnapshot(collection(db, "categories"), (snap) => {
         opt.textContent = cat;
         select.appendChild(opt);
     });
+}, (error) => {
+    console.error("Categories snapshot error:", error);
 });
 
 // Reviews
@@ -747,9 +758,13 @@ onSnapshot(collection(db, "reviews"), (snap) => {
     if (currentProductId) {
         renderReviews(currentProductId);
     }
+}, (error) => {
+    console.error("Reviews snapshot error:", error);
 });
 
 // Delivery fees (reload on change)
 onSnapshot(collection(db, "deliveryFees"), () => {
     loadDistricts();
+}, (error) => {
+    console.warn("Delivery fees snapshot error:", error);
 });
