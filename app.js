@@ -740,26 +740,153 @@ TOTAL: LKR ${finalTotal}`;
         discount: discountAmount,
         coupon: appliedCoupon ? Object.keys(COUPONS).find(k => COUPONS[k] === appliedCoupon) : null,
         delivery,
+
+/* =========================
+CHECKOUT (WITH CUSTOMER NOTIFICATION + SOUND)
+========================= */
+window.checkout = async () => {
+
+    const name = document.getElementById("cusName")?.value.trim();
+    const phone = document.getElementById("cusPhone")?.value.trim();
+    const district = document.getElementById("cusDistrict")?.value;
+    const address = document.getElementById("cusAddress")?.value.trim();
+
+    if (!name || !phone || !district || !address) {
+        showToast("Fill all details including district");
+        return;
+    }
+
+    if (!cart.length) {
+        showToast("Cart empty");
+        return;
+    }
+
+    const orderId = "FR-" + Date.now();
+    const date = new Date().toLocaleString();
+
+    let subtotal = 0;
+    const itemsText = cart.map((item, i) => {
+        const total = num(item.price) * item.qty;
+        subtotal += total;
+        return `${i + 1}) ${item.name} x${item.qty} = LKR ${total}`;
+    }).join("\n");
+
+    let total = subtotal;
+    let discountAmount = 0;
+
+    if (appliedCoupon) {
+        discountAmount = Math.min(subtotal * (appliedCoupon.discount / 100), appliedCoupon.maxDiscount || subtotal);
+        total = subtotal - discountAmount;
+    }
+
+    const delivery = total > 5000 ? 0 : (deliveryDistricts.find(d => d.district === district)?.cost || 375);
+    const finalTotal = total + delivery;
+
+    const message =
+`🟢 FRESHORA NEW ORDER 🟢
+
+📦 Order ID: ${orderId}
+📅 Date: ${date}
+
+👤 CUSTOMER DETAILS
+Name: ${name}
+Phone: ${phone}
+District: ${district}
+Address: ${address}
+
+🛒 ITEMS
+${itemsText}
+
+💰 BILL SUMMARY
+Subtotal: LKR ${subtotal}
+${appliedCoupon ? `Coupon (${appliedCoupon.discount}%): -LKR ${discountAmount.toFixed(0)}\n` : ''}Delivery: LKR ${delivery}
+TOTAL: LKR ${finalTotal}`;
+
+    // Send WhatsApp
+    window.open(
+        `https://wa.me/94752425790?text=${encodeURIComponent(message)}`,
+        "_blank"
+    );
+
+    // Save to Firestore
+    await addDoc(collection(db, "orders"), {
+        orderId,
+        customer: { name, phone, district, address },
+        customerName: name,
+        phone: phone,
+        district: district,
+        address: address,
+        items: cart,
+        subtotal,
+        discount: discountAmount,
+        coupon: appliedCoupon ? Object.keys(COUPONS).find(k => COUPONS[k] === appliedCoupon) : null,
+        delivery,
         total: finalTotal,
         status: "Pending",
         createdAt: new Date().toISOString()
     });
 
+    // Clear cart and UI
     cart = [];
     appliedCoupon = null;
     document.getElementById("couponInput").value = "";
     document.getElementById("couponMessage").innerText = "";
     updateCartDisplay();
 
+    // Show success modal
     document.getElementById("orderSuccessId").innerText = `Order ID: ${orderId}`;
     document.getElementById("orderSuccessModal").classList.add("show");
+    
+    // 🔔 🎵 CUSTOMER NOTIFICATION & SOUND (මෙය එකතු කර ඇත)
+    sendOrderSuccessNotification(orderId);
+    playOrderSuccessSound();
+    
     showToast("Order sent 🚀");
 };
 
-window.closeOrderSuccess = () => {
-    document.getElementById("orderSuccessModal").classList.remove("show");
-};
+// =========================
+// 🔔 CUSTOMER NOTIFICATION FUNCTIONS (මෙය checkout එකට පිටතින් තැබිය යුතුයි)
+// =========================
+function sendOrderSuccessNotification(orderId) {
+    if (!("Notification" in window)) return;
 
+    if (Notification.permission === "granted") {
+        new Notification("✅ Order Placed Successfully!", {
+            body: `Your order ${orderId} has been confirmed. We'll notify you when it's ready.`,
+            icon: "logo.png"
+        });
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                new Notification("✅ Order Placed Successfully!", {
+                    body: `Your order ${orderId} has been confirmed. We'll notify you when it's ready.`,
+                    icon: "logo.png"
+                });
+            }
+        });
+    }
+}
+
+function playOrderSuccessSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const frequencies = [523, 659, 784]; // C, E, G
+        frequencies.forEach((freq, index) => {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = freq;
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime + index * 0.15);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.15 + 0.2);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start(audioCtx.currentTime + index * 0.15);
+            oscillator.stop(audioCtx.currentTime + index * 0.15 + 0.2);
+        });
+    } catch (e) {
+        console.warn("Sound playback failed:", e);
+    }
+}
 /* =========================
 UI
 ========================= */
