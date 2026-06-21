@@ -71,7 +71,6 @@ window.goToStore = () => {
             <i class="fas fa-file-alt"></i> Intelligence Reports
         </button>
 
-        <!-- 🔄 Manual Refresh Button (Optional) -->
         <button onclick="location.reload()" style="background:#6b7280;color:white;padding:10px 20px;border:none;border-radius:8px;width:auto;">
             <i class="fas fa-sync-alt"></i> Refresh
         </button>
@@ -92,6 +91,30 @@ window.goToStore = () => {
             Low Stock: <span id="lowStock">0</span>
         </p>
     </div>
+
+    <!-- ================= COUPONS (NEW) ================= -->
+    <h3><i class="fas fa-ticket"></i> Coupon Management</h3>
+
+    <div class="admin-card">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
+            <input id="couponCode" placeholder="Code (e.g. SAVE10)">
+            <input id="couponDiscount" type="number" placeholder="Discount %">
+            <input id="couponMaxDiscount" type="number" placeholder="Max Discount (Rs)">
+            <input id="couponExpiry" type="date" placeholder="Expiry Date">
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:8px;">
+            <label><input type="checkbox" id="couponActive" checked> Active</label>
+        </div>
+
+        <button onclick="addCoupon()" style="background:var(--primary);color:white;margin-top:10px;">
+            <i class="fas fa-plus"></i> Add Coupon
+        </button>
+
+    </div>
+
+    <div id="couponList"></div>
 
     <!-- ================= DELIVERY LOCATIONS ================= -->
     <h3><i class="fas fa-map-pin"></i> Delivery Locations</h3>
@@ -321,6 +344,30 @@ window.goToStore = () => {
     50% { opacity: 0.4; }
     100% { opacity: 1; }
 }
+
+.coupon-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+}
+.coupon-item span { flex: 1; font-weight: 600; }
+.coupon-item .code { color: var(--primary); font-weight: 700; }
+.coupon-item .discount { color: #22c55e; }
+.coupon-item .expired { color: red; font-size: 12px; }
+.coupon-item input { width: 80px; margin: 0; }
+.coupon-item button { width: auto; padding: 6px 12px; margin: 0; }
+.coupon-item .status-badge {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 20px;
+}
+.coupon-item .status-badge.active { background: #22c55e; color: #fff; }
+.coupon-item .status-badge.inactive { background: #ef4444; color: #fff; }
 </style>
 
 <script type="module" src="admin.js?v=13"></script>
