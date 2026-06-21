@@ -21,6 +21,7 @@ let selectedProductId = null;
 let ordersData = [];
 let deliveryFeesData = [];
 let categoriesData = [];
+let couponsData = [];
 
 /* =========================
 🔔 ORDER NOTIFICATION STATE
@@ -456,6 +457,90 @@ onSnapshot(collection(db, "categories"), (snap) => {
 });
 
 /* =========================
+🆕 COUPON MANAGEMENT (CRUD)
+========================= */
+window.addCoupon = async () => {
+    const code = qs("couponCode").value.trim().toUpperCase();
+    const discount = Number(qs("couponDiscount").value);
+    const maxDiscount = Number(qs("couponMaxDiscount").value) || 0;
+    const expiry = qs("couponExpiry").value;
+    const active = qs("couponActive").checked;
+
+    if (!code || !discount) {
+        showToast("Fill all fields");
+        return;
+    }
+
+    // Check if coupon already exists
+    const existing = couponsData.find(c => c.code === code);
+    if (existing) {
+        showToast("Coupon code already exists!");
+        return;
+    }
+
+    await addDoc(collection(db, "coupons"), {
+        code,
+        discount,
+        maxDiscount,
+        expiry: expiry || null,
+        active,
+        createdAt: Date.now()
+    });
+
+    showToast("Coupon Added!");
+    qs("couponCode").value = "";
+    qs("couponDiscount").value = "";
+    qs("couponMaxDiscount").value = "";
+    qs("couponExpiry").value = "";
+    qs("couponActive").checked = true;
+};
+
+window.updateCoupon = async (id, data) => {
+    await updateDoc(doc(db, "coupons", id), data);
+    showToast("Coupon Updated!");
+};
+
+window.deleteCoupon = async (id) => {
+    if (!confirm("Delete this coupon?")) return;
+    await deleteDoc(doc(db, "coupons", id));
+    showToast("Coupon Deleted!");
+};
+
+onSnapshot(collection(db, "coupons"), (snap) => {
+    couponsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const list = document.getElementById("couponList");
+    if (!list) return;
+
+    if (couponsData.length === 0) {
+        list.innerHTML = `<p style="color:var(--muted);padding:10px;">No coupons added yet.</p>`;
+        return;
+    }
+
+    list.innerHTML = couponsData.map(c => {
+        const isExpired = c.expiry && new Date(c.expiry) < new Date();
+        const isActive = c.active && !isExpired;
+
+        return `
+        <div class="coupon-item">
+            <span class="code">${c.code}</span>
+            <span class="discount">${c.discount}%</span>
+            <span>Max: Rs ${c.maxDiscount || '∞'}</span>
+            <span style="font-size:12px;color:var(--muted);">${c.expiry || 'No expiry'}</span>
+            <span class="status-badge ${isActive ? 'active' : 'inactive'}">
+                ${isActive ? 'Active' : 'Inactive'}
+            </span>
+            <input type="checkbox" ${c.active ? 'checked' : ''} 
+                onchange="updateCoupon('${c.id}', { active: this.checked })">
+            <button onclick="updateCoupon('${c.id}', { discount: ${c.discount}, maxDiscount: ${c.maxDiscount || 0} })" 
+                style="background:orange;color:white;width:auto;padding:4px 10px;">Edit</button>
+            <button onclick="deleteCoupon('${c.id}')" 
+                style="background:red;color:white;width:auto;padding:4px 10px;">🗑</button>
+        </div>`;
+    }).join("");
+});
+
+/* =========================
 🔔 ORDERS (with LIVE REFRESH + NOTIFICATION)
 ========================= */
 window.updateOrderStatus = async (id, status) => {
@@ -512,10 +597,8 @@ onSnapshot(collection(db, "orders"), (snap) => {
     // Check for new orders
     newOrders.forEach(order => {
         if (!previousOrderIds.has(order.id)) {
-            // This is a NEW order
             console.log("🔔 New Order Detected:", order.id);
             
-            // 🔔 Send Notification + Sound (only if not the first load)
             if (previousOrderIds.size > 0) {
                 sendOrderNotification(order);
                 showToast(`🔔 New Order! ${order.customer?.name || order.customerName || 'Customer'}`);
@@ -523,19 +606,14 @@ onSnapshot(collection(db, "orders"), (snap) => {
         }
     });
 
-    // Update previous IDs
     previousOrderIds = newOrderIds;
-
-    // Update orders data
     ordersData = newOrders;
 
-    // ✅ UPDATE ORDER COUNT
     const orderCountEl = document.getElementById("orderCount");
     if (orderCountEl) {
         orderCountEl.innerText = `(${ordersData.length} orders)`;
     }
 
-    // ✅ UPDATE ORDER LIST
     qs("orderList").innerHTML = ordersData.map(o => `
         <tr>
             <td>${o.orderId || o.id.slice(-6)}</td>
@@ -681,7 +759,8 @@ function generateReportData() {
         deliveredOrders,
         cancelledOrders,
         categories: categoriesData.length,
-        deliveryLocations: deliveryFeesData.length
+        deliveryLocations: deliveryFeesData.length,
+        coupons: couponsData.length
     };
     return reportData;
 }
@@ -707,6 +786,7 @@ window.openReportModal = () => {
 
             <div><b>📂 Categories:</b> ${reportData.categories}</div>
             <div><b>📍 Delivery Locations:</b> ${reportData.deliveryLocations}</div>
+            <div><b>🎟️ Coupons:</b> ${reportData.coupons}</div>
 
         </div>
         <hr>
@@ -739,6 +819,7 @@ window.downloadReportPDF = () => {
         `Cancelled Orders: ${d.cancelledOrders}`,
         `Categories: ${d.categories}`,
         `Delivery Locations: ${d.deliveryLocations}`,
+        `Coupons: ${d.coupons}`,
         `Generated: ${new Date().toLocaleString()}`
     ];
 
@@ -766,6 +847,7 @@ window.downloadReportCSV = () => {
         ["Cancelled Orders", d.cancelledOrders],
         ["Categories", d.categories],
         ["Delivery Locations", d.deliveryLocations],
+        ["Coupons", d.coupons],
         ["Generated", new Date().toLocaleString()]
     ];
 
