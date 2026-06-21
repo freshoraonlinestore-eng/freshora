@@ -70,7 +70,7 @@ async function uploadToCloudinary(file) {
 }
 
 /* =========================
-IMAGE PREVIEW (NEW)
+IMAGE PREVIEW
 ========================= */
 document.getElementById("pimageFile")?.addEventListener("change", function(e) {
     const container = document.getElementById("previewContainer");
@@ -534,7 +534,7 @@ document.getElementById("adminSearch")?.addEventListener("input", (e) => {
 });
 
 /* =========================
-INTELLIGENCE REPORTS (NEW)
+INTELLIGENCE REPORTS
 ========================= */
 let reportData = {};
 
@@ -669,7 +669,6 @@ function renderAnalytics() {
     const ctx = document.getElementById("analyticsChart")?.getContext("2d");
     if (!ctx) return;
 
-    // Aggregate last 7 days
     const now = new Date();
     const days = [];
     const revenues = [];
@@ -740,16 +739,8 @@ function renderAnalytics() {
 
 // Re-render chart when orders change
 onSnapshot(collection(db, "orders"), () => {
-    // data already in ordersData via the previous snapshot
-    // We'll call renderAnalytics after a small delay to ensure ordersData is updated
     setTimeout(renderAnalytics, 300);
 });
 
-// Also re-render when products change (for report data)
-onSnapshot(collection(db, "products"), () => {
-    // just to keep report data fresh
-});
-
-// Initial render after orders load (but we already have snapshot)
-// We'll call renderAnalytics once after DOM ready
+// Initial render
 setTimeout(renderAnalytics, 1000);
