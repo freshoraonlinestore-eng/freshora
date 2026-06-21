@@ -288,8 +288,9 @@ window.filterProducts = () => {
     renderProducts(filtered);
 };
 
+
 /* =========================
-RENDER PRODUCTS
+RENDER PRODUCTS - GIFT PACK SPECIAL
 ========================= */
 window.renderProducts = (products) => {
 
@@ -310,6 +311,9 @@ window.renderProducts = (products) => {
         const isLowStock = (p.stock || 0) < 5 && (p.stock || 0) > 0;
         const isOutOfStock = (p.stock || 0) <= 0;
 
+        // 🎁 Check if product belongs to "Gifts Pack" category
+        const isGiftPack = p.category && p.category.toLowerCase().includes("gift");
+
         const reviews = allReviews.filter(r => r.productId === p.id);
         const count = reviews.length;
         const avg = count ? (reviews.reduce((t, r) => t + num(r.rating), 0) / count).toFixed(1) : 0;
@@ -320,9 +324,14 @@ window.renderProducts = (products) => {
         if (p.newArrival) tags += `<span class="tag new">🆕 New</span>`;
         if (isLowStock) tags += `<span class="tag lowstock">⚠️ Low Stock</span>`;
         if (isOutOfStock) tags += `<span class="tag lowstock" style="background:#999;">Out of Stock</span>`;
+        // 🎁 Add Gift Pack tag
+        if (isGiftPack) tags += `<span class="tag gift-tag">🎁 Gift Pack</span>`;
+
+        // 🎁 Add special class to card
+        const cardClass = isGiftPack ? 'card gift-pack' : 'card';
 
         return `
-        <div class="card">
+        <div class="${cardClass}">
 
             ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
@@ -359,6 +368,7 @@ window.renderProducts = (products) => {
         </div>`;
     }).join("");
 };
+
 
 /* =========================
 REVIEWS RENDER
