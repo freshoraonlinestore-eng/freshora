@@ -19,6 +19,25 @@
 
 <body>
 
+<!-- 🔐 AUTH CHECK (new) -->
+<script type="module">
+import { auth } from "./firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+    }
+});
+
+// Override logout function
+window.logout = async () => {
+    await signOut(auth);
+    localStorage.removeItem("admin");
+    window.location.href = "login.html";
+};
+</script>
+
 <div class="admin-container">
 
     <h2>
