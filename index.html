@@ -2,12 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
     <title>Freshora Online Store</title>
 
+    <!-- ✅ PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- ✅ Favicon (Address Bar Icon) -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- ✅ PWA Theme Colors -->
+    <meta name="theme-color" content="#1f8f4d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=23" />
+    <link rel="stylesheet" href="style.css?v=24" />
 
     <!-- FONT AWESOME -->
     <link rel="stylesheet"
@@ -260,7 +272,7 @@
                style="font-weight:bold;font-size:18px;">
             </p>
 
-            <!-- DESCRIPTION + RATING (Will be filled by JS with HTML) -->
+            <!-- DESCRIPTION + RATING -->
             <div id="modalDesc"
                style="color:var(--text);font-size:14px;">
             </div>
@@ -438,7 +450,7 @@
     </div>
 
     <!-- APP JS -->
-    <script type="module" src="app.js?v=23"></script>
+    <script type="module" src="app.js?v=24"></script>
 
 </body>
 </html>
