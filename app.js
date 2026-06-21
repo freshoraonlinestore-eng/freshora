@@ -13,7 +13,7 @@ let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 let appliedCoupon = null;
 let deliveryDistricts = [];
 let availableCoupons = [];
-let isWishlistView = false; // ✅ Track wishlist view state
+let isWishlistView = false;
 
 /* =========================
 UTIL
@@ -279,7 +279,6 @@ window.applyCoupon = () => {
 FILTER
 ========================= */
 window.filterProducts = () => {
-    // ✅ When filtering, exit wishlist view
     isWishlistView = false;
 
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
@@ -320,7 +319,7 @@ window.filterProducts = () => {
 };
 
 /* =========================
-RENDER PRODUCTS - WITH BACK TO HOME BUTTON FOR WISHLIST
+RENDER PRODUCTS
 ========================= */
 window.renderProducts = (products) => {
 
@@ -329,7 +328,6 @@ window.renderProducts = (products) => {
 
     let html = '';
 
-    // ✅ Show "Back to Home" button if in wishlist view
     if (isWishlistView) {
         html += `
             <div style="grid-column:1/-1;text-align:center;padding:10px 0;margin-bottom:10px;border-bottom:2px solid var(--primary);">
@@ -439,12 +437,11 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
-🆕 BACK TO HOME (Exit Wishlist View)
+BACK TO HOME
 ========================= */
 window.backToHome = () => {
     isWishlistView = false;
     renderProducts(allProducts);
-    // Reset filters
     document.getElementById("searchInput").value = "";
     document.getElementById("categoryFilter").value = "all";
     document.getElementById("priceFilter").value = "all";
@@ -674,7 +671,6 @@ window.toggleWishlist = () => {
         showToast("Wishlist is empty");
         return;
     }
-    // ✅ Set wishlist view flag
     isWishlistView = true;
     renderProducts(items);
     showToast(`❤️ Showing ${items.length} wishlist items`);
@@ -695,7 +691,6 @@ window.toggleWishlistProduct = (id) => {
         const isWishlisted = wishlist.includes(id);
         btn.innerHTML = `<i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i> ${isWishlisted ? 'Remove from' : 'Add to'} Wishlist`;
     }
-    // ✅ If in wishlist view, refresh wishlist
     if (isWishlistView) {
         const items = allProducts.filter(p => wishlist.includes(p.id));
         renderProducts(items);
@@ -746,6 +741,41 @@ function loadDistricts() {
             `;
         }
     });
+}
+
+/* =========================
+📱 SEND ORDER CONFIRMATION WHATSAPP (CUSTOMER)
+========================= */
+function sendOrderConfirmationWhatsApp(orderId, name, phone, items, total, district, address) {
+    const cleanPhone = phone.replace(/\D/g, '');
+    const waNumber = cleanPhone.startsWith('94') ? cleanPhone : '94' + cleanPhone;
+    
+    let itemsText = items.map((item, i) =>
+        `${i+1}) ${item.name} x${item.qty} = LKR ${item.price * item.qty}`
+    ).join("\n");
+
+    const message =
+`✅ FRESHORA ORDER CONFIRMATION ✅
+
+Thank you for your order!
+
+📦 Order ID: ${orderId}
+📅 Date: ${new Date().toLocaleString()}
+
+👤 Customer: ${name}
+📍 District: ${district}
+🏠 Address: ${address}
+
+🛒 Items:
+${itemsText}
+
+💰 Total: LKR ${total}
+📊 Status: Pending
+
+We'll notify you when your order is ready.
+Thank you for shopping with Freshora! 🌿`;
+
+    window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, "_blank");
 }
 
 /* =========================
@@ -809,11 +839,13 @@ Subtotal: LKR ${subtotal}
 ${appliedCoupon ? `Coupon (${appliedCoupon.code || 'Unknown'} ${appliedCoupon.discount}%): -LKR ${discountAmount.toFixed(0)}\n` : ''}Delivery: LKR ${delivery}
 TOTAL: LKR ${finalTotal}`;
 
+    // Send WhatsApp to Store Owner
     window.open(
         `https://wa.me/94752425790?text=${encodeURIComponent(message)}`,
         "_blank"
     );
 
+    // Save to Firestore
     await addDoc(collection(db, "orders"), {
         orderId,
         customer: { name, phone, district, address },
@@ -831,15 +863,21 @@ TOTAL: LKR ${finalTotal}`;
         createdAt: new Date().toISOString()
     });
 
+    // ✅ Send WhatsApp Confirmation to Customer
+    sendOrderConfirmationWhatsApp(orderId, name, phone, cart, finalTotal, district, address);
+
+    // Clear cart and UI
     cart = [];
     appliedCoupon = null;
     document.getElementById("couponInput").value = "";
     document.getElementById("couponMessage").innerText = "";
     updateCartDisplay();
 
+    // Show success modal
     document.getElementById("orderSuccessId").innerText = `Order ID: ${orderId}`;
     document.getElementById("orderSuccessModal").classList.add("show");
     
+    // 🔔 Customer Notification + Sound
     sendOrderSuccessNotification(orderId);
     playOrderSuccessSound();
     
@@ -847,7 +885,7 @@ TOTAL: LKR ${finalTotal}`;
 };
 
 /* =========================
-✅ ORDER SUCCESS MODAL - CLOSE FUNCTION (FIXED)
+ORDER SUCCESS MODAL - CLOSE
 ========================= */
 window.closeOrderSuccess = () => {
     const modal = document.getElementById("orderSuccessModal");
@@ -922,11 +960,9 @@ FIREBASE SNAPSHOTS
 // PRODUCTS
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    // ✅ If not in wishlist view, render all products
     if (!isWishlistView) {
         renderProducts(allProducts);
     } else {
-        // Refresh wishlist view
         const items = allProducts.filter(p => wishlist.includes(p.id));
         renderProducts(items);
     }
@@ -950,7 +986,6 @@ onSnapshot(collection(db, "categories"), (snap) => {
 // REVIEWS
 onSnapshot(collection(db, "reviews"), (snap) => {
     allReviews = snap.docs.map(d => d.data());
-    // ✅ If not in wishlist view, render all products
     if (!isWishlistView) {
         renderProducts(allProducts);
     } else {
