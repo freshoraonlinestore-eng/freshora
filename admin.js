@@ -6,7 +6,8 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  getDocs
+  getDocs,
+  getDoc
 } from "./firebase.js";
 
 /* =========================
@@ -94,6 +95,52 @@ function showNotification(order) {
     window.focus();
     notification.close();
   };
+}
+
+/* =========================
+📱 SEND STATUS UPDATE WHATSAPP (AUTO)
+========================= */
+function sendStatusUpdateWhatsApp(order, newStatus) {
+  if (!order) return;
+
+  const items = order.items || [];
+  let itemsText = items.map((item, i) =>
+    `${i+1}) ${item.name} x${item.qty} = LKR ${item.price * item.qty}`
+  ).join("\n");
+
+  const statusEmojis = {
+    'Pending': '⏳',
+    'Processing': '🔄',
+    'Delivered': '✅',
+    'Cancelled': '❌'
+  };
+  const emoji = statusEmojis[newStatus] || '📌';
+
+  const message =
+`🟢 FRESHORA ORDER UPDATE 🟢
+
+${emoji} Order Status: ${newStatus}
+
+📦 Order: ${order.orderId || order.id}
+📅 Date: ${order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}
+
+👤 Customer: ${order.customer?.name || order.customerName || ''}
+📞 Phone: ${order.customer?.phone || order.phone || ''}
+📍 District: ${order.customer?.district || order.district || ''}
+🏠 Address: ${order.customer?.address || order.address || ''}
+
+🛒 Items:
+${itemsText}
+
+💰 Total: LKR ${order.total || order.totalBill || 0}
+
+Thank you for shopping with Freshora! 🌿`;
+
+  const phone = order.customer?.phone || order.phone || '';
+  const cleanPhone = phone.replace(/\D/g, '');
+  const waNumber = cleanPhone.startsWith('94') ? cleanPhone : '94' + cleanPhone;
+
+  window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, "_blank");
 }
 
 /* =========================
@@ -571,11 +618,23 @@ onSnapshot(collection(db, "coupons"), (snap) => {
 });
 
 /* =========================
-🔔 ORDERS (with LIVE REFRESH + NOTIFICATION + STATUS DROPDOWN)
+🔔 ORDERS (with LIVE REFRESH + NOTIFICATION + AUTO WHATSAPP)
 ========================= */
 window.updateOrderStatus = async (id, status) => {
+    // 🔹 Update status in Firestore
     await updateDoc(doc(db, "orders", id), { status });
     showToast(`Status updated to ${status}`);
+
+    // 🔹 Get updated order and send WhatsApp
+    try {
+        const orderSnap = await getDoc(doc(db, "orders", id));
+        if (orderSnap.exists()) {
+            const order = { id: orderSnap.id, ...orderSnap.data() };
+            sendStatusUpdateWhatsApp(order, status);
+        }
+    } catch (e) {
+        console.warn("Could not send WhatsApp:", e);
+    }
 };
 
 window.deleteOrder = async (id) => {
@@ -618,7 +677,7 @@ Thank you for shopping with Freshora! 🌿`;
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, "_blank");
 };
 
-// 🔔 LIVE ORDERS SNAPSHOT WITH STATUS DROPDOWN
+// 🔔 LIVE ORDERS SNAPSHOT
 onSnapshot(collection(db, "orders"), (snap) => {
 
     const newOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -638,7 +697,6 @@ onSnapshot(collection(db, "orders"), (snap) => {
     previousOrderIds = newOrderIds;
     ordersData = newOrders;
 
-    // Update total orders stat
     const totalOrdersEl = document.getElementById("totalOrders");
     if (totalOrdersEl) {
         totalOrdersEl.innerText = ordersData.length;
@@ -649,7 +707,6 @@ onSnapshot(collection(db, "orders"), (snap) => {
         orderCountEl.innerText = `(${ordersData.length})`;
     }
 
-    // ✅ ORDERS LIST WITH STATUS DROPDOWN
     qs("orderList").innerHTML = ordersData.map(o => `
         <tr>
             <td>${o.orderId || o.id.slice(-6)}</td>
