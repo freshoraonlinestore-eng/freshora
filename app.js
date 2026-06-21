@@ -1,4 +1,5 @@
-import { db, collection, onSnapshot, addDoc, doc, updateDoc, getDoc } from "./firebase.js";
+// ✅ IMPORT FIXED: Removed getDoc (not exported from firebase.js)
+import { db, collection, onSnapshot, addDoc } from "./firebase.js";
 
 /* =========================
 STATE
@@ -89,8 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleWishlistProduct(currentProductId);
     });
 
-    // Load districts (simple way, without getDocs)
-    loadDistrictsSimple();
+    // Load districts using onSnapshot (no getDocs needed)
+    loadDistricts();
 });
 
 /* =========================
@@ -572,10 +573,9 @@ function updateWishlistUI() {
 }
 
 /* =========================
-DELIVERY DISTRICTS (Simple - using onSnapshot)
+DELIVERY DISTRICTS (using onSnapshot - no getDocs needed)
 ========================= */
-function loadDistrictsSimple() {
-    // Use onSnapshot instead of getDocs to avoid import issues
+function loadDistricts() {
     onSnapshot(collection(db, "deliveryFees"), (snap) => {
         deliveryDistricts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         const select = document.getElementById("cusDistrict");
@@ -587,10 +587,12 @@ function loadDistrictsSimple() {
             opt.textContent = `${d.district} (Rs ${d.cost})`;
             select.appendChild(opt);
         });
+        // Remove old listeners to avoid duplicates
+        select.removeEventListener("change", updateCartDisplay);
         select.addEventListener("change", updateCartDisplay);
     }, (error) => {
         console.warn("Delivery districts load error:", error);
-        // Fallback: use default districts
+        // Fallback
         const select = document.getElementById("cusDistrict");
         if (select) {
             select.innerHTML = `
@@ -720,7 +722,7 @@ window.toggleDarkMode = () => {
 FIREBASE SNAPSHOTS
 ========================= */
 
-// PRODUCTS (SAME AS OLD WORKING VERSION)
+// PRODUCTS
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderProducts(allProducts);
