@@ -23,6 +23,92 @@ let deliveryFeesData = [];
 let categoriesData = [];
 
 /* =========================
+🔔 ORDER NOTIFICATION STATE
+========================= */
+let previousOrderIds = new Set();
+
+/* =========================
+🔊 PLAY SOUND FUNCTION
+========================= */
+function playNotificationSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Create two tones for a pleasant notification sound
+    const frequencies = [800, 1000];
+    const durations = [0.15, 0.15];
+    const gap = 0.1;
+    
+    frequencies.forEach((freq, index) => {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = freq;
+      
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + index * (durations[0] + gap));
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * (durations[0] + gap) + durations[index]);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.start(audioCtx.currentTime + index * (durations[0] + gap));
+      oscillator.stop(audioCtx.currentTime + index * (durations[0] + gap) + durations[index]);
+    });
+  } catch (e) {
+    console.warn("Sound playback failed:", e);
+  }
+}
+
+/* =========================
+🔔 SEND NOTIFICATION
+========================= */
+function sendOrderNotification(order) {
+  // Request notification permission
+  if (!("Notification" in window)) {
+    console.warn("This browser does not support notifications");
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    showNotification(order);
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        showNotification(order);
+      }
+    });
+  }
+}
+
+function showNotification(order) {
+  const customerName = order.customer?.name || order.customerName || "Customer";
+  const total = order.total || order.totalBill || 0;
+  const orderId = order.orderId || order.id || "";
+  
+  const notification = new Notification("🛒 New Order Received!", {
+    body: `👤 ${customerName}\n💰 Rs ${total}\n📦 ${orderId}`,
+    icon: "logo.png",
+    tag: "new-order",
+    requireInteraction: true
+  });
+
+  // Play sound
+  playNotificationSound();
+
+  // Auto-close after 8 seconds
+  setTimeout(() => {
+    notification.close();
+  }, 8000);
+
+  // On click, focus the admin page
+  notification.onclick = () => {
+    window.focus();
+    notification.close();
+  };
+}
+
+/* =========================
 HELPERS
 ========================= */
 const qs = (id) => document.getElementById(id);
@@ -368,7 +454,7 @@ onSnapshot(collection(db, "categories"), (snap) => {
 });
 
 /* =========================
-ORDERS (with DELETE)
+🔔 ORDERS (with LIVE NOTIFICATION + SOUND)
 ========================= */
 window.updateOrderStatus = async (id, status) => {
     await updateDoc(doc(db, "orders", id), { status });
@@ -415,10 +501,33 @@ Thank you for shopping with Freshora! 🌿`;
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, "_blank");
 };
 
+// 🔔 LIVE ORDERS SNAPSHOT WITH NOTIFICATION
 onSnapshot(collection(db, "orders"), (snap) => {
 
-    ordersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const newOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const newOrderIds = new Set(newOrders.map(o => o.id));
 
+    // Check for new orders
+    newOrders.forEach(order => {
+        if (!previousOrderIds.has(order.id)) {
+            // This is a NEW order
+            console.log("🔔 New Order Detected:", order.id);
+            
+            // 🔔 Send Notification + Sound (only if not the first load)
+            if (previousOrderIds.size > 0) {
+                sendOrderNotification(order);
+                showToast(`🔔 New Order! ${order.customer?.name || order.customerName || 'Customer'}`);
+            }
+        }
+    });
+
+    // Update previous IDs
+    previousOrderIds = newOrderIds;
+
+    // Update orders data
+    ordersData = newOrders;
+
+    // Render orders table
     qs("orderList").innerHTML = ordersData.map(o => `
         <tr>
             <td>${o.orderId || o.id.slice(-6)}</td>
