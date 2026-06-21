@@ -33,8 +33,6 @@ let previousOrderIds = new Set();
 function playNotificationSound() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Create two tones for a pleasant notification sound
     const frequencies = [800, 1000];
     const durations = [0.15, 0.15];
     const gap = 0.1;
@@ -42,16 +40,12 @@ function playNotificationSound() {
     frequencies.forEach((freq, index) => {
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
-      
       oscillator.type = 'sine';
       oscillator.frequency.value = freq;
-      
       gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + index * (durations[0] + gap));
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * (durations[0] + gap) + durations[index]);
-      
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
-      
       oscillator.start(audioCtx.currentTime + index * (durations[0] + gap));
       oscillator.stop(audioCtx.currentTime + index * (durations[0] + gap) + durations[index]);
     });
@@ -64,11 +58,7 @@ function playNotificationSound() {
 🔔 SEND NOTIFICATION
 ========================= */
 function sendOrderNotification(order) {
-  // Request notification permission
-  if (!("Notification" in window)) {
-    console.warn("This browser does not support notifications");
-    return;
-  }
+  if (!("Notification" in window)) return;
 
   if (Notification.permission === "granted") {
     showNotification(order);
@@ -93,19 +83,27 @@ function showNotification(order) {
     requireInteraction: true
   });
 
-  // Play sound
   playNotificationSound();
 
-  // Auto-close after 8 seconds
   setTimeout(() => {
     notification.close();
   }, 8000);
 
-  // On click, focus the admin page
   notification.onclick = () => {
     window.focus();
     notification.close();
   };
+}
+
+/* =========================
+UPDATE LAST UPDATED TIMESTAMP
+========================= */
+function updateLastUpdated() {
+  const el = document.getElementById("lastUpdated");
+  if (el) {
+    const now = new Date();
+    el.innerText = `⏱️ Updated: ${now.toLocaleTimeString()}`;
+  }
 }
 
 /* =========================
@@ -365,6 +363,8 @@ onSnapshot(collection(db, "products"), (snap) => {
             </td>
         </tr>`;
     }).join("");
+    
+    updateLastUpdated();
 });
 
 /* =========================
@@ -405,6 +405,7 @@ onSnapshot(collection(db, "deliveryFees"), (snap) => {
             <button onclick="deleteDeliveryLocation('${d.id}')" style="background:red;color:white;width:auto;padding:6px 12px;">🗑</button>
         </div>
     `).join("");
+    updateLastUpdated();
 });
 
 /* =========================
@@ -451,10 +452,11 @@ onSnapshot(collection(db, "categories"), (snap) => {
             <button onclick="deleteCategory('${c.id}')" style="background:red;color:white;width:auto;padding:6px 12px;">🗑</button>
         </div>
     `).join("");
+    updateLastUpdated();
 });
 
 /* =========================
-🔔 ORDERS (with LIVE NOTIFICATION + SOUND)
+🔔 ORDERS (with LIVE REFRESH + NOTIFICATION)
 ========================= */
 window.updateOrderStatus = async (id, status) => {
     await updateDoc(doc(db, "orders", id), { status });
@@ -501,7 +503,7 @@ Thank you for shopping with Freshora! 🌿`;
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, "_blank");
 };
 
-// 🔔 LIVE ORDERS SNAPSHOT WITH NOTIFICATION
+// 🔔 LIVE ORDERS SNAPSHOT WITH NOTIFICATION + AUTO REFRESH
 onSnapshot(collection(db, "orders"), (snap) => {
 
     const newOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -527,7 +529,13 @@ onSnapshot(collection(db, "orders"), (snap) => {
     // Update orders data
     ordersData = newOrders;
 
-    // Render orders table
+    // ✅ UPDATE ORDER COUNT
+    const orderCountEl = document.getElementById("orderCount");
+    if (orderCountEl) {
+        orderCountEl.innerText = `(${ordersData.length} orders)`;
+    }
+
+    // ✅ UPDATE ORDER LIST
     qs("orderList").innerHTML = ordersData.map(o => `
         <tr>
             <td>${o.orderId || o.id.slice(-6)}</td>
@@ -554,6 +562,8 @@ onSnapshot(collection(db, "orders"), (snap) => {
             </td>
         </tr>
     `).join("");
+    
+    updateLastUpdated();
 });
 
 /* =========================
