@@ -1,253 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Freshora Admin Dashboard</title>
-
 <link rel="stylesheet" href="admin.css?v=10">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- PDF LIB -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 </head>
-
 <body>
-
-<!-- 🔐 AUTH CHECK (new) -->
 <script type="module">
 import { auth } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-onAuthStateChanged(auth, (user) => {
-    if (!user) {
-        window.location.href = "login.html";
-    }
-});
-
-// Override logout function
-window.logout = async () => {
-    await signOut(auth);
-    localStorage.removeItem("admin");
-    window.location.href = "login.html";
-};
+onAuthStateChanged(auth, user=>{ if(!user)window.location.href="login.html"; });
+window.logout=async()=>{ await signOut(auth); localStorage.removeItem("admin"); window.location.href="login.html"; };
 </script>
-
 <div class="admin-container">
+  <h2><i class="fas fa-user-shield"></i> Freshora Admin Dashboard</h2>
+  <div style="text-align:center;"><button type="button" onclick="logout()" style="background:red;color:white;padding:10px 15px;border:none;border-radius:8px;"><i class="fas fa-right-from-bracket"></i> Logout</button></div>
 
-    <h2>
-        <i class="fas fa-user-shield"></i>
-        Freshora Admin Dashboard
-    </h2>
+  <!-- STATS -->
+  <h3><i class="fas fa-chart-line"></i> Intelligence Reports</h3>
+  <div class="admin-card">
+    <p><i class="fas fa-box"></i> Products: <span id="totalProducts">0</span></p>
+    <p><i class="fas fa-cubes"></i> Total Stock: <span id="totalStock">0</span></p>
+    <p style="color:red;"><i class="fas fa-triangle-exclamation"></i> Low Stock: <span id="lowStock">0</span></p>
+  </div>
 
-    <!-- ================= LOGOUT ================= -->
-    <div style="text-align:center;">
-        <button type="button"
-            onclick="logout()"
-            style="background:red;color:white;padding:10px 15px;border:none;border-radius:8px;">
+  <!-- DELIVERY -->
+  <h3><i class="fas fa-truck"></i> Delivery Fees</h3>
+  <div class="admin-card">
+    <select id="districtSelect"><option value="">Select District</option><option value="Colombo">Colombo</option><option value="Gampaha">Gampaha</option><option value="Kandy">Kandy</option></select>
+    <input id="deliveryCost" type="number" placeholder="Delivery Cost">
+    <button type="button" onclick="saveDeliveryFee()"><i class="fas fa-plus"></i> Save</button>
+  </div>
+  <div id="deliveryList"></div>
 
-            <i class="fas fa-right-from-bracket"></i> Logout
-        </button>
+  <!-- COUPONS -->
+  <h3><i class="fas fa-ticket"></i> Coupon Codes</h3>
+  <div class="admin-card">
+    <input id="couponCode" placeholder="Coupon Code (e.g. SAVE10)">
+    <input id="couponDiscount" type="number" placeholder="Discount %">
+    <button type="button" onclick="addCoupon()"><i class="fas fa-plus"></i> Add Coupon</button>
+  </div>
+  <div id="couponList"></div>
+
+  <!-- PRODUCTS -->
+  <h3><i class="fas fa-box-open"></i> Products</h3>
+  <div class="admin-card">
+    <input id="pname" placeholder="Product Name">
+    <input id="pprice" type="number" placeholder="Price">
+    <input id="pdiscount" type="number" placeholder="Discount %">
+    <input id="pstock" type="number" placeholder="Stock">
+    <textarea id="pdesc" placeholder="Description"></textarea>
+    <select id="pcategorySelect"><option value="Other">Other</option></select>
+    <!-- Flags -->
+    <div style="display:flex; gap:10px; margin:8px 0; flex-wrap:wrap;">
+      <label><input type="checkbox" id="pfeatured"> Featured</label>
+      <label><input type="checkbox" id="pbestseller"> Best Seller</label>
+      <label><input type="checkbox" id="pnewarrival"> New Arrival</label>
     </div>
-
-    <!-- ================= STATS ================= -->
-    <h3><i class="fas fa-chart-line"></i> Intelligence Reports</h3>
-
-    <div class="admin-card">
-        <p><i class="fas fa-box"></i> Products: <span id="totalProducts">0</span></p>
-        <p><i class="fas fa-cubes"></i> Total Stock: <span id="totalStock">0</span></p>
-        <p style="color:red;">
-            <i class="fas fa-triangle-exclamation"></i>
-            Low Stock: <span id="lowStock">0</span>
-        </p>
+    <input id="pimageFile" type="file" multiple accept="image/*">
+    <div id="previewContainer" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"></div>
+    <div style="width:100%;background:#eee;height:8px;border-radius:10px;margin-top:10px;"><div id="uploadProgress" style="width:0%;height:8px;background:green;border-radius:10px;"></div></div>
+    <small id="uploadStatus"></small>
+    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button type="button" onclick="uploadAndAddProduct()" style="background:green;color:white;"><i class="fas fa-plus"></i> Add</button>
+      <button type="button" onclick="updateSelected()" style="background:orange;color:white;"><i class="fas fa-pen"></i> Update</button>
+      <button type="button" onclick="clearForm()"><i class="fas fa-broom"></i> Clear</button>
     </div>
+  </div>
 
-    <!-- ================= DELIVERY ================= -->
-    <h3><i class="fas fa-truck"></i> Delivery Fees</h3>
+  <!-- CATEGORIES -->
+  <h3><i class="fas fa-tags"></i> Categories</h3>
+  <div class="admin-card">
+    <input id="catName" placeholder="New Category">
+    <button type="button" onclick="addCategory()"><i class="fas fa-plus"></i> Add</button>
+  </div>
+  <div id="activeCategoryList"></div>
 
-    <div class="admin-card">
+  <!-- ORDERS -->
+  <h3><i class="fas fa-shopping-cart"></i> Live Orders</h3>
+  <div class="admin-card" style="overflow:auto;">
+    <table style="width:100%;">
+      <thead><tr><th>ID</th><th>Customer</th><th>Phone</th><th>District</th><th>Total</th><th>Status</th><th>Tracking</th><th>Action</th></tr></thead>
+      <tbody id="orderList"><tr><td colspan="8" style="text-align:center;">No Orders</td></tr></tbody>
+    </table>
+  </div>
 
-        <select id="districtSelect">
-            <option value="">Select District</option>
-            <option value="Colombo">Colombo</option>
-            <option value="Gampaha">Gampaha</option>
-            <option value="Kandy">Kandy</option>
-        </select>
+  <!-- PRODUCTS LIST -->
+  <h3><i class="fas fa-list"></i> Product List</h3>
+  <input id="adminSearch" placeholder="Search products...">
+  <div class="admin-card" style="overflow:auto;">
+    <table style="width:100%;">
+      <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Discount</th><th>Final</th><th>Category</th><th>Stock</th><th>Featured</th><th>Action</th></tr></thead>
+      <tbody id="productListBody"></tbody>
+    </table>
+  </div>
 
-        <input id="deliveryCost" type="number" placeholder="Delivery Cost">
-
-        <button type="button" onclick="saveDeliveryFee()">
-            <i class="fas fa-plus"></i> Save
-        </button>
-
-    </div>
-
-    <div id="deliveryList"></div>
-
-    <!-- ================= PRODUCTS ================= -->
-    <h3><i class="fas fa-box-open"></i> Products</h3>
-
-    <div class="admin-card">
-
-        <input id="pname" placeholder="Product Name">
-        <input id="pprice" type="number" placeholder="Price">
-        <input id="pdiscount" type="number" placeholder="Discount %">
-        <input id="pstock" type="number" placeholder="Stock">
-
-        <textarea id="pdesc" placeholder="Description"></textarea>
-
-        <select id="pcategorySelect">
-            <option value="Other">Other</option>
-        </select>
-
-        <!-- MULTI IMAGE -->
-        <input id="pimageFile" type="file" multiple accept="image/*">
-
-        <!-- PREVIEW -->
-        <div id="previewContainer" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"></div>
-
-        <!-- PROGRESS -->
-        <div style="width:100%;background:#eee;height:8px;border-radius:10px;margin-top:10px;">
-            <div id="uploadProgress" style="width:0%;height:8px;background:green;border-radius:10px;"></div>
-        </div>
-
-        <small id="uploadStatus"></small>
-
-        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-
-            <button type="button"
-                onclick="uploadAndAddProduct()"
-                style="background:green;color:white;">
-
-                <i class="fas fa-plus"></i> Add
-            </button>
-
-            <button type="button"
-                onclick="updateSelected()"
-                style="background:orange;color:white;">
-
-                <i class="fas fa-pen"></i> Update
-            </button>
-
-            <button type="button" onclick="clearForm()">
-                <i class="fas fa-broom"></i> Clear
-            </button>
-
-        </div>
-
-    </div>
-
-    <!-- ================= CATEGORIES ================= -->
-    <h3><i class="fas fa-tags"></i> Categories</h3>
-
-    <div class="admin-card">
-        <input id="catName" placeholder="New Category">
-
-        <button type="button" onclick="addCategory()">
-            <i class="fas fa-plus"></i> Add
-        </button>
-    </div>
-
-    <div id="activeCategoryList"></div>
-
-    <!-- ================= ORDERS ================= -->
-    <h3><i class="fas fa-shopping-cart"></i> Live Orders</h3>
-
-    <div class="admin-card" style="overflow:auto;">
-
-        <table style="width:100%;">
-
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Customer</th>
-                    <th>Phone</th>
-                    <th>District</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="orderList">
-                <tr>
-                    <td colspan="7" style="text-align:center;">No Orders</td>
-                </tr>
-            </tbody>
-
-        </table>
-
-    </div>
-
-    <!-- ================= PRODUCTS LIST ================= -->
-    <h3><i class="fas fa-list"></i> Product List</h3>
-
-    <input id="adminSearch" placeholder="Search products...">
-
-    <div class="admin-card" style="overflow:auto;">
-
-        <table style="width:100%;">
-
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Discount</th>
-                    <th>Final</th>
-                    <th>Category</th>
-                    <th>Stock</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="productListBody"></tbody>
-
-        </table>
-
-    </div>
-
-    <!-- ================= ANALYTICS ================= -->
-    <h3><i class="fas fa-chart-line"></i> Sales Analytics</h3>
-
-    <canvas id="analyticsChart"></canvas>
-
+  <!-- ANALYTICS -->
+  <h3><i class="fas fa-chart-line"></i> Sales Analytics</h3>
+  <canvas id="analyticsChart"></canvas>
 </div>
 
-<!-- ================= BILL MODAL ================= -->
-<div id="billModal"
-     style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000aa;z-index:9999;">
-
-    <div style="background:white;max-width:420px;margin:50px auto;padding:20px;border-radius:10px;">
-
-        <h3><i class="fas fa-file-invoice"></i> Order Bill</h3>
-
-        <div id="billContent"></div>
-
-        <div style="display:flex;gap:10px;margin-top:10px;">
-
-            <button type="button" onclick="downloadBill(currentOrder)">
-                <i class="fas fa-file-pdf"></i> PDF
-            </button>
-
-            <button type="button"
-                onclick="document.getElementById('billModal').style.display='none'">
-                Close
-            </button>
-
-        </div>
-
+<!-- BILL MODAL -->
+<div id="billModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000aa;z-index:9999;">
+  <div style="background:white;max-width:420px;margin:50px auto;padding:20px;border-radius:10px;">
+    <h3><i class="fas fa-file-invoice"></i> Order Bill</h3>
+    <div id="billContent"></div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <button type="button" onclick="downloadBill(currentOrder)"><i class="fas fa-file-pdf"></i> PDF</button>
+      <button type="button" onclick="document.getElementById('billModal').style.display='none'">Close</button>
     </div>
-
+  </div>
 </div>
 
-<!-- SCRIPT -->
 <script type="module" src="admin.js?v=10"></script>
-
 </body>
 </html>
