@@ -17,6 +17,13 @@
 
 <body>
 
+    <script>
+// Request notification permission on page load
+if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+}
+</script>
+
 <!-- AUTH CHECK -->
 <script type="module">
 import { auth } from "./firebase.js";
