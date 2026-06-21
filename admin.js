@@ -168,8 +168,8 @@ document.getElementById("pimageFile")?.addEventListener("change", function(e) {
         reader.onload = function(ev) {
             const img = document.createElement("img");
             img.src = ev.target.result;
-            img.style.width = "60px";
-            img.style.height = "60px";
+            img.style.width = "50px";
+            img.style.height = "50px";
             img.style.objectFit = "cover";
             img.style.borderRadius = "6px";
             img.style.border = "1px solid var(--border)";
@@ -340,6 +340,7 @@ onSnapshot(collection(db, "products"), (snap) => {
     qs("totalProducts").innerText = productsData.length;
     qs("totalStock").innerText = productsData.reduce((a,b)=>a + (b.stock || 0), 0);
     qs("lowStock").innerText = productsData.filter(p => (p.stock || 0) < 5).length;
+    qs("totalOrders").innerText = ordersData.length;
 
     qs("productListBody").innerHTML = productsData.map(p => {
         let tags = '';
@@ -351,7 +352,7 @@ onSnapshot(collection(db, "products"), (snap) => {
 
         return `
         <tr onclick="selectProduct('${p.id}')">
-            <td><img src="${p.image || ''}" width="40"></td>
+            <td><img src="${p.image || ''}" width="36"></td>
             <td>${p.name}</td>
             <td>${p.price}</td>
             <td>${p.discount}%</td>
@@ -360,7 +361,9 @@ onSnapshot(collection(db, "products"), (snap) => {
             <td>${p.stock}</td>
             <td>${tags}</td>
             <td>
-                <button onclick="event.stopPropagation(); deleteProduct('${p.id}')">🗑</button>
+                <div class="action-btns">
+                    <button class="btn-del" onclick="event.stopPropagation(); deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                </div>
             </td>
         </tr>`;
     }).join("");
@@ -401,9 +404,13 @@ onSnapshot(collection(db, "deliveryFees"), (snap) => {
     deliveryFeesData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     qs("deliveryLocationList").innerHTML = deliveryFeesData.map(d => `
         <div class="location-item">
-            <span>${d.district}</span>
-            <input value="${d.cost}" onchange="updateDeliveryLocation('${d.id}', this.value)" type="number" style="width:100px;">
-            <button onclick="deleteDeliveryLocation('${d.id}')" style="background:red;color:white;width:auto;padding:6px 12px;">🗑</button>
+            <span class="district-name">${d.district}</span>
+            <span class="district-cost">Rs ${d.cost}</span>
+            <input value="${d.cost}" onchange="updateDeliveryLocation('${d.id}', this.value)" type="number">
+            <div class="item-actions">
+                <button class="btn-edit" onclick="updateDeliveryLocation('${d.id}', prompt('New cost:', ${d.cost}))">✏️</button>
+                <button class="btn-del" onclick="deleteDeliveryLocation('${d.id}')">🗑</button>
+            </div>
         </div>
     `).join("");
     updateLastUpdated();
@@ -448,16 +455,20 @@ onSnapshot(collection(db, "categories"), (snap) => {
 
     list.innerHTML = categoriesData.map(c => `
         <div class="category-item">
-            <span>${c.icon || '📦'}</span>
+            <span class="cat-icon">${c.icon || '📦'}</span>
+            <span class="cat-name">${c.name}</span>
             <input value="${c.name}" onchange="updateCategory('${c.id}', this.value, '${c.icon || '📦'}')">
-            <button onclick="deleteCategory('${c.id}')" style="background:red;color:white;width:auto;padding:6px 12px;">🗑</button>
+            <div class="item-actions">
+                <button class="btn-edit" onclick="updateCategory('${c.id}', prompt('New name:', '${c.name}'), '${c.icon || '📦'}')">✏️</button>
+                <button class="btn-del" onclick="deleteCategory('${c.id}')">🗑</button>
+            </div>
         </div>
     `).join("");
     updateLastUpdated();
 });
 
 /* =========================
-🆕 COUPON MANAGEMENT (FIXED EDIT)
+🆕 COUPON MANAGEMENT
 ========================= */
 window.addCoupon = async () => {
     const code = qs("couponCode").value.trim().toUpperCase();
@@ -494,11 +505,9 @@ window.addCoupon = async () => {
     qs("couponActive").checked = true;
 };
 
-// ✅ FIXED: Edit coupon with proper values
 window.editCoupon = (id, currentDiscount, currentMaxDiscount, currentExpiry, currentActive) => {
-    // Prompt user for new values
     const newDiscount = prompt("Enter new discount percentage:", currentDiscount);
-    if (newDiscount === null) return; // Cancel
+    if (newDiscount === null) return;
     
     const newMaxDiscount = prompt("Enter new max discount amount (Rs):", currentMaxDiscount || 0);
     if (newMaxDiscount === null) return;
@@ -553,12 +562,10 @@ onSnapshot(collection(db, "coupons"), (snap) => {
             </span>
             <input type="checkbox" ${c.active ? 'checked' : ''} 
                 onchange="updateCoupon('${c.id}', { active: this.checked })">
-            <button onclick="editCoupon('${c.id}', ${c.discount}, ${c.maxDiscount || 0}, '${c.expiry || ''}', ${c.active})" 
-                style="background:orange;color:white;width:auto;padding:4px 10px;">
-                ✏️ Edit
-            </button>
-            <button onclick="deleteCoupon('${c.id}')" 
-                style="background:red;color:white;width:auto;padding:4px 10px;">🗑</button>
+            <div class="item-actions">
+                <button class="btn-edit" onclick="editCoupon('${c.id}', ${c.discount}, ${c.maxDiscount || 0}, '${c.expiry || ''}', ${c.active})">✏️</button>
+                <button class="btn-del" onclick="deleteCoupon('${c.id}')">🗑</button>
+            </div>
         </div>`;
     }).join("");
 });
@@ -631,12 +638,20 @@ onSnapshot(collection(db, "orders"), (snap) => {
     previousOrderIds = newOrderIds;
     ordersData = newOrders;
 
-    const orderCountEl = document.getElementById("orderCount");
-    if (orderCountEl) {
-        orderCountEl.innerText = `(${ordersData.length} orders)`;
+    // Update total orders stat
+    const totalOrdersEl = document.getElementById("totalOrders");
+    if (totalOrdersEl) {
+        totalOrdersEl.innerText = ordersData.length;
     }
 
-    qs("orderList").innerHTML = ordersData.map(o => `
+    const orderCountEl = document.getElementById("orderCount");
+    if (orderCountEl) {
+        orderCountEl.innerText = `(${ordersData.length})`;
+    }
+
+    qs("orderList").innerHTML = ordersData.map(o => {
+        const statusClass = (o.status || 'Pending').toLowerCase();
+        return `
         <tr>
             <td>${o.orderId || o.id.slice(-6)}</td>
             <td>${o.customer?.name || o.customerName || ""}</td>
@@ -644,24 +659,17 @@ onSnapshot(collection(db, "orders"), (snap) => {
             <td>${o.customer?.district || o.district || ""}</td>
             <td>Rs ${o.total || o.totalBill || 0}</td>
             <td>
-                <select onchange="updateOrderStatus('${o.id}', this.value)">
-                    <option ${o.status=="Pending"?"selected":""}>Pending</option>
-                    <option ${o.status=="Processing"?"selected":""}>Processing</option>
-                    <option ${o.status=="Delivered"?"selected":""}>Delivered</option>
-                    <option ${o.status=="Cancelled"?"selected":""}>Cancelled</option>
-                </select>
+                <span class="status-badge ${statusClass}">${o.status || 'Pending'}</span>
             </td>
-            <td style="display:flex;gap:5px;flex-wrap:wrap;">
-                <button onclick='viewBill(${JSON.stringify(o)})' style="width:auto;padding:4px 8px;">View</button>
-                <button onclick='sendOrderWhatsApp(${JSON.stringify(o)})' style="width:auto;padding:4px 8px;background:#25d366;color:white;">
-                    <i class="fab fa-whatsapp"></i>
-                </button>
-                <button onclick="deleteOrder('${o.id}')" style="width:auto;padding:4px 8px;background:red;color:white;">
-                    <i class="fas fa-trash"></i>
-                </button>
+            <td>
+                <div class="action-btns">
+                    <button class="btn-view" onclick='viewBill(${JSON.stringify(o)})'><i class="fas fa-eye"></i></button>
+                    <button class="btn-wa" onclick='sendOrderWhatsApp(${JSON.stringify(o)})'><i class="fab fa-whatsapp"></i></button>
+                    <button class="btn-del" onclick="deleteOrder('${o.id}')"><i class="fas fa-trash"></i></button>
+                </div>
             </td>
-        </tr>
-    `).join("");
+        </tr>`;
+    }).join("");
     
     updateLastUpdated();
 });
@@ -670,11 +678,11 @@ onSnapshot(collection(db, "orders"), (snap) => {
 BILL + PDF
 ========================= */
 window.viewBill = (order) => {
-    qs("billModal").style.display = "block";
+    document.getElementById("billModal").style.display = "flex";
 
     const items = order.items || [];
 
-    qs("billContent").innerHTML = `
+    document.getElementById("billContent").innerHTML = `
         <p><b>Order ID:</b> ${order.orderId || order.id}</p>
         <p><b>Date:</b> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</p>
         <p><b>Customer:</b> ${order.customer?.name || order.customerName || ''}</p>
@@ -697,9 +705,7 @@ window.viewBill = (order) => {
         ${order.discount ? `<p><b>Discount:</b> -Rs ${order.discount}</p>` : ''}
         ${order.coupon ? `<p><b>Coupon:</b> ${order.coupon}</p>` : ''}
         <p><b>Delivery:</b> Rs ${order.delivery || 0}</p>
-        <p style="font-size:18px;font-weight:bold;color:var(--primary);">
-            <b>Total:</b> Rs ${order.total || order.totalBill || 0}
-        </p>
+        <p class="bill-total"><b>Total:</b> Rs ${order.total || order.totalBill || 0}</p>
         <p><b>Status:</b> ${order.status || 'Pending'}</p>
     `;
 
@@ -791,30 +797,91 @@ window.openReportModal = () => {
     generateReportData();
     const content = document.getElementById("reportContent");
     content.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="report-grid">
 
-            <div><b>📦 Total Products:</b> ${reportData.totalProducts}</div>
-            <div><b>📦 Total Stock:</b> ${reportData.totalStock}</div>
-            <div><b>⚠️ Low Stock:</b> ${reportData.lowStock}</div>
-            <div><b>📋 Total Orders:</b> ${reportData.totalOrders}</div>
+            <div class="report-card r-primary">
+                <div class="r-icon">📦</div>
+                <div class="r-label">Products</div>
+                <div class="r-value">${reportData.totalProducts}</div>
+            </div>
 
-            <div><b>💰 Total Revenue:</b> Rs ${reportData.totalRevenue.toFixed(2)}</div>
-            <div><b>🏷️ Total Discount Given:</b> Rs ${reportData.totalDiscount.toFixed(2)}</div>
-            <div><b>🚚 Total Delivery Fees:</b> Rs ${reportData.totalDelivery.toFixed(2)}</div>
+            <div class="report-card r-primary">
+                <div class="r-icon">📦</div>
+                <div class="r-label">Total Stock</div>
+                <div class="r-value">${reportData.totalStock}</div>
+            </div>
 
-            <div><b>⏳ Pending Orders:</b> ${reportData.pendingOrders}</div>
-            <div><b>✅ Delivered Orders:</b> ${reportData.deliveredOrders}</div>
-            <div><b>❌ Cancelled Orders:</b> ${reportData.cancelledOrders}</div>
+            <div class="report-card r-warning">
+                <div class="r-icon">⚠️</div>
+                <div class="r-label">Low Stock</div>
+                <div class="r-value">${reportData.lowStock}</div>
+            </div>
 
-            <div><b>📂 Categories:</b> ${reportData.categories}</div>
-            <div><b>📍 Delivery Locations:</b> ${reportData.deliveryLocations}</div>
-            <div><b>🎟️ Coupons:</b> ${reportData.coupons}</div>
+            <div class="report-card r-info">
+                <div class="r-icon">📋</div>
+                <div class="r-label">Total Orders</div>
+                <div class="r-value">${reportData.totalOrders}</div>
+            </div>
+
+            <div class="report-card r-gold">
+                <div class="r-icon">💰</div>
+                <div class="r-label">Revenue</div>
+                <div class="r-value">Rs ${reportData.totalRevenue.toFixed(0)}</div>
+            </div>
+
+            <div class="report-card r-danger">
+                <div class="r-icon">🏷️</div>
+                <div class="r-label">Discount Given</div>
+                <div class="r-value">Rs ${reportData.totalDiscount.toFixed(0)}</div>
+            </div>
+
+            <div class="report-card r-primary">
+                <div class="r-icon">🚚</div>
+                <div class="r-label">Delivery Fees</div>
+                <div class="r-value">Rs ${reportData.totalDelivery.toFixed(0)}</div>
+            </div>
+
+            <div class="report-card r-warning">
+                <div class="r-icon">⏳</div>
+                <div class="r-label">Pending Orders</div>
+                <div class="r-value">${reportData.pendingOrders}</div>
+            </div>
+
+            <div class="report-card r-primary">
+                <div class="r-icon">✅</div>
+                <div class="r-label">Delivered</div>
+                <div class="r-value">${reportData.deliveredOrders}</div>
+            </div>
+
+            <div class="report-card r-danger">
+                <div class="r-icon">❌</div>
+                <div class="r-label">Cancelled</div>
+                <div class="r-value">${reportData.cancelledOrders}</div>
+            </div>
+
+            <div class="report-card r-info">
+                <div class="r-icon">📂</div>
+                <div class="r-label">Categories</div>
+                <div class="r-value">${reportData.categories}</div>
+            </div>
+
+            <div class="report-card r-primary">
+                <div class="r-icon">📍</div>
+                <div class="r-label">Locations</div>
+                <div class="r-value">${reportData.deliveryLocations}</div>
+            </div>
+
+            <div class="report-card r-gold">
+                <div class="r-icon">🎟️</div>
+                <div class="r-label">Coupons</div>
+                <div class="r-value">${reportData.coupons}</div>
+            </div>
 
         </div>
-        <hr>
-        <p style="font-size:12px;color:var(--muted);">Last updated: ${new Date().toLocaleString()}</p>
+        <div class="report-divider"></div>
+        <div class="report-timestamp">Last updated: ${new Date().toLocaleString()}</div>
     `;
-    document.getElementById("reportModal").style.display = "block";
+    document.getElementById("reportModal").style.display = "flex";
 };
 
 window.downloadReportPDF = () => {
