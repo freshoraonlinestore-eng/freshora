@@ -57,7 +57,6 @@ window.goToStore = () => {
             <i class="fas fa-right-from-bracket"></i> Logout
         </button>
 
-        <!-- NEW: Intelligence Reports Button -->
         <button onclick="openReportModal()" style="background:#1f8f4d;color:white;padding:10px 20px;border:none;border-radius:8px;width:auto;">
             <i class="fas fa-file-alt"></i> Intelligence Reports
         </button>
@@ -118,7 +117,7 @@ window.goToStore = () => {
         <input id="pdiscount" type="number" placeholder="Discount %">
         <input id="pstock" type="number" placeholder="Stock">
 
-        <textarea id="pdesc" placeholder="Description"></textarea>
+        <textarea id="pdesc" placeholder="Description (You can use HTML tags like <h3>, <ul>, <li>, <strong>, etc.)"></textarea>
 
         <select id="pcategorySelect">
             <option value="Other">Other</option>
@@ -133,7 +132,7 @@ window.goToStore = () => {
 
         <input id="pimageFile" type="file" multiple accept="image/*">
 
-        <!-- PREVIEW CONTAINER (updated dynamically) -->
+        <!-- PREVIEW CONTAINER -->
         <div id="previewContainer" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"></div>
 
         <div style="width:100%;background:#eee;height:8px;border-radius:10px;margin-top:10px;">
@@ -237,7 +236,6 @@ window.goToStore = () => {
 
         <div id="reportContent" style="font-size:14px;line-height:1.8;">
 
-            <!-- Filled by JS -->
             Loading...
 
         </div>
