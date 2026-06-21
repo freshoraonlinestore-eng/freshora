@@ -28,11 +28,9 @@ body {
   padding: 20px;
 }
 
-/* Typography */
 h2 { text-align: center; color: var(--primary); margin-bottom: 25px; }
 h3 { margin-top: 30px; display: flex; align-items: center; gap: 10px; }
 
-/* Cards */
 .admin-card {
   background: var(--card);
   border-radius: var(--radius);
@@ -42,7 +40,6 @@ h3 { margin-top: 30px; display: flex; align-items: center; gap: 10px; }
   border: 1px solid var(--border);
 }
 
-/* Inputs & Form Elements */
 input, textarea, select {
   width: 100%;
   padding: 12px;
@@ -52,7 +49,6 @@ input, textarea, select {
   box-sizing: border-box;
 }
 
-/* Buttons */
 button {
   padding: 10px 15px;
   border: none;
@@ -65,7 +61,6 @@ button {
 }
 button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-/* Table Styling */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -84,7 +79,6 @@ td {
 }
 img { border-radius: 6px; }
 
-/* Utilities */
 .admin-toast {
   position: fixed;
   bottom: 20px;
@@ -98,8 +92,35 @@ img { border-radius: 6px; }
 }
 .admin-toast.show { display: block; }
 
-/* Responsive */
 @media (max-width: 768px) {
   .admin-container { padding: 10px; }
   table { font-size: 12px; }
 }
+
+.location-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 8px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+.location-item span { flex: 1; }
+.location-item input { width: 100px; margin: 0; }
+.location-item button { width: auto; padding: 6px 12px; margin: 0; }
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 8px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+.category-item span { flex: 1; }
+.category-item input { width: 150px; margin: 0; }
+.category-item button { width: auto; padding: 6px 12px; margin: 0; }
