@@ -1387,3 +1387,10 @@ body.dark #modalDesc ul li {
     right: -8px;
   }
 }
+
+/* PWA Splash Screen */
+@media all and (display-mode: standalone) {
+  body {
+    background: #ffffff;
+  }
+}
