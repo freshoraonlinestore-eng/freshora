@@ -1,4 +1,4 @@
-// ✅ IMPORT FIXED: Removed getDoc (not exported from firebase.js)
+// ✅ IMPORT FIXED - Only what's needed
 import { db, collection, onSnapshot, addDoc } from "./firebase.js";
 
 /* =========================
@@ -90,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleWishlistProduct(currentProductId);
     });
 
-    // Load districts using onSnapshot (no getDocs needed)
     loadDistricts();
 });
 
@@ -388,7 +387,7 @@ function renderReviews(productId) {
 }
 
 /* =========================
-MODAL
+MODAL - FIXED with Discount Badge, Original Price & Gallery
 ========================= */
 window.openModal = (id) => {
 
@@ -401,29 +400,90 @@ window.openModal = (id) => {
     recentlyViewed.unshift(id);
     saveRecentlyViewed();
 
+    // ========== PRICE DATA ==========
+    const originalPrice = num(p.price);
+    const discount = num(p.discount);
+    const finalPrice = getFinalPrice(p);
+    const hasDiscount = discount > 0;
+
+    // ========== GALLERY ==========
     const images = p.images?.length ? p.images : [p.image];
 
-    document.getElementById("modalName").innerText = p.name || "";
-    document.getElementById("modalPrice").innerText = "Rs " + getFinalPrice(p);
-    document.getElementById("modalDesc").innerText = p.description || "";
+    // ========== RATING ==========
+    const reviews = allReviews.filter(r => r.productId === p.id);
+    const count = reviews.length;
+    const avg = count ? (reviews.reduce((t, r) => t + num(r.rating), 0) / count).toFixed(1) : 0;
 
-    document.getElementById("galleryContainer").innerHTML = `
-        <img src="${images[0]}" class="main-img" id="mainModalImg" onclick="zoomImage()">
-        <div class="thumbnail-grid">
-            ${images.map(img => `
-                <img src="${img}" class="thumbnail"
-                onclick="document.getElementById('mainModalImg').src='${img}'">
-            `).join("")}
+    // ========== SET MODAL CONTENT ==========
+    document.getElementById("modalName").innerText = p.name || "";
+
+    // --- Price Display with Original Price ---
+    let priceHTML = '';
+    if (hasDiscount) {
+        priceHTML = `
+            <span style="text-decoration:line-through;color:var(--muted);font-size:16px;margin-right:10px;">
+                Rs ${originalPrice}
+            </span>
+            <span style="font-weight:bold;font-size:22px;color:var(--primary);">
+                Rs ${finalPrice}
+            </span>
+            <span style="display:inline-block;margin-left:10px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;padding:2px 10px;border-radius:6px;font-size:14px;font-weight:700;">
+                -${discount}%
+            </span>
+        `;
+    } else {
+        priceHTML = `
+            <span style="font-weight:bold;font-size:22px;color:var(--primary);">
+                Rs ${finalPrice}
+            </span>
+        `;
+    }
+    document.getElementById("modalPrice").innerHTML = priceHTML;
+
+    // --- Rating Display ---
+    const ratingHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin:8px 0;">
+            <span style="color:#ffb400;font-size:18px;">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))}</span>
+            <span style="font-weight:600;">${avg}</span>
+            <span style="color:var(--muted);font-size:13px;">(${count} reviews)</span>
         </div>
     `;
 
+    // --- Description ---
+    document.getElementById("modalDesc").innerHTML = `
+        <p style="color:var(--muted);font-size:14px;">${p.description || ''}</p>
+        ${ratingHTML}
+    `;
+
+    // --- Gallery with Thumbnails ---
+    let galleryHTML = `
+        <img src="${images[0]}" class="main-img" id="mainModalImg" onclick="zoomImage()">
+    `;
+
+    // Show thumbnails only if more than 1 image
+    if (images.length > 1) {
+        galleryHTML += `
+            <div class="thumbnail-grid">
+                ${images.map(img => `
+                    <img src="${img}" class="thumbnail"
+                    onclick="document.getElementById('mainModalImg').src='${img}'">
+                `).join("")}
+            </div>
+        `;
+    }
+
+    document.getElementById("galleryContainer").innerHTML = galleryHTML;
+
     document.getElementById("productModal")?.classList.add("show");
 
+    // Reset rating stars
     selectedRating = 0;
     updateStars(0);
 
+    // Load reviews
     renderReviews(id);
 
+    // Update wishlist button
     const isWishlisted = wishlist.includes(id);
     const btn = document.getElementById("modalWishlistBtn");
     btn.innerHTML = `<i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i> ${isWishlisted ? 'Remove from' : 'Add to'} Wishlist`;
@@ -573,7 +633,7 @@ function updateWishlistUI() {
 }
 
 /* =========================
-DELIVERY DISTRICTS (using onSnapshot - no getDocs needed)
+DELIVERY DISTRICTS
 ========================= */
 function loadDistricts() {
     onSnapshot(collection(db, "deliveryFees"), (snap) => {
@@ -587,12 +647,10 @@ function loadDistricts() {
             opt.textContent = `${d.district} (Rs ${d.cost})`;
             select.appendChild(opt);
         });
-        // Remove old listeners to avoid duplicates
         select.removeEventListener("change", updateCartDisplay);
         select.addEventListener("change", updateCartDisplay);
     }, (error) => {
         console.warn("Delivery districts load error:", error);
-        // Fallback
         const select = document.getElementById("cusDistrict");
         if (select) {
             select.innerHTML = `
