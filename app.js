@@ -12,6 +12,8 @@ let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 let appliedCoupon = null;
 let deliveryDistricts = [];
+let availableCoupons = [];
+let isWishlistView = false; // ✅ Track wishlist view state
 
 /* =========================
 UTIL
@@ -90,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     loadDistricts();
+    loadCoupons();
 });
 
 /* =========================
@@ -147,14 +150,12 @@ window.updateCartDisplay = () => {
         </div>`;
     }).join("");
 
-    // ✅ COUPON DISCOUNT
     let discountAmount = 0;
     if (appliedCoupon) {
         discountAmount = Math.min(total * (appliedCoupon.discount / 100), appliedCoupon.maxDiscount || total);
         total = total - discountAmount;
     }
 
-    // ✅ DELIVERY FEE
     let delivery = 0;
     if (total > 5000) {
         delivery = 0;
@@ -216,19 +217,19 @@ window.clearCart = () => {
 };
 
 /* =========================
-✅ COUPON - FIXED
+COUPON - LOAD FROM FIRESTORE
 ========================= */
-const COUPONS = {
-    "SAVE10": { discount: 10, maxDiscount: 500 },
-    "SAVE20": { discount: 20, maxDiscount: 1000 },
-    "FRESHORA": { discount: 15, maxDiscount: 750 }
-};
+function loadCoupons() {
+    onSnapshot(collection(db, "coupons"), (snap) => {
+        availableCoupons = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log("✅ Coupons loaded:", availableCoupons.length);
+    });
+}
 
 window.applyCoupon = () => {
     const code = document.getElementById("couponInput").value.trim().toUpperCase();
     const msg = document.getElementById("couponMessage");
 
-    // Clear previous coupon if any
     if (!code) {
         appliedCoupon = null;
         msg.innerText = "Enter a coupon code";
@@ -237,23 +238,37 @@ window.applyCoupon = () => {
         return;
     }
 
-    // Check if coupon exists
-    if (COUPONS[code]) {
-        // ✅ Set the coupon
-        appliedCoupon = COUPONS[code];
-        appliedCoupon.code = code; // Store the code for display
+    const coupon = availableCoupons.find(c => c.code === code && c.active === true);
+
+    if (coupon) {
+        if (coupon.expiry) {
+            const expiryDate = new Date(coupon.expiry);
+            if (expiryDate < new Date()) {
+                appliedCoupon = null;
+                msg.innerText = "❌ Coupon has expired!";
+                msg.style.color = "red";
+                updateCartDisplay();
+                showToast("Coupon expired");
+                return;
+            }
+        }
+
+        appliedCoupon = {
+            code: coupon.code,
+            discount: coupon.discount,
+            maxDiscount: coupon.maxDiscount || 0
+        };
         
-        msg.innerText = `✅ Coupon applied! ${appliedCoupon.discount}% off (Max Rs ${appliedCoupon.maxDiscount})`;
+        msg.innerText = `✅ Coupon applied! ${appliedCoupon.discount}% off (Max Rs ${appliedCoupon.maxDiscount || '∞'})`;
         msg.style.color = "green";
         
-        // ✅ Update cart display immediately
         updateCartDisplay();
         showToast(`🎉 Coupon "${code}" applied!`);
         
         console.log("✅ Coupon Applied:", appliedCoupon);
     } else {
         appliedCoupon = null;
-        msg.innerText = "❌ Invalid coupon code";
+        msg.innerText = "❌ Invalid or inactive coupon code";
         msg.style.color = "red";
         updateCartDisplay();
         showToast("Invalid coupon code");
@@ -264,6 +279,8 @@ window.applyCoupon = () => {
 FILTER
 ========================= */
 window.filterProducts = () => {
+    // ✅ When filtering, exit wishlist view
+    isWishlistView = false;
 
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const category = document.getElementById("categoryFilter")?.value || "all";
@@ -303,19 +320,59 @@ window.filterProducts = () => {
 };
 
 /* =========================
-RENDER PRODUCTS - GIFT PACK SPECIAL
+RENDER PRODUCTS - WITH BACK TO HOME BUTTON FOR WISHLIST
 ========================= */
 window.renderProducts = (products) => {
 
     const grid = document.getElementById("products");
     if (!grid) return;
 
+    let html = '';
+
+    // ✅ Show "Back to Home" button if in wishlist view
+    if (isWishlistView) {
+        html += `
+            <div style="grid-column:1/-1;text-align:center;padding:10px 0;margin-bottom:10px;border-bottom:2px solid var(--primary);">
+                <button onclick="backToHome()" style="
+                    background:var(--primary);
+                    color:#fff;
+                    border:none;
+                    padding:10px 30px;
+                    border-radius:10px;
+                    font-size:16px;
+                    font-weight:700;
+                    cursor:pointer;
+                    transition:0.3s;
+                ">
+                    🏠 Back to Home
+                </button>
+                <span style="margin-left:15px;color:var(--muted);font-size:14px;">
+                    ❤️ ${products.length} items in wishlist
+                </span>
+            </div>
+        `;
+    }
+
     if (!products.length) {
-        grid.innerHTML = `<p style="text-align:center;width:100%">No products</p>`;
+        if (isWishlistView) {
+            html += `
+                <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);">
+                    <i class="fa-regular fa-heart" style="font-size:48px;display:block;margin-bottom:15px;"></i>
+                    <h3>Your wishlist is empty</h3>
+                    <p style="margin-top:8px;">Start adding your favorite products!</p>
+                    <button onclick="backToHome()" style="margin-top:15px;background:var(--primary);color:#fff;border:none;padding:10px 30px;border-radius:10px;cursor:pointer;">
+                        🏠 Browse Products
+                    </button>
+                </div>
+            `;
+        } else {
+            html += `<p style="text-align:center;width:100%;grid-column:1/-1;">No products found</p>`;
+        }
+        grid.innerHTML = html;
         return;
     }
 
-    grid.innerHTML = products.map(p => {
+    html += products.map(p => {
 
         const price = num(p.price);
         const discount = num(p.discount);
@@ -324,7 +381,6 @@ window.renderProducts = (products) => {
         const isLowStock = (p.stock || 0) < 5 && (p.stock || 0) > 0;
         const isOutOfStock = (p.stock || 0) <= 0;
 
-        // 🎁 Check if product belongs to "Gifts Pack" category
         const isGiftPack = p.category && p.category.toLowerCase().includes("gift");
 
         const reviews = allReviews.filter(r => r.productId === p.id);
@@ -337,10 +393,8 @@ window.renderProducts = (products) => {
         if (p.newArrival) tags += `<span class="tag new">🆕 New</span>`;
         if (isLowStock) tags += `<span class="tag lowstock">⚠️ Low Stock</span>`;
         if (isOutOfStock) tags += `<span class="tag lowstock" style="background:#999;">Out of Stock</span>`;
-        // 🎁 Add Gift Pack tag
         if (isGiftPack) tags += `<span class="tag gift-tag">🎁 Gift Pack</span>`;
 
-        // 🎁 Add special class to card
         const cardClass = isGiftPack ? 'card gift-pack' : 'card';
 
         return `
@@ -380,6 +434,23 @@ window.renderProducts = (products) => {
 
         </div>`;
     }).join("");
+
+    grid.innerHTML = html;
+};
+
+/* =========================
+🆕 BACK TO HOME (Exit Wishlist View)
+========================= */
+window.backToHome = () => {
+    isWishlistView = false;
+    renderProducts(allProducts);
+    // Reset filters
+    document.getElementById("searchInput").value = "";
+    document.getElementById("categoryFilter").value = "all";
+    document.getElementById("priceFilter").value = "all";
+    document.getElementById("discountFilter").value = "all";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast("🏠 Back to Home");
 };
 
 /* =========================
@@ -408,7 +479,7 @@ function renderReviews(productId) {
 }
 
 /* =========================
-MODAL - UPDATED: Renders Description as HTML
+MODAL
 ========================= */
 window.openModal = (id) => {
 
@@ -432,10 +503,8 @@ window.openModal = (id) => {
     const count = reviews.length;
     const avg = count ? (reviews.reduce((t, r) => t + num(r.rating), 0) / count).toFixed(1) : 0;
 
-    // Set Name
     document.getElementById("modalName").innerText = p.name || "";
 
-    // Set Price with Badge
     let priceHTML = '';
     if (hasDiscount) {
         priceHTML = `
@@ -458,7 +527,6 @@ window.openModal = (id) => {
     }
     document.getElementById("modalPrice").innerHTML = priceHTML;
 
-    // --- DESCRIPTION + RATING (Renders user-provided HTML safely) ---
     const descriptionHTML = p.description || '';
     const ratingHTML = `
         <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
@@ -470,10 +538,8 @@ window.openModal = (id) => {
         </div>
     `;
 
-    // IMPORTANT: innerHTML renders the HTML tags from the admin description
     document.getElementById("modalDesc").innerHTML = descriptionHTML + ratingHTML;
 
-    // --- GALLERY ---
     let galleryHTML = `
         <img src="${images[0]}" class="main-img" id="mainModalImg" onclick="zoomImage()">
     `;
@@ -608,8 +674,10 @@ window.toggleWishlist = () => {
         showToast("Wishlist is empty");
         return;
     }
+    // ✅ Set wishlist view flag
+    isWishlistView = true;
     renderProducts(items);
-    showToast(`Showing ${items.length} wishlist items`);
+    showToast(`❤️ Showing ${items.length} wishlist items`);
 };
 
 window.toggleWishlistProduct = (id) => {
@@ -627,7 +695,13 @@ window.toggleWishlistProduct = (id) => {
         const isWishlisted = wishlist.includes(id);
         btn.innerHTML = `<i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i> ${isWishlisted ? 'Remove from' : 'Add to'} Wishlist`;
     }
-    filterProducts();
+    // ✅ If in wishlist view, refresh wishlist
+    if (isWishlistView) {
+        const items = allProducts.filter(p => wishlist.includes(p.id));
+        renderProducts(items);
+    } else {
+        filterProducts();
+    }
 };
 
 function updateWishlistUI() {
@@ -675,7 +749,7 @@ function loadDistricts() {
 }
 
 /* =========================
-✅ CHECKOUT (WITH COUPON FIX)
+CHECKOUT
 ========================= */
 window.checkout = async () => {
 
@@ -707,7 +781,6 @@ window.checkout = async () => {
     let total = subtotal;
     let discountAmount = 0;
 
-    // ✅ Apply coupon if exists
     if (appliedCoupon) {
         discountAmount = Math.min(subtotal * (appliedCoupon.discount / 100), appliedCoupon.maxDiscount || subtotal);
         total = subtotal - discountAmount;
@@ -736,13 +809,11 @@ Subtotal: LKR ${subtotal}
 ${appliedCoupon ? `Coupon (${appliedCoupon.code || 'Unknown'} ${appliedCoupon.discount}%): -LKR ${discountAmount.toFixed(0)}\n` : ''}Delivery: LKR ${delivery}
 TOTAL: LKR ${finalTotal}`;
 
-    // Send WhatsApp
     window.open(
         `https://wa.me/94752425790?text=${encodeURIComponent(message)}`,
         "_blank"
     );
 
-    // Save to Firestore
     await addDoc(collection(db, "orders"), {
         orderId,
         customer: { name, phone, district, address },
@@ -760,22 +831,29 @@ TOTAL: LKR ${finalTotal}`;
         createdAt: new Date().toISOString()
     });
 
-    // Clear cart and UI
     cart = [];
     appliedCoupon = null;
     document.getElementById("couponInput").value = "";
     document.getElementById("couponMessage").innerText = "";
     updateCartDisplay();
 
-    // Show success modal
     document.getElementById("orderSuccessId").innerText = `Order ID: ${orderId}`;
     document.getElementById("orderSuccessModal").classList.add("show");
     
-    // 🔔 🎵 CUSTOMER NOTIFICATION & SOUND
     sendOrderSuccessNotification(orderId);
     playOrderSuccessSound();
     
     showToast("Order sent 🚀");
+};
+
+/* =========================
+✅ ORDER SUCCESS MODAL - CLOSE FUNCTION (FIXED)
+========================= */
+window.closeOrderSuccess = () => {
+    const modal = document.getElementById("orderSuccessModal");
+    if (modal) {
+        modal.classList.remove("show");
+    }
 };
 
 // =========================
@@ -844,7 +922,14 @@ FIREBASE SNAPSHOTS
 // PRODUCTS
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderProducts(allProducts);
+    // ✅ If not in wishlist view, render all products
+    if (!isWishlistView) {
+        renderProducts(allProducts);
+    } else {
+        // Refresh wishlist view
+        const items = allProducts.filter(p => wishlist.includes(p.id));
+        renderProducts(items);
+    }
     document.getElementById("loadingScreen")?.remove();
 });
 
@@ -865,7 +950,13 @@ onSnapshot(collection(db, "categories"), (snap) => {
 // REVIEWS
 onSnapshot(collection(db, "reviews"), (snap) => {
     allReviews = snap.docs.map(d => d.data());
-    renderProducts(allProducts);
+    // ✅ If not in wishlist view, render all products
+    if (!isWishlistView) {
+        renderProducts(allProducts);
+    } else {
+        const items = allProducts.filter(p => wishlist.includes(p.id));
+        renderProducts(items);
+    }
     if (currentProductId) {
         renderReviews(currentProductId);
     }
