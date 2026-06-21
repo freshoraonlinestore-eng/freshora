@@ -3,359 +3,161 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Freshora Online Store</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=21" />
-
-    <!-- FONT AWESOME -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css?v=22" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
-
 <body>
 
-    <!-- TOP BANNER -->
-    <div class="top-banner">
-        Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products
+<!-- TOP BANNER -->
+<div class="top-banner">Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products</div>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="logo-area" ondblclick="window.location='login.html'">
+        <img src="logo.png" class="logo-img" alt="Freshora Logo" />
+        <div class="logo-text">Freshora</div>
     </div>
-
-    <!-- HEADER -->
-    <header class="header">
-
-        <div class="logo-area"
-             ondblclick="window.location='login.html'">
-
-            <img
-                src="logo.png"
-                class="logo-img"
-                alt="Freshora Logo"
-            />
-
-            <div class="logo-text">
-                Freshora
-            </div>
-
-        </div>
-
-        <!-- SEARCH -->
-        <div class="search-box">
-
-            <i class="fa-solid fa-magnifying-glass"></i>
-
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Search products..."
-                autocomplete="off"
-            />
-
-        </div>
-
-        <!-- DARK MODE -->
-        <button
-            id="darkModeBtn"
-            class="icon-btn"
-            type="button"
-            onclick="toggleDarkMode()"
-            aria-label="Toggle Dark Mode">
-
-            <i class="fa-solid fa-moon"></i>
-
+    <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off" />
+    </div>
+    <div style="display:flex; gap:8px;">
+        <!-- Wishlist Icon -->
+        <button class="icon-btn" onclick="toggleWishlist()" aria-label="Wishlist">
+            <i class="fa-regular fa-heart" id="wishlistIcon"></i>
+            <span id="wishlistCount" style="font-size:10px; background:red; color:white; border-radius:50%; padding:0 5px; position:relative; top:-8px; left:-6px;">0</span>
         </button>
-
-    </header>
-
-    <!-- FILTERS -->
-    <section class="advanced-search">
-
-        <div class="filter-grid">
-
-            <select id="categoryFilter">
-
-                <option value="all">
-                    All Categories
-                </option>
-
-            </select>
-
-            <select id="priceFilter">
-
-                <option value="all">All Prices</option>
-                <option value="0-500">Rs 0 - 500</option>
-                <option value="500-1000">Rs 500 - 1000</option>
-                <option value="1000-2000">Rs 1000 - 2000</option>
-                <option value="2000-">Rs 2000+</option>
-
-            </select>
-
-            <select id="discountFilter">
-
-                <option value="all">All Discounts</option>
-                <option value="10+">10%+</option>
-                <option value="20+">20%+</option>
-                <option value="50+">50%+</option>
-
-            </select>
-
-        </div>
-
-    </section>
-
-    <!-- PRODUCTS -->
-    <main
-        id="products"
-        class="products-grid">
-    </main>
-
-    <!-- FLOATING CART -->
-    <button
-        class="floating-cart"
-        type="button"
-        onclick="toggleCart()"
-        aria-label="Open Cart">
-
-        <i class="fa-solid fa-cart-shopping"></i>
-
-        <span id="floatingCartCount">
-            0
-        </span>
-
-    </button>
-
-    <!-- CART DRAWER -->
-    <div id="cartDrawer" class="cart-drawer">
-
-        <!-- CART HEADER -->
-        <div class="cart-header">
-
-            <h2>Your Cart</h2>
-
-            <button
-                class="icon-btn"
-                type="button"
-                onclick="toggleCart()"
-                aria-label="Close Cart">
-
-                <i class="fa-solid fa-xmark"></i>
-
-            </button>
-
-        </div>
-
-        <!-- CART ITEMS -->
-        <div id="cartItems"></div>
-
-        <!-- CHECKOUT -->
-        <div class="sticky-checkout">
-
-            <h3 id="cartTotal">
-                Total: Rs 0
-            </h3>
-
-            <div class="checkout-form">
-
-                <input
-                    type="text"
-                    id="cusName"
-                    placeholder="Your Name"
-                    autocomplete="name"
-                />
-
-                <input
-                    type="tel"
-                    id="cusPhone"
-                    placeholder="Phone Number"
-                    autocomplete="tel"
-                />
-
-                <textarea
-                    id="cusAddress"
-                    placeholder="Delivery Address"></textarea>
-
-            </div>
-
-            <div class="checkout-actions">
-
-                <button
-                    class="checkout-btn"
-                    type="button"
-                    onclick="checkout()">
-
-                    Order Now
-
-                </button>
-
-                <button
-                    class="clear-btn"
-                    type="button"
-                    onclick="clearCart()">
-
-                    Clear Cart
-
-                </button>
-
-            </div>
-
-        </div>
-
+        <!-- Dark Mode -->
+        <button id="darkModeBtn" class="icon-btn" type="button" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+            <i class="fa-solid fa-moon"></i>
+        </button>
     </div>
+</header>
 
-    <!-- PRODUCT MODAL -->
-    <div id="productModal" class="modal">
+<!-- CATEGORY ICONS -->
+<section class="category-icons" id="categoryIcons"></section>
 
-        <div class="modal-content">
+<!-- FILTERS -->
+<section class="advanced-search">
+    <div class="filter-grid">
+        <select id="categoryFilter"><option value="all">All Categories</option></select>
+        <select id="priceFilter">
+            <option value="all">All Prices</option>
+            <option value="0-500">Rs 0 - 500</option>
+            <option value="500-1000">Rs 500 - 1000</option>
+            <option value="1000-2000">Rs 1000 - 2000</option>
+            <option value="2000-">Rs 2000+</option>
+        </select>
+        <select id="discountFilter">
+            <option value="all">All Discounts</option>
+            <option value="10+">10%+</option>
+            <option value="20+">20%+</option>
+            <option value="50+">50%+</option>
+        </select>
+    </div>
+    <!-- Quick filters: Featured, Best Sellers, New Arrivals -->
+    <div style="display:flex; gap:10px; padding:0 12px 12px 12px; flex-wrap:wrap;">
+        <button class="filter-chip" data-filter="featured">⭐ Featured</button>
+        <button class="filter-chip" data-filter="bestseller">🔥 Best Sellers</button>
+        <button class="filter-chip" data-filter="newarrival">🆕 New Arrivals</button>
+        <button class="filter-chip active" data-filter="all">All Products</button>
+    </div>
+</section>
 
-            <!-- CLOSE -->
-            <button
-                type="button"
-                class="close"
-                onclick="closeModal()"
-                aria-label="Close Modal">
+<!-- PRODUCTS -->
+<main id="products" class="products-grid"></main>
 
-                <i class="fa-solid fa-xmark"></i>
+<!-- RECENTLY VIEWED -->
+<section style="padding:0 16px 20px 16px;">
+    <h3 style="display:flex; align-items:center; gap:8px;"><i class="fa-regular fa-clock"></i> Recently Viewed</h3>
+    <div id="recentlyViewed" class="products-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));"></div>
+</section>
 
-            </button>
+<!-- FLOATING CART -->
+<button class="floating-cart" type="button" onclick="toggleCart()" aria-label="Open Cart">
+    <i class="fa-solid fa-cart-shopping"></i>
+    <span id="floatingCartCount">0</span>
+</button>
 
-            <!-- GALLERY -->
-            <div
-                id="galleryContainer"
-                class="gallery-container">
-            </div>
-
-            <!-- PRODUCT DETAILS -->
-            <h2 id="modalName"></h2>
-
-            <p id="modalPrice"
-               style="font-weight:bold;font-size:18px;">
-            </p>
-
-            <p id="modalDesc"
-               style="color:var(--muted);font-size:14px;">
-            </p>
-
-            <!-- RATING -->
-            <div class="rating-ui">
-
-                <span>Rate:</span>
-
-                <div
-                    class="stars-display"
-                    id="starRating">
-
-                    <i class="fa-regular fa-star" data-value="1"></i>
-                    <i class="fa-regular fa-star" data-value="2"></i>
-                    <i class="fa-regular fa-star" data-value="3"></i>
-                    <i class="fa-regular fa-star" data-value="4"></i>
-                    <i class="fa-regular fa-star" data-value="5"></i>
-
-                </div>
-
-            </div>
-
-            <!-- REVIEW -->
-            <textarea
-                id="reviewText"
-                placeholder="Write your review...">
-            </textarea>
-
-            <button
-                id="reviewSubmitBtn"
-                class="checkout-btn"
-                type="button">
-
-                Submit Review
-
-            </button>
-
-            <!-- REVIEW LIST -->
-            <div id="reviewList"></div>
-
-            <!-- MODAL ADD TO CART -->
-            <button
-                id="modalAddBtn"
-                type="button"
-                style="
-                    margin-top:15px;
-                    padding:12px;
-                    width:100%;
-                    border-radius:10px;
-                    border:none;
-                    background:var(--primary);
-                    color:#fff;
-                    cursor:pointer;
-                ">
-
-                Add to Cart
-
-            </button>
-
+<!-- CART DRAWER -->
+<div id="cartDrawer" class="cart-drawer">
+    <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="icon-btn" type="button" onclick="toggleCart()" aria-label="Close Cart"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="cartItems"></div>
+    <div class="sticky-checkout">
+        <h3 id="cartTotal">Total: Rs 0</h3>
+        <!-- Coupon Code -->
+        <div style="display:flex; gap:8px; margin:10px 0;">
+            <input id="couponInput" placeholder="Coupon code" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border);">
+            <button onclick="applyCoupon()" style="padding:10px 15px; background:var(--primary); color:#fff; border:none; border-radius:8px;">Apply</button>
         </div>
-
+        <div id="couponMessage" style="font-size:13px; color:var(--muted);"></div>
+        <div class="checkout-form">
+            <input type="text" id="cusName" placeholder="Your Name" autocomplete="name" />
+            <input type="tel" id="cusPhone" placeholder="Phone Number" autocomplete="tel" />
+            <textarea id="cusAddress" placeholder="Delivery Address"></textarea>
+        </div>
+        <div class="checkout-actions">
+            <button class="checkout-btn" type="button" onclick="checkout()">Order Now</button>
+            <button class="clear-btn" type="button" onclick="clearCart()">Clear Cart</button>
+        </div>
     </div>
+</div>
 
-    <!-- LOADING -->
-    <div id="loadingScreen" class="loading-screen">
-
-        <div class="loader"></div>
-
+<!-- PRODUCT MODAL -->
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <button type="button" class="close" onclick="closeModal()" aria-label="Close Modal"><i class="fa-solid fa-xmark"></i></button>
+        <!-- Zoom Image: click main image to zoom -->
+        <div id="galleryContainer" class="gallery-container"></div>
+        <h2 id="modalName"></h2>
+        <p id="modalPrice" style="font-weight:bold;font-size:18px;"></p>
+        <p id="modalDesc" style="color:var(--muted);font-size:14px;"></p>
+        <!-- Share button -->
+        <button onclick="shareProduct()" style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:6px 12px; margin:6px 0;"><i class="fa-solid fa-share-nodes"></i> Share</button>
+        <!-- Low stock badge -->
+        <div id="modalLowStock" style="color:red; font-weight:bold; margin:4px 0;"></div>
+        <!-- Rating -->
+        <div class="rating-ui"><span>Rate:</span><div class="stars-display" id="starRating"><i class="fa-regular fa-star" data-value="1"></i><i class="fa-regular fa-star" data-value="2"></i><i class="fa-regular fa-star" data-value="3"></i><i class="fa-regular fa-star" data-value="4"></i><i class="fa-regular fa-star" data-value="5"></i></div></div>
+        <textarea id="reviewText" placeholder="Write your review..."></textarea>
+        <button id="reviewSubmitBtn" class="checkout-btn" type="button">Submit Review</button>
+        <div id="reviewList"></div>
+        <!-- Wishlist toggle in modal -->
+        <button id="modalWishlistBtn" type="button" style="margin-top:10px; padding:8px; width:100%; border-radius:10px; border:1px solid var(--border); background:var(--bg); cursor:pointer;"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
+        <button id="modalAddBtn" type="button" style="margin-top:10px; padding:12px; width:100%; border-radius:10px; border:none; background:var(--primary); color:#fff; cursor:pointer;">Add to Cart</button>
     </div>
+</div>
 
-    <!-- TOAST -->
-    <div id="toast" class="toast"></div>
-
-    <!-- SOCIAL LINKS -->
-    <div class="social-links">
-
-        <!-- FACEBOOK -->
-        <a href="https://facebook.com/"
-           target="_blank"
-           rel="noopener"
-           class="social-btn"
-           aria-label="Facebook">
-
-            <i class="fa-brands fa-facebook-f"></i>
-
-        </a>
-
-        <!-- INSTAGRAM -->
-        <a href="https://instagram.com/"
-           target="_blank"
-           rel="noopener"
-           class="social-btn"
-           aria-label="Instagram">
-
-            <i class="fa-brands fa-instagram"></i>
-
-        </a>
-
-        <!-- TIKTOK -->
-        <a href="https://tiktok.com/"
-           target="_blank"
-           rel="noopener"
-           class="social-btn"
-           aria-label="TikTok">
-
-            <i class="fa-brands fa-tiktok"></i>
-
-        </a>
-
-        <!-- WHATSAPP -->
-        <a href="https://wa.me/94752425790"
-           target="_blank"
-           rel="noopener"
-           class="social-btn whatsapp"
-           aria-label="WhatsApp">
-
-            <i class="fa-brands fa-whatsapp"></i>
-
-        </a>
-
+<!-- ORDER SUCCESS PAGE (hidden by default) -->
+<div id="orderSuccessPage" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:5000; padding:40px 20px; overflow-y:auto;">
+    <div style="max-width:500px; margin:0 auto; background:var(--card); border-radius:20px; padding:30px; text-align:center; box-shadow:var(--shadow);">
+        <i class="fa-regular fa-circle-check" style="font-size:60px; color:var(--primary);"></i>
+        <h2 style="margin:20px 0 10px;">Order Placed! 🎉</h2>
+        <p id="orderSuccessId" style="color:var(--muted);">Order #FR-12345</p>
+        <p>We'll notify you when your order ships.</p>
+        <button onclick="document.getElementById('orderSuccessPage').style.display='none'" style="margin-top:20px; padding:12px 30px; background:var(--primary); color:#fff; border:none; border-radius:10px;">Continue Shopping</button>
+        <br><br>
+        <a href="tracking.html?order=FR-12345" style="color:var(--primary);">Track Order</a>
     </div>
+</div>
 
-    <!-- APP JS -->
-    <script type="module" src="app.js?v=21"></script>
+<!-- LOADING -->
+<div id="loadingScreen" class="loading-screen"><div class="loader"></div></div>
 
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- SOCIAL LINKS -->
+<div class="social-links">
+    <a href="https://facebook.com/" target="_blank" rel="noopener" class="social-btn" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+    <a href="https://instagram.com/" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+    <a href="https://tiktok.com/" target="_blank" rel="noopener" class="social-btn" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+    <a href="https://wa.me/94752425790" target="_blank" rel="noopener" class="social-btn whatsapp" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+</div>
+
+<script type="module" src="app.js?v=22"></script>
 </body>
 </html>
