@@ -1,4 +1,3 @@
-// ✅ IMPORT FIXED - Only what's needed
 import { db, collection, onSnapshot, addDoc } from "./firebase.js";
 
 /* =========================
@@ -387,7 +386,7 @@ function renderReviews(productId) {
 }
 
 /* =========================
-MODAL - FIXED with Discount Badge, Original Price & Gallery
+MODAL - UPDATED: Renders Description as HTML
 ========================= */
 window.openModal = (id) => {
 
@@ -400,24 +399,21 @@ window.openModal = (id) => {
     recentlyViewed.unshift(id);
     saveRecentlyViewed();
 
-    // ========== PRICE DATA ==========
     const originalPrice = num(p.price);
     const discount = num(p.discount);
     const finalPrice = getFinalPrice(p);
     const hasDiscount = discount > 0;
 
-    // ========== GALLERY ==========
     const images = p.images?.length ? p.images : [p.image];
 
-    // ========== RATING ==========
     const reviews = allReviews.filter(r => r.productId === p.id);
     const count = reviews.length;
     const avg = count ? (reviews.reduce((t, r) => t + num(r.rating), 0) / count).toFixed(1) : 0;
 
-    // ========== SET MODAL CONTENT ==========
+    // Set Name
     document.getElementById("modalName").innerText = p.name || "";
 
-    // --- Price Display with Original Price ---
+    // Set Price with Badge
     let priceHTML = '';
     if (hasDiscount) {
         priceHTML = `
@@ -440,27 +436,25 @@ window.openModal = (id) => {
     }
     document.getElementById("modalPrice").innerHTML = priceHTML;
 
-    // --- Rating Display ---
+    // --- DESCRIPTION + RATING (Renders user-provided HTML safely) ---
+    const descriptionHTML = p.description || '';
     const ratingHTML = `
-        <div style="display:flex;align-items:center;gap:8px;margin:8px 0;">
-            <span style="color:#ffb400;font-size:18px;">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))}</span>
-            <span style="font-weight:600;">${avg}</span>
-            <span style="color:var(--muted);font-size:13px;">(${count} reviews)</span>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#ffb400;font-size:18px;">${'★'.repeat(Math.min(5, Math.round(avg)))}${'☆'.repeat(5 - Math.min(5, Math.round(avg)))}</span>
+                <span style="font-weight:600;">${avg}</span>
+                <span style="color:var(--muted);font-size:13px;">(${count} reviews)</span>
+            </div>
         </div>
     `;
 
-    // --- Description ---
-    document.getElementById("modalDesc").innerHTML = `
-        <p style="color:var(--muted);font-size:14px;">${p.description || ''}</p>
-        ${ratingHTML}
-    `;
+    // IMPORTANT: innerHTML renders the HTML tags from the admin description
+    document.getElementById("modalDesc").innerHTML = descriptionHTML + ratingHTML;
 
-    // --- Gallery with Thumbnails ---
+    // --- GALLERY ---
     let galleryHTML = `
         <img src="${images[0]}" class="main-img" id="mainModalImg" onclick="zoomImage()">
     `;
-
-    // Show thumbnails only if more than 1 image
     if (images.length > 1) {
         galleryHTML += `
             <div class="thumbnail-grid">
@@ -471,19 +465,14 @@ window.openModal = (id) => {
             </div>
         `;
     }
-
     document.getElementById("galleryContainer").innerHTML = galleryHTML;
 
     document.getElementById("productModal")?.classList.add("show");
 
-    // Reset rating stars
     selectedRating = 0;
     updateStars(0);
-
-    // Load reviews
     renderReviews(id);
 
-    // Update wishlist button
     const isWishlisted = wishlist.includes(id);
     const btn = document.getElementById("modalWishlistBtn");
     btn.innerHTML = `<i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i> ${isWishlisted ? 'Remove from' : 'Add to'} Wishlist`;
