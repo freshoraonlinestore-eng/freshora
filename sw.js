@@ -1,17 +1,23 @@
 /* =========================
 FRESHORA SERVICE WORKER
-CACHE-FREE AUTO UPDATE SYSTEM
+PWA - OFFLINE SUPPORT
 ========================= */
 
-const CACHE_NAME = "freshora-cache-v5";
+const CACHE_NAME = "freshora-cache-v6";
 
-/* Files to cache (ONLY essential shell) */
+/* Files to cache */
 const urlsToCache = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
-  "./logo.png"
+  "./logo.png",
+  "./manifest.json",
+  "./admin.html",
+  "./admin.css",
+  "./admin.js",
+  "./login.html",
+  "./firebase.js"
 ];
 
 /* =========================
@@ -22,6 +28,7 @@ self.addEventListener("install", (event) => {
 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      console.log("SW: Caching files...");
       return cache.addAll(urlsToCache);
     })
   );
@@ -30,7 +37,7 @@ self.addEventListener("install", (event) => {
 });
 
 /* =========================
-ACTIVATE EVENT (IMPORTANT FIX)
+ACTIVATE EVENT
 ========================= */
 self.addEventListener("activate", (event) => {
   console.log("SW: Activating...");
@@ -52,24 +59,21 @@ self.addEventListener("activate", (event) => {
 });
 
 /* =========================
-FETCH EVENT (CACHE-FREE STRATEGY)
+FETCH EVENT
 ========================= */
 self.addEventListener("fetch", (event) => {
 
-  // Always bypass cache for Firebase + API calls
-  if (
-    event.request.url.includes("firebase") ||
-    event.request.url.includes("firestore") ||
-    event.request.url.includes("googleapis")
-  ) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-
-  // Network first (NO STALE CACHE PROBLEM)
+  // Network first - fallback to cache
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        // Cache successful responses
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
         return response;
       })
       .catch(() => {
