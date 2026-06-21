@@ -571,11 +571,11 @@ onSnapshot(collection(db, "coupons"), (snap) => {
 });
 
 /* =========================
-🔔 ORDERS (with LIVE REFRESH + NOTIFICATION)
+🔔 ORDERS (with LIVE REFRESH + NOTIFICATION + STATUS DROPDOWN)
 ========================= */
 window.updateOrderStatus = async (id, status) => {
     await updateDoc(doc(db, "orders", id), { status });
-    showToast("Status Updated");
+    showToast(`Status updated to ${status}`);
 };
 
 window.deleteOrder = async (id) => {
@@ -618,7 +618,7 @@ Thank you for shopping with Freshora! 🌿`;
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, "_blank");
 };
 
-// 🔔 LIVE ORDERS SNAPSHOT
+// 🔔 LIVE ORDERS SNAPSHOT WITH STATUS DROPDOWN
 onSnapshot(collection(db, "orders"), (snap) => {
 
     const newOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -649,9 +649,8 @@ onSnapshot(collection(db, "orders"), (snap) => {
         orderCountEl.innerText = `(${ordersData.length})`;
     }
 
-    qs("orderList").innerHTML = ordersData.map(o => {
-        const statusClass = (o.status || 'Pending').toLowerCase();
-        return `
+    // ✅ ORDERS LIST WITH STATUS DROPDOWN
+    qs("orderList").innerHTML = ordersData.map(o => `
         <tr>
             <td>${o.orderId || o.id.slice(-6)}</td>
             <td>${o.customer?.name || o.customerName || ""}</td>
@@ -659,17 +658,38 @@ onSnapshot(collection(db, "orders"), (snap) => {
             <td>${o.customer?.district || o.district || ""}</td>
             <td>Rs ${o.total || o.totalBill || 0}</td>
             <td>
-                <span class="status-badge ${statusClass}">${o.status || 'Pending'}</span>
+                <select onchange="updateOrderStatus('${o.id}', this.value)" style="
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    border: 1px solid var(--border);
+                    background: var(--bg);
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: var(--text);
+                    width: auto;
+                    min-width: 100px;
+                ">
+                    <option value="Pending" ${o.status=="Pending"?"selected":""}>Pending</option>
+                    <option value="Processing" ${o.status=="Processing"?"selected":""}>Processing</option>
+                    <option value="Delivered" ${o.status=="Delivered"?"selected":""}>Delivered</option>
+                    <option value="Cancelled" ${o.status=="Cancelled"?"selected":""}>Cancelled</option>
+                </select>
             </td>
             <td>
                 <div class="action-btns">
-                    <button class="btn-view" onclick='viewBill(${JSON.stringify(o)})'><i class="fas fa-eye"></i></button>
-                    <button class="btn-wa" onclick='sendOrderWhatsApp(${JSON.stringify(o)})'><i class="fab fa-whatsapp"></i></button>
-                    <button class="btn-del" onclick="deleteOrder('${o.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn-view" onclick='viewBill(${JSON.stringify(o)})' title="View Bill">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-wa" onclick='sendOrderWhatsApp(${JSON.stringify(o)})' title="Send WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                    <button class="btn-del" onclick="deleteOrder('${o.id}')" title="Delete Order">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </td>
-        </tr>`;
-    }).join("");
+        </tr>
+    `).join("");
     
     updateLastUpdated();
 });
