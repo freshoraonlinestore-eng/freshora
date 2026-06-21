@@ -1,4 +1,4 @@
-import { db, collection, onSnapshot, addDoc, doc, updateDoc, getDoc, getDocs } from "./firebase.js";
+import { db, collection, onSnapshot, addDoc, doc, updateDoc, getDoc } from "./firebase.js";
 
 /* =========================
 STATE
@@ -10,10 +10,8 @@ let currentProductId = null;
 let allReviews = [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 let recentlyViewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
-let couponDiscount = 0;
-let deliveryFee = 0;
-let deliveryDistricts = [];
 let appliedCoupon = null;
+let deliveryDistricts = [];
 
 /* =========================
 UTIL
@@ -91,8 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleWishlistProduct(currentProductId);
     });
 
-    // Load delivery districts
-    loadDistricts();
+    // Load districts (simple way, without getDocs)
+    loadDistrictsSimple();
 });
 
 /* =========================
@@ -150,14 +148,12 @@ window.updateCartDisplay = () => {
         </div>`;
     }).join("");
 
-    // Apply coupon if any
     let discountAmount = 0;
     if (appliedCoupon) {
         discountAmount = Math.min(total * (appliedCoupon.discount / 100), appliedCoupon.maxDiscount || total);
         total = total - discountAmount;
     }
 
-    // Delivery fee
     let delivery = 0;
     if (total > 5000) {
         delivery = 0;
@@ -166,7 +162,6 @@ window.updateCartDisplay = () => {
         const dist = deliveryDistricts.find(d => d.district === selectedDistrict);
         delivery = dist ? dist.cost : 375;
     }
-    deliveryFee = delivery;
 
     if (cartTotal) {
         let displayTotal = total + delivery;
@@ -320,7 +315,6 @@ window.renderProducts = (products) => {
         const count = reviews.length;
         const avg = count ? (reviews.reduce((t, r) => t + num(r.rating), 0) / count).toFixed(1) : 0;
 
-        // Tags
         let tags = '';
         if (p.featured) tags += `<span class="tag featured">⭐ Featured</span>`;
         if (p.bestseller) tags += `<span class="tag bestseller">🔥 Bestseller</span>`;
@@ -402,7 +396,6 @@ window.openModal = (id) => {
 
     currentProductId = id;
 
-    // Add to recently viewed
     recentlyViewed = recentlyViewed.filter(pid => pid !== id);
     recentlyViewed.unshift(id);
     saveRecentlyViewed();
@@ -430,7 +423,6 @@ window.openModal = (id) => {
 
     renderReviews(id);
 
-    // Update wishlist button
     const isWishlisted = wishlist.includes(id);
     const btn = document.getElementById("modalWishlistBtn");
     btn.innerHTML = `<i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i> ${isWishlisted ? 'Remove from' : 'Add to'} Wishlist`;
@@ -539,13 +531,11 @@ function bindReviewButton() {
 WISHLIST
 ========================= */
 window.toggleWishlist = () => {
-    // Show wishlist products in a simple way
     const items = allProducts.filter(p => wishlist.includes(p.id));
     if (items.length === 0) {
         showToast("Wishlist is empty");
         return;
     }
-    // Render products filter to show only wishlist
     renderProducts(items);
     showToast(`Showing ${items.length} wishlist items`);
 };
@@ -560,13 +550,11 @@ window.toggleWishlistProduct = (id) => {
         showToast("Added to wishlist ❤️");
     }
     saveWishlist();
-    // Update modal button if open
     if (currentProductId === id) {
         const btn = document.getElementById("modalWishlistBtn");
         const isWishlisted = wishlist.includes(id);
         btn.innerHTML = `<i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i> ${isWishlisted ? 'Remove from' : 'Add to'} Wishlist`;
     }
-    // Re-render products to update heart icons
     filterProducts();
 };
 
@@ -584,12 +572,12 @@ function updateWishlistUI() {
 }
 
 /* =========================
-DELIVERY DISTRICTS
+DELIVERY DISTRICTS (Simple - using onSnapshot)
 ========================= */
-async function loadDistricts() {
-    try {
-        const snapshot = await getDocs(collection(db, "deliveryFees"));
-        deliveryDistricts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+function loadDistrictsSimple() {
+    // Use onSnapshot instead of getDocs to avoid import issues
+    onSnapshot(collection(db, "deliveryFees"), (snap) => {
+        deliveryDistricts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         const select = document.getElementById("cusDistrict");
         if (!select) return;
         select.innerHTML = `<option value="">Select District</option>`;
@@ -600,10 +588,19 @@ async function loadDistricts() {
             select.appendChild(opt);
         });
         select.addEventListener("change", updateCartDisplay);
-    } catch (e) {
-        console.warn("Could not load delivery districts", e);
-        // Fallback: empty select or use default
-    }
+    }, (error) => {
+        console.warn("Delivery districts load error:", error);
+        // Fallback: use default districts
+        const select = document.getElementById("cusDistrict");
+        if (select) {
+            select.innerHTML = `
+                <option value="">Select District</option>
+                <option value="Colombo">Colombo (Rs 375)</option>
+                <option value="Gampaha">Gampaha (Rs 375)</option>
+                <option value="Kandy">Kandy (Rs 375)</option>
+            `;
+        }
+    });
 }
 
 /* =========================
@@ -682,7 +679,7 @@ TOTAL: LKR ${finalTotal}`;
         items: cart,
         subtotal,
         discount: discountAmount,
-        coupon: appliedCoupon?.code || null,
+        coupon: appliedCoupon ? Object.keys(COUPONS).find(k => COUPONS[k] === appliedCoupon) : null,
         delivery,
         total: finalTotal,
         status: "Pending",
@@ -695,7 +692,6 @@ TOTAL: LKR ${finalTotal}`;
     document.getElementById("couponMessage").innerText = "";
     updateCartDisplay();
 
-    // Show success modal
     document.getElementById("orderSuccessId").innerText = `Order ID: ${orderId}`;
     document.getElementById("orderSuccessModal").classList.add("show");
     showToast("Order sent 🚀");
@@ -724,18 +720,14 @@ window.toggleDarkMode = () => {
 FIREBASE SNAPSHOTS
 ========================= */
 
-// Products
+// PRODUCTS (SAME AS OLD WORKING VERSION)
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderProducts(allProducts);
     document.getElementById("loadingScreen")?.remove();
-}, (error) => {
-    console.error("Products snapshot error:", error);
-    document.getElementById("loadingScreen")?.remove();
-    showToast("Error loading products");
 });
 
-// Categories
+// CATEGORIES
 onSnapshot(collection(db, "categories"), (snap) => {
     const categories = snap.docs.map(d => d.data().name);
     const select = document.getElementById("categoryFilter");
@@ -747,24 +739,13 @@ onSnapshot(collection(db, "categories"), (snap) => {
         opt.textContent = cat;
         select.appendChild(opt);
     });
-}, (error) => {
-    console.error("Categories snapshot error:", error);
 });
 
-// Reviews
+// REVIEWS
 onSnapshot(collection(db, "reviews"), (snap) => {
     allReviews = snap.docs.map(d => d.data());
     renderProducts(allProducts);
     if (currentProductId) {
         renderReviews(currentProductId);
     }
-}, (error) => {
-    console.error("Reviews snapshot error:", error);
-});
-
-// Delivery fees (reload on change)
-onSnapshot(collection(db, "deliveryFees"), () => {
-    loadDistricts();
-}, (error) => {
-    console.warn("Delivery fees snapshot error:", error);
 });
