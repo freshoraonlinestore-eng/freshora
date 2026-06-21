@@ -44,14 +44,19 @@ function showToast(msg) {
 /* =========================
 INIT
 ========================= */
-window.addEventListener("DOMContentLoaded", () => {
-
+document.addEventListener("DOMContentLoaded", () => {
     updateCartDisplay();
 
     document.getElementById("searchInput")
         ?.addEventListener("input", filterProducts);
 
     document.getElementById("categoryFilter")
+        ?.addEventListener("change", filterProducts);
+
+    document.getElementById("priceFilter")
+        ?.addEventListener("change", filterProducts);
+
+    document.getElementById("discountFilter")
         ?.addEventListener("change", filterProducts);
 
     setupStarRating();
@@ -69,7 +74,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
         addToCart(p.id, p.name, price, p.image);
     });
-
 });
 
 /* =========================
@@ -183,15 +187,40 @@ window.filterProducts = () => {
 
     const search = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const category = document.getElementById("categoryFilter")?.value || "all";
+    const priceFilter = document.getElementById("priceFilter")?.value || "all";
+    const discountFilter = document.getElementById("discountFilter")?.value || "all";
 
     let filtered = [...allProducts];
 
+    // Search
     filtered = filtered.filter(p =>
         (p.name || "").toLowerCase().includes(search)
     );
 
+    // Category
     if (category !== "all") {
         filtered = filtered.filter(p => p.category === category);
+    }
+
+    // Price
+    if (priceFilter !== "all") {
+        const [min, max] = priceFilter.split("-").map(Number);
+        filtered = filtered.filter(p => {
+            const price = getFinalPrice(p);
+            if (max) return price >= min && price <= max;
+            return price >= min;
+        });
+    }
+
+    // Discount
+    if (discountFilter !== "all") {
+        filtered = filtered.filter(p => {
+            const disc = Number(p.discount || 0);
+            if (discountFilter === "10+") return disc >= 10;
+            if (discountFilter === "20+") return disc >= 20;
+            if (discountFilter === "50+") return disc >= 50;
+            return true;
+        });
     }
 
     renderProducts(filtered);
@@ -259,6 +288,31 @@ window.renderProducts = (products) => {
 };
 
 /* =========================
+REVIEWS RENDER (Helper)
+========================= */
+function renderReviews(productId) {
+    const container = document.getElementById("reviewList");
+    if (!container) return;
+
+    const reviews = allReviews.filter(r => r.productId === productId);
+
+    if (reviews.length === 0) {
+        container.innerHTML = `<p style="color:var(--muted);font-size:13px;">No reviews yet</p>`;
+        return;
+    }
+
+    container.innerHTML = reviews.map(r => `
+        <div class="review-item">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span style="color:#ffb400;">${'★'.repeat(Math.min(r.rating, 5))}${'☆'.repeat(Math.max(0, 5 - Math.min(r.rating, 5)))}</span>
+                <span style="font-size:12px;color:var(--muted);">${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ''}</span>
+            </div>
+            <p style="margin-top:4px;">${r.text || ''}</p>
+        </div>
+    `).join("");
+}
+
+/* =========================
 MODAL
 ========================= */
 window.openModal = (id) => {
@@ -288,6 +342,9 @@ window.openModal = (id) => {
 
     selectedRating = 0;
     updateStars(0);
+
+    // Render reviews for this product
+    renderReviews(id);
 };
 
 window.closeModal = () => {
@@ -300,14 +357,13 @@ window.closeModal = () => {
 STAR RATING
 ========================= */
 function setupStarRating() {
-    setTimeout(() => {
-        document.querySelectorAll("#starRating i").forEach((star, i) => {
-            star.onclick = () => {
-                selectedRating = i + 1;
-                updateStars(selectedRating);
-            };
-        });
-    }, 300);
+    const stars = document.querySelectorAll("#starRating i");
+    stars.forEach((star, i) => {
+        star.onclick = () => {
+            selectedRating = i + 1;
+            updateStars(selectedRating);
+        };
+    });
 }
 
 function updateStars(rating) {
@@ -321,41 +377,35 @@ function updateStars(rating) {
 REVIEWS
 ========================= */
 function bindReviewButton() {
+    const btn = document.getElementById("reviewSubmitBtn");
+    if (!btn) return;
 
-    setTimeout(() => {
+    btn.onclick = async () => {
+        const text = document.getElementById("reviewText")?.value;
 
-        const btn = document.getElementById("reviewSubmitBtn");
-        if (!btn) return;
+        if (!text || selectedRating === 0) {
+            showToast("Add rating + review");
+            return;
+        }
 
-        btn.onclick = async () => {
+        if (!currentProductId) {
+            showToast("Open product first");
+            return;
+        }
 
-            const text = document.getElementById("reviewText")?.value;
+        await addDoc(collection(db, "reviews"), {
+            productId: currentProductId,
+            rating: selectedRating,
+            text,
+            createdAt: new Date().toISOString()
+        });
 
-            if (!text || selectedRating === 0) {
-                showToast("Add rating + review");
-                return;
-            }
+        selectedRating = 0;
+        updateStars(0);
+        document.getElementById("reviewText").value = "";
 
-            if (!currentProductId) {
-                showToast("Open product first");
-                return;
-            }
-
-            await addDoc(collection(db, "reviews"), {
-                productId: currentProductId,
-                rating: selectedRating,
-                text,
-                createdAt: new Date().toISOString()
-            });
-
-            selectedRating = 0;
-            updateStars(0);
-            document.getElementById("reviewText").value = "";
-
-            showToast("Review added");
-        };
-
-    }, 300);
+        showToast("Review added");
+    };
 }
 
 /* =========================
@@ -418,10 +468,14 @@ TOTAL: LKR ${total}`;
     await addDoc(collection(db, "orders"), {
         orderId,
         customer: { name, phone, address },
+        customerName: name,
+        phone: phone,
+        address: address,
         items: cart,
         subtotal,
         delivery,
         total,
+        status: "Pending",
         createdAt: new Date().toISOString()
     });
 
@@ -446,18 +500,38 @@ window.toggleDarkMode = () => {
 };
 
 /* =========================
-FIREBASE
+FIREBASE SNAPSHOTS
 ========================= */
+
+// Products
 onSnapshot(collection(db, "products"), (snap) => {
     allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderProducts(allProducts);
     document.getElementById("loadingScreen")?.remove();
 });
 
-/* =========================
-REVIEWS SNAPSHOT (⭐ rating system)
-========================= */
+// Categories (populate filter)
+onSnapshot(collection(db, "categories"), (snap) => {
+    const categories = snap.docs.map(d => d.data().name);
+    const select = document.getElementById("categoryFilter");
+    if (!select) return;
+
+    // Keep "All Categories" as first option
+    select.innerHTML = `<option value="all">All Categories</option>`;
+    categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+});
+
+// Reviews
 onSnapshot(collection(db, "reviews"), (snap) => {
     allReviews = snap.docs.map(d => d.data());
     renderProducts(allProducts);
+    // If modal is open, refresh its review list
+    if (currentProductId) {
+        renderReviews(currentProductId);
+    }
 });
