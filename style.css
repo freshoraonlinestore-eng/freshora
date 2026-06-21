@@ -977,6 +977,58 @@ PRODUCT RATING DISPLAY
   transform:translateY(-3px);
 }
 
+/* =========================
+MODAL DESCRIPTION - RICH TEXT STYLES (NEW)
+========================= */
+
+#modalDesc h3 {
+  font-size: 18px;
+  margin: 12px 0 6px 0;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+#modalDesc h4 {
+  font-size: 15px;
+  margin: 14px 0 6px 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+#modalDesc p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 6px 0;
+  color: var(--text);
+}
+
+#modalDesc ul {
+  margin: 6px 0 12px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+#modalDesc ul li {
+  padding: 5px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+#modalDesc ul li:last-child {
+  border-bottom: none;
+}
+
+#modalDesc strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+body.dark #modalDesc ul li {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
 /* RATING */
 
 .rating-ui{
