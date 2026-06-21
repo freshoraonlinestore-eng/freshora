@@ -288,7 +288,6 @@ window.filterProducts = () => {
     renderProducts(filtered);
 };
 
-
 /* =========================
 RENDER PRODUCTS - GIFT PACK SPECIAL
 ========================= */
@@ -368,7 +367,6 @@ window.renderProducts = (products) => {
         </div>`;
     }).join("");
 };
-
 
 /* =========================
 REVIEWS RENDER
@@ -663,85 +661,6 @@ function loadDistricts() {
 }
 
 /* =========================
-CHECKOUT
-========================= */
-window.checkout = async () => {
-
-    const name = document.getElementById("cusName")?.value.trim();
-    const phone = document.getElementById("cusPhone")?.value.trim();
-    const district = document.getElementById("cusDistrict")?.value;
-    const address = document.getElementById("cusAddress")?.value.trim();
-
-    if (!name || !phone || !district || !address) {
-        showToast("Fill all details including district");
-        return;
-    }
-
-    if (!cart.length) {
-        showToast("Cart empty");
-        return;
-    }
-
-    const orderId = "FR-" + Date.now();
-    const date = new Date().toLocaleString();
-
-    let subtotal = 0;
-    const itemsText = cart.map((item, i) => {
-        const total = num(item.price) * item.qty;
-        subtotal += total;
-        return `${i + 1}) ${item.name} x${item.qty} = LKR ${total}`;
-    }).join("\n");
-
-    let total = subtotal;
-    let discountAmount = 0;
-
-    if (appliedCoupon) {
-        discountAmount = Math.min(subtotal * (appliedCoupon.discount / 100), appliedCoupon.maxDiscount || subtotal);
-        total = subtotal - discountAmount;
-    }
-
-    const delivery = total > 5000 ? 0 : (deliveryDistricts.find(d => d.district === district)?.cost || 375);
-    const finalTotal = total + delivery;
-
-    const message =
-`🟢 FRESHORA NEW ORDER 🟢
-
-📦 Order ID: ${orderId}
-📅 Date: ${date}
-
-👤 CUSTOMER DETAILS
-Name: ${name}
-Phone: ${phone}
-District: ${district}
-Address: ${address}
-
-🛒 ITEMS
-${itemsText}
-
-💰 BILL SUMMARY
-Subtotal: LKR ${subtotal}
-${appliedCoupon ? `Coupon (${appliedCoupon.discount}%): -LKR ${discountAmount.toFixed(0)}\n` : ''}Delivery: LKR ${delivery}
-TOTAL: LKR ${finalTotal}`;
-
-    window.open(
-        `https://wa.me/94752425790?text=${encodeURIComponent(message)}`,
-        "_blank"
-    );
-
-    await addDoc(collection(db, "orders"), {
-        orderId,
-        customer: { name, phone, district, address },
-        customerName: name,
-        phone: phone,
-        district: district,
-        address: address,
-        items: cart,
-        subtotal,
-        discount: discountAmount,
-        coupon: appliedCoupon ? Object.keys(COUPONS).find(k => COUPONS[k] === appliedCoupon) : null,
-        delivery,
-
-/* =========================
 CHECKOUT (WITH CUSTOMER NOTIFICATION + SOUND)
 ========================= */
 window.checkout = async () => {
@@ -837,7 +756,7 @@ TOTAL: LKR ${finalTotal}`;
     document.getElementById("orderSuccessId").innerText = `Order ID: ${orderId}`;
     document.getElementById("orderSuccessModal").classList.add("show");
     
-    // 🔔 🎵 CUSTOMER NOTIFICATION & SOUND (මෙය එකතු කර ඇත)
+    // 🔔 🎵 CUSTOMER NOTIFICATION & SOUND
     sendOrderSuccessNotification(orderId);
     playOrderSuccessSound();
     
@@ -845,7 +764,7 @@ TOTAL: LKR ${finalTotal}`;
 };
 
 // =========================
-// 🔔 CUSTOMER NOTIFICATION FUNCTIONS (මෙය checkout එකට පිටතින් තැබිය යුතුයි)
+// 🔔 CUSTOMER NOTIFICATION FUNCTIONS
 // =========================
 function sendOrderSuccessNotification(orderId) {
     if (!("Notification" in window)) return;
@@ -887,6 +806,7 @@ function playOrderSuccessSound() {
         console.warn("Sound playback failed:", e);
     }
 }
+
 /* =========================
 UI
 ========================= */
