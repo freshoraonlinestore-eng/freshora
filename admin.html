@@ -7,7 +7,7 @@
 
 <title>Freshora Admin Dashboard</title>
 
-<link rel="stylesheet" href="admin.css?v=13">
+<link rel="stylesheet" href="admin.css?v=14">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -48,329 +48,335 @@ window.goToStore = () => {
 
 <div class="admin-container">
 
-    <h2>
-        <i class="fas fa-user-shield"></i>
-        Freshora Admin Dashboard
-        <span style="font-size:12px;background:#22c55e;color:#fff;padding:4px 12px;border-radius:20px;margin-left:10px;">
-            <i class="fas fa-circle" style="font-size:8px;color:#fff;animation:pulse 1.5s infinite;"></i> Live
-        </span>
-    </h2>
+    <!-- HEADER -->
+    <div class="admin-header">
+        <div class="admin-header-left">
+            <h1>
+                <i class="fas fa-leaf" style="color:var(--primary);"></i>
+                Freshora
+                <span class="admin-badge">Admin</span>
+            </h1>
+            <span class="live-badge">
+                <i class="fas fa-circle" style="font-size:8px;color:#22c55e;animation:pulse 1.5s infinite;"></i>
+                LIVE
+            </span>
+        </div>
+        <div class="admin-header-right">
+            <span id="lastUpdated" style="font-size:12px;color:var(--muted);"></span>
+        </div>
+    </div>
 
-    <!-- ================= NAV ================= -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;">
-
-        <button onclick="goToStore()" style="background:var(--primary);color:white;padding:10px 20px;border:none;border-radius:8px;width:auto;">
-            <i class="fas fa-store"></i> Go to Store
+    <!-- NAV -->
+    <div class="admin-nav">
+        <button onclick="goToStore()" class="nav-btn store-btn">
+            <i class="fas fa-store"></i> Store
         </button>
-
-        <button onclick="logout()" style="background:red;color:white;padding:10px 20px;border:none;border-radius:8px;width:auto;">
-            <i class="fas fa-right-from-bracket"></i> Logout
+        <button onclick="openReportModal()" class="nav-btn report-btn">
+            <i class="fas fa-file-alt"></i> Reports
         </button>
-
-        <button onclick="openReportModal()" style="background:#1f8f4d;color:white;padding:10px 20px;border:none;border-radius:8px;width:auto;">
-            <i class="fas fa-file-alt"></i> Intelligence Reports
-        </button>
-
-        <button onclick="location.reload()" style="background:#6b7280;color:white;padding:10px 20px;border:none;border-radius:8px;width:auto;">
+        <button onclick="location.reload()" class="nav-btn refresh-btn">
             <i class="fas fa-sync-alt"></i> Refresh
         </button>
-
-    </div>
-
-    <!-- ================= STATS ================= -->
-    <h3>
-        <i class="fas fa-chart-line"></i> Intelligence Reports
-        <span id="lastUpdated" style="font-size:12px;color:var(--muted);font-weight:normal;margin-left:10px;"></span>
-    </h3>
-
-    <div class="admin-card">
-        <p><i class="fas fa-box"></i> Products: <span id="totalProducts">0</span></p>
-        <p><i class="fas fa-cubes"></i> Total Stock: <span id="totalStock">0</span></p>
-        <p style="color:red;">
-            <i class="fas fa-triangle-exclamation"></i>
-            Low Stock: <span id="lowStock">0</span>
-        </p>
-    </div>
-
-    <!-- ================= COUPONS (NEW) ================= -->
-    <h3><i class="fas fa-ticket"></i> Coupon Management</h3>
-
-    <div class="admin-card">
-
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
-            <input id="couponCode" placeholder="Code (e.g. SAVE10)">
-            <input id="couponDiscount" type="number" placeholder="Discount %">
-            <input id="couponMaxDiscount" type="number" placeholder="Max Discount (Rs)">
-            <input id="couponExpiry" type="date" placeholder="Expiry Date">
-        </div>
-
-        <div style="display:flex;gap:10px;margin-top:8px;">
-            <label><input type="checkbox" id="couponActive" checked> Active</label>
-        </div>
-
-        <button onclick="addCoupon()" style="background:var(--primary);color:white;margin-top:10px;">
-            <i class="fas fa-plus"></i> Add Coupon
+        <button onclick="logout()" class="nav-btn logout-btn">
+            <i class="fas fa-right-from-bracket"></i> Logout
         </button>
-
     </div>
 
-    <div id="couponList"></div>
+    <!-- ================= STATS CARDS ================= -->
+    <div class="stats-grid">
+        <div class="stat-card stat-products">
+            <div class="stat-icon"><i class="fas fa-box"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Products</span>
+                <span class="stat-value" id="totalProducts">0</span>
+            </div>
+        </div>
+        <div class="stat-card stat-stock">
+            <div class="stat-icon"><i class="fas fa-cubes"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Stock</span>
+                <span class="stat-value" id="totalStock">0</span>
+            </div>
+        </div>
+        <div class="stat-card stat-lowstock">
+            <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Low Stock</span>
+                <span class="stat-value" id="lowStock">0</span>
+            </div>
+        </div>
+        <div class="stat-card stat-orders">
+            <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Orders</span>
+                <span class="stat-value" id="totalOrders">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= COUPONS ================= -->
+    <section class="admin-section">
+        <div class="section-header">
+            <h3><i class="fas fa-ticket"></i> Coupon Management</h3>
+            <span class="section-badge">Manage</span>
+        </div>
+
+        <div class="admin-card">
+            <div class="form-row">
+                <input id="couponCode" placeholder="Code (e.g. SAVE10)">
+                <input id="couponDiscount" type="number" placeholder="Discount %">
+                <input id="couponMaxDiscount" type="number" placeholder="Max Rs">
+                <input id="couponExpiry" type="date" placeholder="Expiry">
+            </div>
+            <div class="form-row">
+                <label style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="couponActive" checked> Active
+                </label>
+                <button onclick="addCoupon()" class="btn-primary">
+                    <i class="fas fa-plus"></i> Add Coupon
+                </button>
+            </div>
+        </div>
+
+        <div id="couponList"></div>
+    </section>
 
     <!-- ================= DELIVERY LOCATIONS ================= -->
-    <h3><i class="fas fa-map-pin"></i> Delivery Locations</h3>
+    <section class="admin-section">
+        <div class="section-header">
+            <h3><i class="fas fa-map-pin"></i> Delivery Locations</h3>
+            <span class="section-badge">Manage</span>
+        </div>
 
-    <div class="admin-card">
+        <div class="admin-card">
+            <div class="form-row">
+                <input id="delDistrict" placeholder="District Name">
+                <input id="delCost" type="number" placeholder="Delivery Cost (Rs)">
+            </div>
+            <button onclick="addDeliveryLocation()" class="btn-primary">
+                <i class="fas fa-plus"></i> Add Location
+            </button>
+        </div>
 
-        <input id="delDistrict" placeholder="District Name">
-        <input id="delCost" type="number" placeholder="Delivery Cost (Rs)">
-
-        <button onclick="addDeliveryLocation()" style="background:var(--primary);color:white;">
-            <i class="fas fa-plus"></i> Add Location
-        </button>
-
-    </div>
-
-    <div id="deliveryLocationList"></div>
+        <div id="deliveryLocationList"></div>
+    </section>
 
     <!-- ================= CATEGORIES ================= -->
-    <h3><i class="fas fa-tags"></i> Categories</h3>
+    <section class="admin-section">
+        <div class="section-header">
+            <h3><i class="fas fa-tags"></i> Categories</h3>
+            <span class="section-badge">Manage</span>
+        </div>
 
-    <div class="admin-card">
+        <div class="admin-card">
+            <div class="form-row">
+                <input id="catName" placeholder="New Category">
+                <input id="catIcon" placeholder="Icon (emoji, e.g. 🍎)">
+            </div>
+            <button onclick="addCategory()" class="btn-primary">
+                <i class="fas fa-plus"></i> Add Category
+            </button>
+        </div>
 
-        <input id="catName" placeholder="New Category">
-        <input id="catIcon" placeholder="Icon (emoji, e.g. 🍎)">
-
-        <button onclick="addCategory()" style="background:var(--primary);color:white;">
-            <i class="fas fa-plus"></i> Add Category
-        </button>
-
-    </div>
-
-    <div id="activeCategoryList"></div>
+        <div id="activeCategoryList"></div>
+    </section>
 
     <!-- ================= PRODUCTS ================= -->
-    <h3><i class="fas fa-box-open"></i> Products</h3>
-
-    <div class="admin-card">
-
-        <input id="pname" placeholder="Product Name">
-        <input id="pprice" type="number" placeholder="Price">
-        <input id="pdiscount" type="number" placeholder="Discount %">
-        <input id="pstock" type="number" placeholder="Stock">
-
-        <textarea id="pdesc" placeholder="Description (You can use HTML tags like <h3>, <ul>, <li>, <strong>, etc.)"></textarea>
-
-        <select id="pcategorySelect">
-            <option value="Other">Other</option>
-        </select>
-
-        <!-- Product Tags -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0;">
-            <label><input type="checkbox" id="pFeatured"> ⭐ Featured</label>
-            <label><input type="checkbox" id="pBestseller"> 🔥 Bestseller</label>
-            <label><input type="checkbox" id="pNewArrival"> 🆕 New Arrival</label>
+    <section class="admin-section">
+        <div class="section-header">
+            <h3><i class="fas fa-box-open"></i> Products</h3>
+            <span class="section-badge">CRUD</span>
         </div>
 
-        <input id="pimageFile" type="file" multiple accept="image/*">
+        <div class="admin-card">
+            <div class="form-row">
+                <input id="pname" placeholder="Product Name">
+                <input id="pprice" type="number" placeholder="Price">
+                <input id="pdiscount" type="number" placeholder="Discount %">
+                <input id="pstock" type="number" placeholder="Stock">
+            </div>
 
-        <!-- PREVIEW CONTAINER -->
-        <div id="previewContainer" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"></div>
+            <textarea id="pdesc" placeholder="Description (HTML allowed)"></textarea>
 
-        <div style="width:100%;background:#eee;height:8px;border-radius:10px;margin-top:10px;">
-            <div id="uploadProgress" style="width:0%;height:8px;background:green;border-radius:10px;"></div>
+            <select id="pcategorySelect">
+                <option value="Other">Other</option>
+            </select>
+
+            <div class="tag-row">
+                <label><input type="checkbox" id="pFeatured"> ⭐ Featured</label>
+                <label><input type="checkbox" id="pBestseller"> 🔥 Bestseller</label>
+                <label><input type="checkbox" id="pNewArrival"> 🆕 New Arrival</label>
+            </div>
+
+            <input id="pimageFile" type="file" multiple accept="image/*">
+
+            <div id="previewContainer"></div>
+
+            <div class="progress-bar">
+                <div id="uploadProgress" style="width:0%;"></div>
+            </div>
+            <small id="uploadStatus"></small>
+
+            <div class="btn-group">
+                <button onclick="uploadAndAddProduct()" class="btn-success">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+                <button onclick="updateSelected()" class="btn-warning">
+                    <i class="fas fa-pen"></i> Update
+                </button>
+                <button onclick="clearForm()" class="btn-secondary">
+                    <i class="fas fa-broom"></i> Clear
+                </button>
+            </div>
         </div>
-
-        <small id="uploadStatus"></small>
-
-        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-
-            <button onclick="uploadAndAddProduct()" style="background:green;color:white;">
-                <i class="fas fa-plus"></i> Add
-            </button>
-
-            <button onclick="updateSelected()" style="background:orange;color:white;">
-                <i class="fas fa-pen"></i> Update
-            </button>
-
-            <button onclick="clearForm()">
-                <i class="fas fa-broom"></i> Clear
-            </button>
-
-        </div>
-
-    </div>
+    </section>
 
     <!-- ================= ORDERS ================= -->
-    <h3>
-        <i class="fas fa-shopping-cart"></i> Live Orders
-        <span id="orderCount" style="font-size:14px;color:var(--primary);font-weight:normal;margin-left:10px;"></span>
-        <span style="font-size:11px;background:#22c55e;color:#fff;padding:2px 10px;border-radius:20px;margin-left:8px;animation:pulse 2s infinite;">
-            <i class="fas fa-circle" style="font-size:6px;color:#fff;"></i> LIVE
-        </span>
-    </h3>
+    <section class="admin-section">
+        <div class="section-header">
+            <h3><i class="fas fa-shopping-cart"></i> Live Orders</h3>
+            <span class="section-badge live">
+                <i class="fas fa-circle"></i> LIVE
+                <span id="orderCount" style="margin-left:6px;"></span>
+            </span>
+        </div>
 
-    <div class="admin-card" style="overflow:auto;">
-
-        <table style="width:100%;">
-
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Customer</th>
-                    <th>Phone</th>
-                    <th>District</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="orderList">
-                <tr>
-                    <td colspan="7" style="text-align:center;">No Orders</td>
-                </tr>
-            </tbody>
-
-        </table>
-
-    </div>
+        <div class="admin-card table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>District</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderList">
+                        <tr>
+                            <td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">
+                                <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:10px;"></i>
+                                No Orders Yet
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 
     <!-- ================= PRODUCTS LIST ================= -->
-    <h3><i class="fas fa-list"></i> Product List</h3>
+    <section class="admin-section">
+        <div class="section-header">
+            <h3><i class="fas fa-list"></i> Product List</h3>
+            <span class="section-badge">Manage</span>
+        </div>
 
-    <input id="adminSearch" placeholder="Search products...">
+        <input id="adminSearch" placeholder="🔍 Search products..." class="search-input">
 
-    <div class="admin-card" style="overflow:auto;">
-
-        <table style="width:100%;">
-
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Discount</th>
-                    <th>Final</th>
-                    <th>Category</th>
-                    <th>Stock</th>
-                    <th>Tags</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="productListBody"></tbody>
-
-        </table>
-
-    </div>
+        <div class="admin-card table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Disc</th>
+                            <th>Final</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Tags</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productListBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 
     <!-- ================= ANALYTICS ================= -->
-    <h3><i class="fas fa-chart-line"></i> Sales Analytics</h3>
+    <section class="admin-section">
+        <div class="section-header">
+            <h3><i class="fas fa-chart-line"></i> Sales Analytics</h3>
+            <span class="section-badge">Chart</span>
+        </div>
 
-    <div class="admin-card">
-        <canvas id="analyticsChart"></canvas>
-    </div>
+        <div class="admin-card">
+            <canvas id="analyticsChart"></canvas>
+        </div>
+    </section>
 
 </div>
 
 <!-- ================= INTELLIGENCE REPORT MODAL ================= -->
-<div id="reportModal"
-     style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000aa;z-index:9999;overflow-y:auto;">
-
-    <div style="background:white;max-width:600px;margin:30px auto;padding:25px;border-radius:12px;">
-
-        <h3><i class="fas fa-file-alt"></i> Intelligence Report</h3>
-
-        <div id="reportContent" style="font-size:14px;line-height:1.8;">
-
-            Loading...
-
+<div id="reportModal" class="report-modal">
+    <div class="report-modal-content">
+        <div class="report-modal-header">
+            <h3><i class="fas fa-file-alt" style="color:var(--primary);"></i> Intelligence Report</h3>
+            <button onclick="document.getElementById('reportModal').style.display='none'" class="modal-close">
+                <i class="fas fa-xmark"></i>
+            </button>
         </div>
 
-        <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+        <div id="reportContent" class="report-content">
+            Loading...
+        </div>
 
-            <button onclick="downloadReportPDF()" style="flex:1;background:var(--primary);color:white;padding:10px;border:none;border-radius:8px;cursor:pointer;">
-                <i class="fas fa-file-pdf"></i> Download PDF
+        <div class="report-modal-footer">
+            <button onclick="downloadReportPDF()" class="btn-pdf">
+                <i class="fas fa-file-pdf"></i> PDF
             </button>
-
-            <button onclick="downloadReportCSV()" style="flex:1;background:#2d7d46;color:white;padding:10px;border:none;border-radius:8px;cursor:pointer;">
-                <i class="fas fa-file-csv"></i> Download CSV
+            <button onclick="downloadReportCSV()" class="btn-csv">
+                <i class="fas fa-file-csv"></i> CSV
             </button>
-
-            <button onclick="document.getElementById('reportModal').style.display='none'" style="flex:1;background:#666;color:white;padding:10px;border:none;border-radius:8px;cursor:pointer;">
+            <button onclick="document.getElementById('reportModal').style.display='none'" class="btn-close-modal">
                 Close
             </button>
-
         </div>
-
     </div>
-
 </div>
 
 <!-- ================= BILL MODAL ================= -->
-<div id="billModal"
-     style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000aa;z-index:9999;">
-
-    <div style="background:white;max-width:420px;margin:50px auto;padding:20px;border-radius:10px;">
-
-        <h3><i class="fas fa-file-invoice"></i> Order Bill</h3>
-
-        <div id="billContent"></div>
-
-        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
-
-            <button onclick="downloadBill(currentOrder)" style="flex:1;background:var(--primary);color:white;">
+<div id="billModal" class="bill-modal">
+    <div class="bill-modal-content">
+        <div class="bill-modal-header">
+            <h3><i class="fas fa-file-invoice"></i> Order Bill</h3>
+            <button onclick="document.getElementById('billModal').style.display='none'" class="modal-close">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div id="billContent" class="bill-content"></div>
+        <div class="bill-modal-footer">
+            <button onclick="downloadBill(currentOrder)" class="btn-pdf">
                 <i class="fas fa-file-pdf"></i> PDF
             </button>
-
-            <button onclick="sendOrderWhatsApp(currentOrder)" style="flex:1;background:#25d366;color:white;">
+            <button onclick="sendOrderWhatsApp(currentOrder)" class="btn-whatsapp">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </button>
-
-            <button onclick="document.getElementById('billModal').style.display='none'" style="flex:1;background:#666;color:white;">
+            <button onclick="document.getElementById('billModal').style.display='none'" class="btn-close-modal">
                 Close
             </button>
-
         </div>
-
     </div>
-
 </div>
 
-<!-- ================= CSS ANIMATION ================= -->
 <style>
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
 }
-
-.coupon-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background: var(--bg);
-    border-radius: 8px;
-    margin-top: 5px;
-    flex-wrap: wrap;
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-.coupon-item span { flex: 1; font-weight: 600; }
-.coupon-item .code { color: var(--primary); font-weight: 700; }
-.coupon-item .discount { color: #22c55e; }
-.coupon-item .expired { color: red; font-size: 12px; }
-.coupon-item input { width: 80px; margin: 0; }
-.coupon-item button { width: auto; padding: 6px 12px; margin: 0; }
-.coupon-item .status-badge {
-    font-size: 11px;
-    padding: 2px 10px;
-    border-radius: 20px;
-}
-.coupon-item .status-badge.active { background: #22c55e; color: #fff; }
-.coupon-item .status-badge.inactive { background: #ef4444; color: #fff; }
 </style>
 
-<script type="module" src="admin.js?v=13"></script>
+<script type="module" src="admin.js?v=14"></script>
 
 </body>
 </html>
