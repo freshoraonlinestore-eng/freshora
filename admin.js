@@ -457,7 +457,7 @@ onSnapshot(collection(db, "categories"), (snap) => {
 });
 
 /* =========================
-🆕 COUPON MANAGEMENT (CRUD)
+🆕 COUPON MANAGEMENT (FIXED EDIT)
 ========================= */
 window.addCoupon = async () => {
     const code = qs("couponCode").value.trim().toUpperCase();
@@ -471,7 +471,6 @@ window.addCoupon = async () => {
         return;
     }
 
-    // Check if coupon already exists
     const existing = couponsData.find(c => c.code === code);
     if (existing) {
         showToast("Coupon code already exists!");
@@ -493,6 +492,28 @@ window.addCoupon = async () => {
     qs("couponMaxDiscount").value = "";
     qs("couponExpiry").value = "";
     qs("couponActive").checked = true;
+};
+
+// ✅ FIXED: Edit coupon with proper values
+window.editCoupon = (id, currentDiscount, currentMaxDiscount, currentExpiry, currentActive) => {
+    // Prompt user for new values
+    const newDiscount = prompt("Enter new discount percentage:", currentDiscount);
+    if (newDiscount === null) return; // Cancel
+    
+    const newMaxDiscount = prompt("Enter new max discount amount (Rs):", currentMaxDiscount || 0);
+    if (newMaxDiscount === null) return;
+    
+    const newExpiry = prompt("Enter new expiry date (YYYY-MM-DD) or leave empty:", currentExpiry || "");
+    if (newExpiry === null) return;
+    
+    const newActive = confirm("Is this coupon active?\nClick OK for Active, Cancel for Inactive");
+    
+    updateCoupon(id, {
+        discount: Number(newDiscount),
+        maxDiscount: Number(newMaxDiscount),
+        expiry: newExpiry || null,
+        active: newActive
+    });
 };
 
 window.updateCoupon = async (id, data) => {
@@ -532,8 +553,10 @@ onSnapshot(collection(db, "coupons"), (snap) => {
             </span>
             <input type="checkbox" ${c.active ? 'checked' : ''} 
                 onchange="updateCoupon('${c.id}', { active: this.checked })">
-            <button onclick="updateCoupon('${c.id}', { discount: ${c.discount}, maxDiscount: ${c.maxDiscount || 0} })" 
-                style="background:orange;color:white;width:auto;padding:4px 10px;">Edit</button>
+            <button onclick="editCoupon('${c.id}', ${c.discount}, ${c.maxDiscount || 0}, '${c.expiry || ''}', ${c.active})" 
+                style="background:orange;color:white;width:auto;padding:4px 10px;">
+                ✏️ Edit
+            </button>
             <button onclick="deleteCoupon('${c.id}')" 
                 style="background:red;color:white;width:auto;padding:4px 10px;">🗑</button>
         </div>`;
@@ -588,13 +611,12 @@ Thank you for shopping with Freshora! 🌿`;
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, "_blank");
 };
 
-// 🔔 LIVE ORDERS SNAPSHOT WITH NOTIFICATION + AUTO REFRESH
+// 🔔 LIVE ORDERS SNAPSHOT
 onSnapshot(collection(db, "orders"), (snap) => {
 
     const newOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const newOrderIds = new Set(newOrders.map(o => o.id));
 
-    // Check for new orders
     newOrders.forEach(order => {
         if (!previousOrderIds.has(order.id)) {
             console.log("🔔 New Order Detected:", order.id);
