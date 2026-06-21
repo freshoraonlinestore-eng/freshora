@@ -7,7 +7,7 @@
 
 <title>Freshora Admin Dashboard</title>
 
-<link rel="stylesheet" href="admin.css?v=12">
+<link rel="stylesheet" href="admin.css?v=13">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,8 +17,8 @@
 
 <body>
 
-    <script>
-// Request notification permission on page load
+<!-- 🔔 Notification Permission -->
+<script>
 if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
 }
@@ -51,6 +51,9 @@ window.goToStore = () => {
     <h2>
         <i class="fas fa-user-shield"></i>
         Freshora Admin Dashboard
+        <span style="font-size:12px;background:#22c55e;color:#fff;padding:4px 12px;border-radius:20px;margin-left:10px;">
+            <i class="fas fa-circle" style="font-size:8px;color:#fff;animation:pulse 1.5s infinite;"></i> Live
+        </span>
     </h2>
 
     <!-- ================= NAV ================= -->
@@ -68,10 +71,18 @@ window.goToStore = () => {
             <i class="fas fa-file-alt"></i> Intelligence Reports
         </button>
 
+        <!-- 🔄 Manual Refresh Button (Optional) -->
+        <button onclick="location.reload()" style="background:#6b7280;color:white;padding:10px 20px;border:none;border-radius:8px;width:auto;">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+
     </div>
 
     <!-- ================= STATS ================= -->
-    <h3><i class="fas fa-chart-line"></i> Intelligence Reports</h3>
+    <h3>
+        <i class="fas fa-chart-line"></i> Intelligence Reports
+        <span id="lastUpdated" style="font-size:12px;color:var(--muted);font-weight:normal;margin-left:10px;"></span>
+    </h3>
 
     <div class="admin-card">
         <p><i class="fas fa-box"></i> Products: <span id="totalProducts">0</span></p>
@@ -167,7 +178,13 @@ window.goToStore = () => {
     </div>
 
     <!-- ================= ORDERS ================= -->
-    <h3><i class="fas fa-shopping-cart"></i> Live Orders</h3>
+    <h3>
+        <i class="fas fa-shopping-cart"></i> Live Orders
+        <span id="orderCount" style="font-size:14px;color:var(--primary);font-weight:normal;margin-left:10px;"></span>
+        <span style="font-size:11px;background:#22c55e;color:#fff;padding:2px 10px;border-radius:20px;margin-left:8px;animation:pulse 2s infinite;">
+            <i class="fas fa-circle" style="font-size:6px;color:#fff;"></i> LIVE
+        </span>
+    </h3>
 
     <div class="admin-card" style="overflow:auto;">
 
@@ -297,7 +314,16 @@ window.goToStore = () => {
 
 </div>
 
-<script type="module" src="admin.js?v=12"></script>
+<!-- ================= CSS ANIMATION ================= -->
+<style>
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+</style>
+
+<script type="module" src="admin.js?v=13"></script>
 
 </body>
 </html>
