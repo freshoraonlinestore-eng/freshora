@@ -51,7 +51,7 @@ function showToast(msg) {
 }
 
 /* =========================
-CLOUDINARY UPLOAD
+CLOUDINARY UPLOAD (single)
 ========================= */
 async function uploadToCloudinary(file) {
     const formData = new FormData();
@@ -75,16 +75,32 @@ async function uploadToCloudinary(file) {
 }
 
 /* =========================
-PRODUCT ADD
+PRODUCT ADD (with multiple images)
 ========================= */
 window.uploadAndAddProduct = async () => {
 
-    const file = qs("pimageFile").files[0];
-    let imageUrl = "";
+    const files = qs("pimageFile").files;
+    const imageUrls = [];
 
-    if (file) {
-        imageUrl = await uploadToCloudinary(file);
+    const progressBar = document.getElementById("uploadProgress");
+    const statusText = document.getElementById("uploadStatus");
+
+    // Upload each file
+    for (let i = 0; i < files.length; i++) {
+        statusText.innerText = `Uploading ${i+1}/${files.length}...`;
+        progressBar.style.width = `${((i+1)/files.length)*100}%`;
+
+        try {
+            const url = await uploadToCloudinary(files[i]);
+            imageUrls.push(url);
+        } catch (err) {
+            console.error("Upload failed:", err);
+            showToast(`Image ${i+1} upload failed`);
+        }
     }
+
+    statusText.innerText = "Upload complete!";
+    progressBar.style.width = "100%";
 
     await addDoc(collection(db, "products"), {
         name: qs("pname").value || "",
@@ -93,16 +109,23 @@ window.uploadAndAddProduct = async () => {
         stock: Number(qs("pstock").value || 0),
         category: qs("pcategorySelect").value || "Other",
         description: qs("pdesc").value || "",
-        image: imageUrl,
+        images: imageUrls,
+        image: imageUrls[0] || "",
         createdAt: Date.now()
     });
 
-    showToast("Product Added");
+    showToast("Product Added with " + imageUrls.length + " images");
     clearForm();
+
+    // Reset progress
+    setTimeout(() => {
+        progressBar.style.width = "0%";
+        statusText.innerText = "";
+    }, 2000);
 };
 
 /* =========================
-UPDATE PRODUCT
+UPDATE PRODUCT (with image support)
 ========================= */
 window.updateSelected = async () => {
 
@@ -111,14 +134,53 @@ window.updateSelected = async () => {
         return;
     }
 
-    await updateDoc(doc(db, "products", selectedProductId), {
+    const files = qs("pimageFile").files;
+    let imageUrls = [];
+    let mainImage = "";
+
+    // If new images selected, upload them
+    if (files.length > 0) {
+        const progressBar = document.getElementById("uploadProgress");
+        const statusText = document.getElementById("uploadStatus");
+
+        for (let i = 0; i < files.length; i++) {
+            statusText.innerText = `Uploading ${i+1}/${files.length}...`;
+            progressBar.style.width = `${((i+1)/files.length)*100}%`;
+
+            try {
+                const url = await uploadToCloudinary(files[i]);
+                imageUrls.push(url);
+            } catch (err) {
+                console.error("Upload failed:", err);
+            }
+        }
+
+        mainImage = imageUrls[0] || "";
+        statusText.innerText = "Upload complete!";
+
+        setTimeout(() => {
+            progressBar.style.width = "0%";
+            statusText.innerText = "";
+        }, 2000);
+    }
+
+    // Prepare update data
+    const updateData = {
         name: qs("pname").value || "",
         price: Number(qs("pprice").value || 0),
         discount: Number(qs("pdiscount").value || 0),
         stock: Number(qs("pstock").value || 0),
         category: qs("pcategorySelect").value || "Other",
         description: qs("pdesc").value || ""
-    });
+    };
+
+    // If new images were uploaded, update image fields
+    if (imageUrls.length > 0) {
+        updateData.images = imageUrls;
+        updateData.image = mainImage;
+    }
+
+    await updateDoc(doc(db, "products", selectedProductId), updateData);
 
     showToast("Product Updated");
     clearForm();
@@ -366,9 +428,14 @@ window.downloadBill = (order) => {
 };
 
 /* =========================
-LOGOUT
+ADMIN SEARCH (new)
 ========================= */
-window.logout = () => {
-    localStorage.removeItem("admin");
-    location.href = "login.html";
-};
+document.getElementById("adminSearch")?.addEventListener("input", (e) => {
+    const search = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll("#productListBody tr");
+
+    rows.forEach(row => {
+        const name = row.querySelector("td:nth-child(2)")?.textContent?.toLowerCase() || "";
+        row.style.display = name.includes(search) ? "" : "none";
+    });
+});
