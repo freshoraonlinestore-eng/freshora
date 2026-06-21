@@ -24,9 +24,14 @@
     <!-- HEADER -->
     <header class="header">
 
-        <div class="logo-area" ondblclick="window.location='login.html'">
+        <div class="logo-area"
+             ondblclick="window.location='login.html'">
 
-            <img src="logo.png" class="logo-img" alt="Freshora Logo" />
+            <img
+                src="logo.png"
+                class="logo-img"
+                alt="Freshora Logo"
+            />
 
             <div class="logo-text">
                 Freshora
@@ -68,15 +73,27 @@
         <div class="filter-grid">
 
             <select id="categoryFilter">
-                <option value="all">All Categories</option>
+
+                <option value="all">
+                    All Categories
+                </option>
+
             </select>
 
             <select id="priceFilter">
-                <option value="all">All Prices</option>
+
+                <option value="all">
+                    All Prices
+                </option>
+
             </select>
 
             <select id="discountFilter">
-                <option value="all">All Discounts</option>
+
+                <option value="all">
+                    All Discounts
+                </option>
+
             </select>
 
         </div>
@@ -84,7 +101,10 @@
     </section>
 
     <!-- PRODUCTS -->
-    <main id="products" class="products-grid"></main>
+    <main
+        id="products"
+        class="products-grid">
+    </main>
 
     <!-- FLOATING CART -->
     <button
@@ -95,7 +115,9 @@
 
         <i class="fa-solid fa-cart-shopping"></i>
 
-        <span id="floatingCartCount">0</span>
+        <span id="floatingCartCount">
+            0
+        </span>
 
     </button>
 
@@ -125,7 +147,9 @@
         <!-- CHECKOUT -->
         <div class="sticky-checkout">
 
-            <h3 id="cartTotal">Total: Rs 0</h3>
+            <h3 id="cartTotal">
+                Total: Rs 0
+            </h3>
 
             <div class="checkout-form">
 
@@ -151,12 +175,22 @@
 
             <div class="checkout-actions">
 
-                <button class="checkout-btn" type="button" onclick="checkout()">
+                <button
+                    class="checkout-btn"
+                    type="button"
+                    onclick="checkout()">
+
                     Order Now
+
                 </button>
 
-                <button class="clear-btn" type="button" onclick="clearCart()">
+                <button
+                    class="clear-btn"
+                    type="button"
+                    onclick="clearCart()">
+
                     Clear Cart
+
                 </button>
 
             </div>
@@ -182,21 +216,30 @@
             </button>
 
             <!-- GALLERY -->
-            <div id="galleryContainer" class="gallery-container"></div>
+            <div
+                id="galleryContainer"
+                class="gallery-container">
+            </div>
 
             <!-- PRODUCT DETAILS -->
             <h2 id="modalName"></h2>
 
-            <p id="modalPrice" style="font-weight:bold;font-size:18px;"></p>
+            <p id="modalPrice"
+               style="font-weight:bold;font-size:18px;">
+            </p>
 
-            <p id="modalDesc" style="color:var(--muted);font-size:14px;"></p>
+            <p id="modalDesc"
+               style="color:var(--muted);font-size:14px;">
+            </p>
 
             <!-- RATING -->
             <div class="rating-ui">
 
                 <span>Rate:</span>
 
-                <div class="stars-display" id="starRating">
+                <div
+                    class="stars-display"
+                    id="starRating">
 
                     <i class="fa-regular fa-star" data-value="1"></i>
                     <i class="fa-regular fa-star" data-value="2"></i>
@@ -209,7 +252,10 @@
             </div>
 
             <!-- REVIEW -->
-            <textarea id="reviewText" placeholder="Write your review..."></textarea>
+            <textarea
+                id="reviewText"
+                placeholder="Write your review...">
+            </textarea>
 
             <button
                 id="reviewSubmitBtn"
@@ -248,7 +294,9 @@
 
     <!-- LOADING -->
     <div id="loadingScreen" class="loading-screen">
+
         <div class="loader"></div>
+
     </div>
 
     <!-- TOAST -->
@@ -257,24 +305,48 @@
     <!-- SOCIAL LINKS -->
     <div class="social-links">
 
-        <a href="https://facebook.com/" target="_blank" rel="noopener"
-           class="social-btn" aria-label="Facebook">
+        <!-- FACEBOOK -->
+        <a href="https://facebook.com/"
+           target="_blank"
+           rel="noopener"
+           class="social-btn"
+           aria-label="Facebook">
+
             <i class="fa-brands fa-facebook-f"></i>
+
         </a>
 
-        <a href="https://instagram.com/" target="_blank" rel="noopener"
-           class="social-btn" aria-label="Instagram">
+        <!-- INSTAGRAM -->
+        <a href="https://instagram.com/"
+           target="_blank"
+           rel="noopener"
+           class="social-btn"
+           aria-label="Instagram">
+
             <i class="fa-brands fa-instagram"></i>
+
         </a>
 
-        <a href="https://tiktok.com/" target="_blank" rel="noopener"
-           class="social-btn" aria-label="TikTok">
+        <!-- TIKTOK -->
+        <a href="https://tiktok.com/"
+           target="_blank"
+           rel="noopener"
+           class="social-btn"
+           aria-label="TikTok">
+
             <i class="fa-brands fa-tiktok"></i>
+
         </a>
 
-        <a href="https://wa.me/94752425790" target="_blank" rel="noopener"
-           class="social-btn whatsapp" aria-label="WhatsApp">
+        <!-- WHATSAPP -->
+        <a href="https://wa.me/94752425790"
+           target="_blank"
+           rel="noopener"
+           class="social-btn whatsapp"
+           aria-label="WhatsApp">
+
             <i class="fa-brands fa-whatsapp"></i>
+
         </a>
 
     </div>
