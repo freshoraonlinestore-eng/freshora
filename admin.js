@@ -18,6 +18,9 @@ const UPLOAD_FOLDER = "freshora/products";
 
 let productsData = [];
 let selectedProductId = null;
+let ordersData = [];
+let deliveryFeesData = [];
+let categoriesData = [];
 
 /* =========================
 HELPERS
@@ -65,6 +68,31 @@ async function uploadToCloudinary(file) {
     }
     return data.secure_url;
 }
+
+/* =========================
+IMAGE PREVIEW (NEW)
+========================= */
+document.getElementById("pimageFile")?.addEventListener("change", function(e) {
+    const container = document.getElementById("previewContainer");
+    container.innerHTML = "";
+    const files = e.target.files;
+    if (!files.length) return;
+
+    for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const img = document.createElement("img");
+            img.src = ev.target.result;
+            img.style.width = "60px";
+            img.style.height = "60px";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "6px";
+            img.style.border = "1px solid var(--border)";
+            container.appendChild(img);
+        };
+        reader.readAsDataURL(files[i]);
+    }
+});
 
 /* =========================
 PRODUCT ADD
@@ -213,6 +241,7 @@ window.clearForm = () => {
     qs("pFeatured").checked = false;
     qs("pBestseller").checked = false;
     qs("pNewArrival").checked = false;
+    document.getElementById("previewContainer").innerHTML = "";
     selectedProductId = null;
 };
 
@@ -282,10 +311,11 @@ window.deleteDeliveryLocation = async (id) => {
 };
 
 onSnapshot(collection(db, "deliveryFees"), (snap) => {
-    qs("deliveryLocationList").innerHTML = snap.docs.map(d => `
+    deliveryFeesData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    qs("deliveryLocationList").innerHTML = deliveryFeesData.map(d => `
         <div class="location-item">
-            <span>${d.data().district}</span>
-            <input value="${d.data().cost}" onchange="updateDeliveryLocation('${d.id}', this.value)" type="number" style="width:100px;">
+            <span>${d.district}</span>
+            <input value="${d.cost}" onchange="updateDeliveryLocation('${d.id}', this.value)" type="number" style="width:100px;">
             <button onclick="deleteDeliveryLocation('${d.id}')" style="background:red;color:white;width:auto;padding:6px 12px;">🗑</button>
         </div>
     `).join("");
@@ -319,16 +349,16 @@ window.deleteCategory = async (id) => {
 
 onSnapshot(collection(db, "categories"), (snap) => {
 
-    const cats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    categoriesData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     const select = qs("pcategorySelect");
     const list = qs("activeCategoryList");
 
     select.innerHTML =
         `<option value="Other">Other</option>` +
-        cats.map(c => `<option value="${c.name}">${c.icon || '📦'} ${c.name}</option>`).join("");
+        categoriesData.map(c => `<option value="${c.name}">${c.icon || '📦'} ${c.name}</option>`).join("");
 
-    list.innerHTML = cats.map(c => `
+    list.innerHTML = categoriesData.map(c => `
         <div class="category-item">
             <span>${c.icon || '📦'}</span>
             <input value="${c.name}" onchange="updateCategory('${c.id}', this.value, '${c.icon || '📦'}')">
@@ -338,11 +368,17 @@ onSnapshot(collection(db, "categories"), (snap) => {
 });
 
 /* =========================
-ORDERS
+ORDERS (with DELETE)
 ========================= */
 window.updateOrderStatus = async (id, status) => {
     await updateDoc(doc(db, "orders", id), { status });
     showToast("Status Updated");
+};
+
+window.deleteOrder = async (id) => {
+    if (!confirm("Delete this order permanently?")) return;
+    await deleteDoc(doc(db, "orders", id));
+    showToast("Order Deleted");
 };
 
 window.sendOrderWhatsApp = (order) => {
@@ -381,9 +417,9 @@ Thank you for shopping with Freshora! 🌿`;
 
 onSnapshot(collection(db, "orders"), (snap) => {
 
-    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    ordersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    qs("orderList").innerHTML = orders.map(o => `
+    qs("orderList").innerHTML = ordersData.map(o => `
         <tr>
             <td>${o.orderId || o.id.slice(-6)}</td>
             <td>${o.customer?.name || o.customerName || ""}</td>
@@ -402,6 +438,9 @@ onSnapshot(collection(db, "orders"), (snap) => {
                 <button onclick='viewBill(${JSON.stringify(o)})' style="width:auto;padding:4px 8px;">View</button>
                 <button onclick='sendOrderWhatsApp(${JSON.stringify(o)})' style="width:auto;padding:4px 8px;background:#25d366;color:white;">
                     <i class="fab fa-whatsapp"></i>
+                </button>
+                <button onclick="deleteOrder('${o.id}')" style="width:auto;padding:4px 8px;background:red;color:white;">
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         </tr>
@@ -493,3 +532,224 @@ document.getElementById("adminSearch")?.addEventListener("input", (e) => {
         row.style.display = name.includes(search) ? "" : "none";
     });
 });
+
+/* =========================
+INTELLIGENCE REPORTS (NEW)
+========================= */
+let reportData = {};
+
+function generateReportData() {
+    const totalProducts = productsData.length;
+    const totalStock = productsData.reduce((a, b) => a + (b.stock || 0), 0);
+    const lowStock = productsData.filter(p => (p.stock || 0) < 5).length;
+    const totalOrders = ordersData.length;
+    const totalRevenue = ordersData.reduce((sum, o) => sum + (o.total || 0), 0);
+    const totalDiscount = ordersData.reduce((sum, o) => sum + (o.discount || 0), 0);
+    const totalDelivery = ordersData.reduce((sum, o) => sum + (o.delivery || 0), 0);
+    const pendingOrders = ordersData.filter(o => o.status === 'Pending').length;
+    const deliveredOrders = ordersData.filter(o => o.status === 'Delivered').length;
+    const cancelledOrders = ordersData.filter(o => o.status === 'Cancelled').length;
+
+    reportData = {
+        totalProducts,
+        totalStock,
+        lowStock,
+        totalOrders,
+        totalRevenue,
+        totalDiscount,
+        totalDelivery,
+        pendingOrders,
+        deliveredOrders,
+        cancelledOrders,
+        categories: categoriesData.length,
+        deliveryLocations: deliveryFeesData.length
+    };
+    return reportData;
+}
+
+window.openReportModal = () => {
+    generateReportData();
+    const content = document.getElementById("reportContent");
+    content.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+            <div><b>📦 Total Products:</b> ${reportData.totalProducts}</div>
+            <div><b>📦 Total Stock:</b> ${reportData.totalStock}</div>
+            <div><b>⚠️ Low Stock:</b> ${reportData.lowStock}</div>
+            <div><b>📋 Total Orders:</b> ${reportData.totalOrders}</div>
+
+            <div><b>💰 Total Revenue:</b> Rs ${reportData.totalRevenue.toFixed(2)}</div>
+            <div><b>🏷️ Total Discount Given:</b> Rs ${reportData.totalDiscount.toFixed(2)}</div>
+            <div><b>🚚 Total Delivery Fees:</b> Rs ${reportData.totalDelivery.toFixed(2)}</div>
+
+            <div><b>⏳ Pending Orders:</b> ${reportData.pendingOrders}</div>
+            <div><b>✅ Delivered Orders:</b> ${reportData.deliveredOrders}</div>
+            <div><b>❌ Cancelled Orders:</b> ${reportData.cancelledOrders}</div>
+
+            <div><b>📂 Categories:</b> ${reportData.categories}</div>
+            <div><b>📍 Delivery Locations:</b> ${reportData.deliveryLocations}</div>
+
+        </div>
+        <hr>
+        <p style="font-size:12px;color:var(--muted);">Last updated: ${new Date().toLocaleString()}</p>
+    `;
+    document.getElementById("reportModal").style.display = "block";
+};
+
+window.downloadReportPDF = () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const d = reportData;
+
+    doc.setFontSize(18);
+    doc.text("FRESHORA INTELLIGENCE REPORT", 20, 20);
+
+    doc.setFontSize(12);
+    let y = 40;
+    const lineHeight = 8;
+    const lines = [
+        `Products: ${d.totalProducts}`,
+        `Total Stock: ${d.totalStock}`,
+        `Low Stock: ${d.lowStock}`,
+        `Total Orders: ${d.totalOrders}`,
+        `Total Revenue: Rs ${d.totalRevenue.toFixed(2)}`,
+        `Total Discount Given: Rs ${d.totalDiscount.toFixed(2)}`,
+        `Total Delivery Fees: Rs ${d.totalDelivery.toFixed(2)}`,
+        `Pending Orders: ${d.pendingOrders}`,
+        `Delivered Orders: ${d.deliveredOrders}`,
+        `Cancelled Orders: ${d.cancelledOrders}`,
+        `Categories: ${d.categories}`,
+        `Delivery Locations: ${d.deliveryLocations}`,
+        `Generated: ${new Date().toLocaleString()}`
+    ];
+
+    lines.forEach(line => {
+        doc.text(line, 20, y);
+        y += lineHeight;
+    });
+
+    doc.save("freshora_report.pdf");
+};
+
+window.downloadReportCSV = () => {
+    const d = reportData;
+    const rows = [
+        ["Metric", "Value"],
+        ["Total Products", d.totalProducts],
+        ["Total Stock", d.totalStock],
+        ["Low Stock", d.lowStock],
+        ["Total Orders", d.totalOrders],
+        ["Total Revenue", d.totalRevenue],
+        ["Total Discount Given", d.totalDiscount],
+        ["Total Delivery Fees", d.totalDelivery],
+        ["Pending Orders", d.pendingOrders],
+        ["Delivered Orders", d.deliveredOrders],
+        ["Cancelled Orders", d.cancelledOrders],
+        ["Categories", d.categories],
+        ["Delivery Locations", d.deliveryLocations],
+        ["Generated", new Date().toLocaleString()]
+    ];
+
+    let csv = rows.map(row => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "freshora_report.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+/* =========================
+SALES ANALYTICS (CHART)
+========================= */
+let analyticsChart = null;
+
+function renderAnalytics() {
+    const ctx = document.getElementById("analyticsChart")?.getContext("2d");
+    if (!ctx) return;
+
+    // Aggregate last 7 days
+    const now = new Date();
+    const days = [];
+    const revenues = [];
+    const ordersCount = [];
+
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split("T")[0];
+        days.push(dateStr);
+
+        const dayOrders = ordersData.filter(o => {
+            if (!o.createdAt) return false;
+            const oDate = new Date(o.createdAt).toISOString().split("T")[0];
+            return oDate === dateStr;
+        });
+
+        const dayRevenue = dayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+        revenues.push(dayRevenue);
+        ordersCount.push(dayOrders.length);
+    }
+
+    if (analyticsChart) {
+        analyticsChart.destroy();
+    }
+
+    analyticsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: days,
+            datasets: [
+                {
+                    label: 'Revenue (Rs)',
+                    data: revenues,
+                    backgroundColor: 'rgba(31, 143, 77, 0.6)',
+                    borderColor: '#1f8f4d',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Orders',
+                    data: ordersCount,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: '#36a2eb',
+                    borderWidth: 1,
+                    yAxisID: 'y1',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    position: 'left',
+                    title: { display: true, text: 'Revenue (Rs)' }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: 'Orders' }
+                }
+            }
+        }
+    });
+}
+
+// Re-render chart when orders change
+onSnapshot(collection(db, "orders"), () => {
+    // data already in ordersData via the previous snapshot
+    // We'll call renderAnalytics after a small delay to ensure ordersData is updated
+    setTimeout(renderAnalytics, 300);
+});
+
+// Also re-render when products change (for report data)
+onSnapshot(collection(db, "products"), () => {
+    // just to keep report data fresh
+});
+
+// Initial render after orders load (but we already have snapshot)
+// We'll call renderAnalytics once after DOM ready
+setTimeout(renderAnalytics, 1000);
