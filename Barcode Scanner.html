@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>📦 Stock Manager Pro + Scanner + OCR</title>
+    <title>📦 Stock Pro + Delivery Manager</title>
 
     <!-- Barcode scanner library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
-    </script>
-
-    <!-- Tesseract.js for OCR (Image to Text) -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
     </script>
 
     <style>
@@ -108,8 +104,8 @@
 
         .tab-btn {
             flex: 1;
-            min-width: 40px;
-            padding: 8px 0;
+            min-width: 38px;
+            padding: 9px 2px;
             border: none;
             border-radius: 11px;
             background: transparent;
@@ -138,6 +134,11 @@
         }
 
         @media (min-width: 420px) {
+            .tab-btn {
+                min-width: 44px;
+                padding: 9px 0;
+                font-size: 12px;
+            }
             .tab-btn .label {
                 display: inline;
             }
@@ -243,34 +244,6 @@
             gap: 10px;
         }
 
-        .form-row-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        /* ───────────── TOTAL PRICE DISPLAY ───────────── */
-        .total-price-display {
-            background: #f0fdf4;
-            border: 2px solid #22c55e;
-            border-radius: 10px;
-            padding: 8px 14px;
-            margin-top: 8px;
-            display: none;
-            font-weight: 600;
-            font-size: 15px;
-            color: #0f172a;
-            text-align: center;
-        }
-
-        .total-price-display.show {
-            display: block;
-        }
-        .total-price-display .amount {
-            color: #16a34a;
-            font-size: 18px;
-        }
-
         /* ───────────── BUTTONS ───────────── */
         .btn {
             display: inline-flex;
@@ -328,17 +301,8 @@
             font-size: 12px;
             border-radius: 8px;
         }
-        .btn-xs {
-            padding: 3px 8px;
-            font-size: 11px;
-            border-radius: 6px;
-        }
         .btn-block {
             width: 100%;
-        }
-        .btn:disabled {
-            opacity: 0.5;
-            pointer-events: none;
         }
 
         /* ───────────── SCANNER ───────────── */
@@ -390,26 +354,10 @@
             word-break: break-all;
         }
 
-        .scan-result-box .code small {
-            font-weight: 400;
-            font-size: 12px;
-            color: #64748b;
-            display: block;
-        }
-
-        /* Manual barcode input */
         .manual-input-area {
             margin-top: 14px;
             border-top: 2px dashed #e2e8f0;
             padding-top: 14px;
-        }
-
-        .manual-input-area label {
-            font-weight: 600;
-            font-size: 13px;
-            color: #0f172a;
-            display: block;
-            margin-bottom: 6px;
         }
 
         .manual-input-row {
@@ -437,166 +385,6 @@
             font-size: 13px;
             margin-top: 8px;
             display: none;
-        }
-
-        /* ───────────── OCR SECTION ───────────── */
-        .ocr-section {
-            margin-top: 14px;
-            border-top: 2px dashed #e2e8f0;
-            padding-top: 14px;
-        }
-
-        .ocr-section .ocr-title {
-            font-weight: 600;
-            font-size: 14px;
-            color: #0f172a;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .ocr-upload-area {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .ocr-upload-box {
-            flex: 1;
-            min-width: 120px;
-            border: 2px dashed #d1d5db;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            background: #fafafa;
-        }
-
-        .ocr-upload-box:hover {
-            border-color: #3b82f6;
-            background: #f0f7ff;
-        }
-
-        .ocr-upload-box .ocr-preview {
-            width: 100%;
-            max-height: 150px;
-            object-fit: contain;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .ocr-upload-box .ocr-placeholder-text {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-
-        .ocr-upload-box input[type="file"] {
-            display: none;
-        }
-
-        .ocr-upload-box .remove-ocr-img {
-            background: #ef4444;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 14px;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            margin: 4px auto 0;
-        }
-
-        .ocr-buttons {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .ocr-buttons .btn {
-            flex: 1;
-            min-width: 80px;
-        }
-
-        .ocr-progress {
-            margin-top: 10px;
-            display: none;
-        }
-
-        .ocr-progress .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .ocr-progress .progress-bar .fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #22c55e);
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .ocr-progress .progress-text {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 4px;
-            text-align: center;
-        }
-
-        .ocr-result {
-            margin-top: 10px;
-            padding: 12px;
-            background: #f8fafc;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            display: none;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 13px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-
-        .ocr-result.show {
-            display: block;
-        }
-
-        .ocr-extracted-data {
-            margin-top: 10px;
-            display: none;
-            background: #f0fdf4;
-            border: 1px solid #22c55e;
-            border-radius: 10px;
-            padding: 12px;
-        }
-
-        .ocr-extracted-data.show {
-            display: block;
-        }
-
-        .ocr-extracted-data .data-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #eef2f6;
-            font-size: 13px;
-        }
-
-        .ocr-extracted-data .data-row:last-child {
-            border-bottom: none;
-        }
-
-        .ocr-extracted-data .data-label {
-            font-weight: 600;
-            color: #475569;
         }
 
         /* ───────────── IMAGE UPLOAD ───────────── */
@@ -654,10 +442,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .image-upload-box .remove-img:active {
-            transform: scale(0.9);
         }
 
         .image-upload-box input[type="file"] {
@@ -745,12 +529,6 @@
             border-radius: 10px;
             font-size: 10px;
             font-family: monospace;
-        }
-
-        .item-info .meta .total-value {
-            color: #16a34a;
-            font-weight: 600;
-            font-size: 11px;
         }
 
         .item-qty-badge {
@@ -870,6 +648,9 @@
         .stat-box.purple .num {
             color: #8b5cf6;
         }
+        .stat-box.teal .num {
+            color: #14b8a6;
+        }
 
         .report-table {
             width: 100%;
@@ -896,10 +677,6 @@
 
         .report-table .text-right {
             text-align: right;
-        }
-
-        .report-table .text-muted {
-            color: #94a3b8;
         }
 
         .report-scroll {
@@ -1075,9 +852,6 @@
             color: #94a3b8;
             cursor: pointer;
         }
-        .modal-content .modal-close:active {
-            transform: scale(0.9);
-        }
 
         /* ───────────── MISC ───────────── */
         .flex-between {
@@ -1086,29 +860,6 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 8px;
-        }
-        .flex-center {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .gap-1 {
-            gap: 4px;
-        }
-        .gap-2 {
-            gap: 8px;
-        }
-        .mt-1 {
-            margin-top: 6px;
-        }
-        .mt-2 {
-            margin-top: 12px;
-        }
-        .mb-1 {
-            margin-bottom: 6px;
-        }
-        .mb-2 {
-            margin-bottom: 12px;
         }
         .text-muted {
             color: #94a3b8;
@@ -1126,8 +877,10 @@
         .hidden {
             display: none !important;
         }
+        .mt-2 {
+            margin-top: 12px;
+        }
 
-        /* ───────────── SCROLLBAR ───────────── */
         .modal-content::-webkit-scrollbar {
             width: 4px;
         }
@@ -1140,13 +893,9 @@
             border-radius: 8px;
         }
 
-        /* ───────────── RESPONSIVE ───────────── */
         @media (max-width: 400px) {
             .form-row {
                 grid-template-columns: 1fr;
-            }
-            .form-row-3 {
-                grid-template-columns: 1fr 1fr;
             }
             .stat-grid {
                 grid-template-columns: 1fr 1fr;
@@ -1159,14 +908,7 @@
             }
             .tab-btn {
                 font-size: 10px;
-                padding: 6px 0;
-            }
-            .tab-btn .label {
-                display: none;
-            }
-            .ocr-buttons .btn {
-                flex: none;
-                width: 100%;
+                padding: 7px 2px;
             }
         }
 
@@ -1190,18 +932,12 @@
             margin-right: 4px;
         }
 
-        .pulse {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.4;
-            }
+        .delivery-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eef2f6;
+            font-size: 13px;
         }
 
         @media print {
@@ -1249,12 +985,12 @@
 
         <!-- ─── TABS ─── -->
         <div class="tabs" role="tablist">
-            <button class="tab-btn active" data-tab="dashboard" role="tab">📊 <span class="label">Dashboard</span></button>
+            <button class="tab-btn active" data-tab="dashboard" role="tab">📊 <span class="label">Dash</span></button>
             <button class="tab-btn" data-tab="inventory" role="tab">📋 <span class="label">Items</span></button>
             <button class="tab-btn" data-tab="add" role="tab">➕ <span class="label">Add</span></button>
+            <button class="tab-btn" data-tab="deliver" role="tab">📦 <span class="label">Deliver</span></button>
             <button class="tab-btn" data-tab="scan" role="tab">📷 <span class="label">Scan</span></button>
-            <button class="tab-btn" data-tab="ocr" role="tab">🖼️ <span class="label">OCR</span></button>
-            <button class="tab-btn" data-tab="categories" role="tab">🏷️ <span class="label">Categories</span></button>
+            <button class="tab-btn" data-tab="categories" role="tab">🏷️ <span class="label">Cats</span></button>
             <button class="tab-btn" data-tab="reports" role="tab">📈 <span class="label">Reports</span></button>
         </div>
 
@@ -1262,44 +998,27 @@
         <!-- PANEL: DASHBOARD -->
         <!-- ══════════════════════════════════════════════ -->
         <div class="panel active" id="panel-dashboard" role="tabpanel">
-
-            <div class="stat-grid" id="statsGrid">
-                <div class="stat-box blue">
-                    <div class="num" id="dashTotalItems">0</div>
-                    <div class="label">Total Items</div>
-                </div>
-                <div class="stat-box green">
-                    <div class="num" id="dashTotalQty">0</div>
-                    <div class="label">Total Stock</div>
-                </div>
-                <div class="stat-box red">
-                    <div class="num" id="dashLowStock">0</div>
-                    <div class="label">Low Stock (≤5)</div>
-                </div>
-                <div class="stat-box purple">
-                    <div class="num" id="dashCategories">0</div>
-                    <div class="label">Categories</div>
-                </div>
-                <div class="stat-box orange" style="grid-column: span 2;">
-                    <div class="num" id="dashTotalValue">LKR 0</div>
-                    <div class="label">Total Inventory Value</div>
-                </div>
+            <div class="stat-grid">
+                <div class="stat-box blue"><div class="num" id="dashTotalItems">0</div><div class="label">Total Items</div></div>
+                <div class="stat-box green"><div class="num" id="dashTotalQty">0</div><div class="label">Total Stock</div></div>
+                <div class="stat-box red"><div class="num" id="dashLowStock">0</div><div class="label">Low Stock</div></div>
+                <div class="stat-box purple"><div class="num" id="dashCategories">0</div><div class="label">Categories</div></div>
+                <div class="stat-box teal"><div class="num" id="dashTodayDeliveries">0</div><div class="label">Today Deliveries</div></div>
+                <div class="stat-box orange"><div class="num" id="dashTotalValue">LKR 0</div><div class="label">Total Value</div></div>
             </div>
 
             <div class="card">
                 <div class="card-title">⚠️ Low Stock Alerts</div>
-                <div id="dashLowStockList">
-                    <div class="text-muted text-center" style="padding:12px;">✅ All items are well-stocked.</div>
-                </div>
+                <div id="dashLowStockList"><div class="text-muted text-center" style="padding:12px;">✅ All items are well-stocked.</div></div>
             </div>
 
             <div class="card">
                 <div class="card-title">📌 Quick Actions</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                     <button class="btn btn-primary btn-sm" id="dashAddBtn">➕ Add Item</button>
-                    <button class="btn btn-success btn-sm" id="dashAddCategoryBtn">🏷️ Add Category</button>
-                    <button class="btn btn-outline btn-sm" id="dashPrintBtn">🖨️ Print Report</button>
-                    <button class="btn btn-outline btn-sm" id="dashExportBtn">📥 Export CSV</button>
+                    <button class="btn btn-success btn-sm" id="dashDeliverBtn">📦 Deliver</button>
+                    <button class="btn btn-outline btn-sm" id="dashPrintBtn">🖨️ Print</button>
+                    <button class="btn btn-outline btn-sm" id="dashExportBtn">📥 CSV</button>
                 </div>
             </div>
         </div>
@@ -1310,21 +1029,15 @@
         <div class="panel" id="panel-inventory" role="tabpanel">
             <div class="card">
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="🔍 Search items..." />
-                    <select id="filterCategory">
-                        <option value="all">All Categories</option>
-                    </select>
+                    <input type="text" id="searchInput" placeholder="🔍 Search..." />
+                    <select id="filterCategory"><option value="all">All Cats</option></select>
                     <select id="sortBy">
-                        <option value="name">Sort: Name</option>
-                        <option value="qty">Sort: Quantity</option>
-                        <option value="price">Sort: Price</option>
-                        <option value="value">Sort: Total Value</option>
-                        <option value="newest">Sort: Newest</option>
+                        <option value="name">Name</option>
+                        <option value="qty">Qty</option>
+                        <option value="price">Price</option>
                     </select>
                 </div>
-                <div id="inventoryList" class="item-grid">
-                    <!-- rendered by JS -->
-                </div>
+                <div id="inventoryList" class="item-grid"></div>
             </div>
         </div>
 
@@ -1333,194 +1046,107 @@
         <!-- ══════════════════════════════════════════════ -->
         <div class="panel" id="panel-add" role="tabpanel">
             <div class="card">
-                <div class="card-title">
-                    <span id="formTitle">➕ Add New Item</span>
-                    <span class="sub" id="editIdDisplay"></span>
-                </div>
-                <form id="addForm" autocomplete="off">
-                    <input type="hidden" id="editId" value="" />
-
-                    <div class="form-group">
-                        <label>🔢 Barcode Number</label>
-                        <input type="text" id="itemBarcode" placeholder="Scanned or manually entered barcode" readonly />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Item Name *</label>
-                        <input type="text" id="itemName" placeholder="e.g. Cologne Spray" required />
-                    </div>
-
+                <div class="card-title"><span id="formTitle">➕ Add Item</span><span class="sub" id="editIdDisplay"></span></div>
+                <form id="addForm">
+                    <input type="hidden" id="editId" />
+                    <div class="form-group"><label>🔢 Barcode</label><input type="text" id="itemBarcode" placeholder="Scan or type" readonly /></div>
+                    <div class="form-group"><label>Item Name *</label><input type="text" id="itemName" required /></div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Quantity *</label>
-                            <input type="number" id="itemQty" placeholder="0" min="0" required />
-                        </div>
-                        <div class="form-group">
-                            <label>Price (LKR)</label>
-                            <input type="number" id="itemPrice" placeholder="0.00" min="0" step="0.01" />
-                        </div>
+                        <div class="form-group"><label>Qty *</label><input type="number" id="itemQty" min="0" required /></div>
+                        <div class="form-group"><label>Price (LKR)</label><input type="number" id="itemPrice" min="0" step="0.01" /></div>
                     </div>
-
-                    <!-- ✅ Total Price Display -->
-                    <div class="total-price-display" id="totalPriceDisplay">
-                        💰 Total Value: <span class="amount" id="totalPriceAmount">LKR 0</span>
-                    </div>
-
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Category</label>
-                            <select id="itemCategory">
-                                <option value="">Select category...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Status</label>
-                            <select id="itemStatus">
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
+                        <div class="form-group"><label>Category</label><select id="itemCategory"><option value="">Select...</option></select></div>
+                        <div class="form-group"><label>Status</label><select id="itemStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                    </div>
+                    <div class="form-group"><label>Description</label><textarea id="itemDesc"></textarea></div>
+                    <div class="form-group"><label>📸 Images (max 2)</label>
+                        <div class="image-upload-area">
+                            <div class="image-upload-box" id="imgBox1"><input type="file" accept="image/*" /><div class="preview-container"><img class="preview-img" style="display:none;" /><span class="placeholder-text">📷 Image 1</span></div><button type="button" class="remove-img hidden" data-img="1">✕</button></div>
+                            <div class="image-upload-box" id="imgBox2"><input type="file" accept="image/*" /><div class="preview-container"><img class="preview-img" style="display:none;" /><span class="placeholder-text">📷 Image 2</span></div><button type="button" class="remove-img hidden" data-img="2">✕</button></div>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="itemDesc" placeholder="Product description..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>📸 Images (max 2)</label>
-                        <div class="image-upload-area" id="imageUploadArea">
-                            <div class="image-upload-box" id="imgBox1">
-                                <input type="file" accept="image/*" />
-                                <div class="preview-container">
-                                    <img class="preview-img" style="display:none;" />
-                                    <span class="placeholder-text">📷 Image 1</span>
-                                </div>
-                                <button type="button" class="remove-img hidden" data-img="1">✕</button>
-                            </div>
-                            <div class="image-upload-box" id="imgBox2">
-                                <input type="file" accept="image/*" />
-                                <div class="preview-container">
-                                    <img class="preview-img" style="display:none;" />
-                                    <span class="placeholder-text">📷 Image 2</span>
-                                </div>
-                                <button type="button" class="remove-img hidden" data-img="2">✕</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
-                        <button type="submit" class="btn btn-primary" id="submitBtn">💾 Save Item</button>
+                    <div style="display:flex; gap:8px;">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">💾 Save</button>
                         <button type="button" class="btn btn-outline" id="cancelEditBtn" style="display:none;">Cancel</button>
-                        <!-- ✅ Clear Button -->
-                        <button type="button" class="btn btn-danger" id="clearFormBtn">🗑️ Clear</button>
                     </div>
                 </form>
             </div>
-
-            <!-- Quick fill -->
             <div class="card" style="background:#f0f7ff; border:2px dashed #3b82f6;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span style="font-size:26px;">📸</span>
-                    <div>
-                        <div style="font-weight:600; font-size:13px; color:#1e293b;">Quick-fill from sample</div>
-                        <div style="font-size:12px; color:#475569;">Pre-fill with the example product</div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-primary" style="width:auto; margin-left:auto;" id="quickAddBtn">
-                        ⚡ Fill
-                    </button>
+                    <div><div style="font-weight:600; font-size:13px;">Quick-fill</div><div style="font-size:12px; color:#475569;">Sample product</div></div>
+                    <button type="button" class="btn btn-sm btn-primary" style="width:auto; margin-left:auto;" id="quickAddBtn">⚡ Fill</button>
                 </div>
             </div>
         </div>
 
         <!-- ══════════════════════════════════════════════ -->
-        <!-- PANEL: SCAN (Barcode) -->
+        <!-- PANEL: DELIVER -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div class="panel" id="panel-deliver" role="tabpanel">
+            <div class="card">
+                <div class="card-title">📦 Make a Delivery</div>
+                <form id="deliverForm">
+                    <div class="form-group">
+                        <label>👤 Customer Name *</label>
+                        <input type="text" id="deliveryCustomer" placeholder="e.g. Kamal Perera" required />
+                    </div>
+                    <div class="form-group">
+                        <label>📦 Select Item *</label>
+                        <select id="deliveryItemSelect" required>
+                            <option value="">-- Select Item --</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📊 Available Qty</label>
+                            <input type="text" id="deliveryAvailableQty" readonly style="background:#f1f5f9; font-weight:bold;" />
+                        </div>
+                        <div class="form-group">
+                            <label>📤 Delivery Qty *</label>
+                            <input type="number" id="deliveryQty" min="1" placeholder="1" required />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">✅ Confirm Delivery</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📋 Today's Deliveries</div>
+                <div id="todayDeliveryList" class="report-scroll" style="max-height:200px;">
+                    <div class="text-muted text-center" style="padding:12px;">No deliveries today.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- PANEL: SCAN -->
         <!-- ══════════════════════════════════════════════ -->
         <div class="panel" id="panel-scan" role="tabpanel">
             <div class="card">
                 <div class="card-title">📷 Barcode Scanner</div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
-                    Point your camera at a barcode (EAN-13, UPC, Code-128, etc.).
-                </p>
-
+                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Camera requires HTTPS. Use manual entry below if it fails.</p>
                 <div id="scanner-container">
-                    <div class="placeholder" id="scannerPlaceholder">
-                        <span style="font-size:40px; display:block; margin-bottom:8px;">📸</span>
-                        Tap "Start Scanning" to use your camera.
-                    </div>
+                    <div class="placeholder" id="scannerPlaceholder"><span style="font-size:40px; display:block;">📸</span>Tap "Start Scanning"</div>
                     <div id="scanner-reader" style="width:100%;"></div>
                 </div>
-
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button class="btn btn-primary" id="startScanBtn" style="flex:1;">📷 Start Scanning</button>
+                    <button class="btn btn-primary" id="startScanBtn" style="flex:1;">📷 Start</button>
                     <button class="btn btn-danger" id="stopScanBtn" disabled style="flex:1;">⏹ Stop</button>
                 </div>
-
                 <div class="scan-result-box" id="scanResultBox">
-                    <div>
-                        <span class="code" id="scannedCode">123456789012</span>
-                        <small>Barcode detected</small>
-                    </div>
-                    <button class="btn btn-success btn-sm" id="useScannedBtn" style="width:auto;">➕ Add to Inventory</button>
+                    <div><span class="code" id="scannedCode">123456</span><small>Barcode detected</small></div>
+                    <button class="btn btn-success btn-sm" id="useScannedBtn" style="width:auto;">➕ Add</button>
                 </div>
-
                 <div class="manual-input-area">
-                    <label>🔢 Or enter barcode manually:</label>
+                    <label>🔢 Or enter manually:</label>
                     <div class="manual-input-row">
-                        <input type="text" id="manualBarcode" placeholder="e.g. 890123456789" />
-                        <button class="btn btn-primary" id="manualBarcodeBtn" style="width:auto; padding:10px 18px;">➕ Use</button>
+                        <input type="text" id="manualBarcode" placeholder="890123456789" />
+                        <button class="btn btn-primary" id="manualBarcodeBtn" style="width:auto;">Use</button>
                     </div>
                 </div>
-
                 <div class="scan-error" id="scanError"></div>
-            </div>
-        </div>
-
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- PANEL: OCR (Image to Text Scanner) - UPDATED -->
-        <!-- ══════════════════════════════════════════════ -->
-        <div class="panel" id="panel-ocr" role="tabpanel">
-            <div class="card">
-                <div class="card-title">🖼️ Image to Text Scanner (OCR)</div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
-                    Upload a product label image or take a photo. The system will extract text like <strong>Product Name, Price, Barcode, Description</strong> and auto-fill the form.
-                </p>
-
-                <div class="ocr-section">
-                    <div class="ocr-title">📸 Upload or Take Photo</div>
-                    <div class="ocr-upload-area">
-                        <div class="ocr-upload-box" id="ocrUploadBox">
-                            <input type="file" id="ocrFileInput" accept="image/*" />
-                            <img class="ocr-preview" id="ocrPreview" />
-                            <span class="ocr-placeholder-text" id="ocrPlaceholder">📷 Tap to upload image</span>
-                            <button type="button" class="remove-ocr-img" id="ocrRemoveBtn">✕</button>
-                        </div>
-                    </div>
-
-                    <!-- ✅ Camera Capture Button -->
-                    <div class="ocr-buttons">
-                        <button class="btn btn-primary" id="ocrCameraBtn">📸 Take Photo</button>
-                        <button class="btn btn-success" id="ocrStartBtn">🔍 Start OCR</button>
-                        <button class="btn btn-outline" id="ocrClearBtn">🗑️ Clear</button>
-                    </div>
-                </div>
-
-                <div class="ocr-progress" id="ocrProgress">
-                    <div class="progress-bar">
-                        <div class="fill" id="ocrProgressFill"></div>
-                    </div>
-                    <div class="progress-text" id="ocrProgressText">Processing...</div>
-                </div>
-
-                <div class="ocr-result" id="ocrResult"></div>
-
-                <div class="ocr-extracted-data" id="ocrExtractedData">
-                    <div style="font-weight:600;font-size:13px;color:#0f172a;margin-bottom:6px;">📝 Extracted Data</div>
-                    <div id="ocrDataRows"></div>
-                    <button class="btn btn-success btn-sm" id="ocrFillFormBtn" style="width:100%;margin-top:8px;">
-                        ⚡ Auto-fill Form
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -1529,23 +1155,16 @@
         <!-- ══════════════════════════════════════════════ -->
         <div class="panel" id="panel-categories" role="tabpanel">
             <div class="card">
-                <div class="card-title">🏷️ Manage Categories</div>
-
+                <div class="card-title">🏷️ Categories</div>
                 <div style="display:flex; gap:8px; margin-bottom:12px;">
-                    <input type="text" id="newCategoryInput" placeholder="New category name..." style="flex:1; padding:10px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none;" />
-                    <button class="btn btn-primary" id="addCategoryBtn" style="width:auto; padding:10px 18px;">➕ Add</button>
+                    <input type="text" id="newCategoryInput" placeholder="New category..." style="flex:1; padding:10px 12px; border:2px solid #e2e8f0; border-radius:10px;" />
+                    <button class="btn btn-primary" id="addCategoryBtn" style="width:auto;">➕ Add</button>
                 </div>
-
-                <div id="categoryList" class="category-list">
-                    <!-- rendered by JS -->
-                </div>
+                <div id="categoryList" class="category-list"></div>
             </div>
-
             <div class="card">
                 <div class="card-title">📊 Category Stats</div>
-                <div id="categoryStats">
-                    <div class="text-muted text-center" style="padding:8px;">No categories yet.</div>
-                </div>
+                <div id="categoryStats"></div>
             </div>
         </div>
 
@@ -1554,32 +1173,24 @@
         <!-- ══════════════════════════════════════════════ -->
         <div class="panel" id="panel-reports" role="tabpanel">
             <div class="card">
-                <div class="card-title">
-                    📈 Detailed Reports
-                    <span class="sub">
-                        <button class="btn btn-sm btn-outline" id="reportPrintBtn">🖨️ Print</button>
-                        <button class="btn btn-sm btn-outline" id="reportExportBtn">📥 CSV</button>
-                    </span>
-                </div>
-
+                <div class="card-title">📈 Stock Report</div>
                 <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
-                    <select id="reportCategoryFilter" style="flex:1; min-width:120px; padding:8px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:13px; background:#f8fafc; outline:none;">
-                        <option value="all">All Categories</option>
-                    </select>
-                    <select id="reportSortBy" style="padding:8px 12px; border:2px solid #e2e8f0; border-radius:10px; font-size:13px; background:#f8fafc; outline:none;">
-                        <option value="name">Sort: Name</option>
-                        <option value="qty">Sort: Quantity</option>
-                        <option value="value">Sort: Value</option>
-                    </select>
+                    <select id="reportCategoryFilter" style="flex:1; padding:8px 12px; border:2px solid #e2e8f0; border-radius:10px;"><option value="all">All</option></select>
+                    <select id="reportSortBy" style="padding:8px 12px; border:2px solid #e2e8f0; border-radius:10px;"><option value="name">Name</option><option value="qty">Qty</option></select>
+                    <button class="btn btn-sm btn-outline" id="reportExportBtn">📥 CSV</button>
                 </div>
+                <div class="report-scroll" id="reportContent"></div>
+                <div class="flex-between mt-2"><span class="text-muted" id="reportSummary">Total: 0</span><span class="text-muted" id="reportValueSummary">Value: LKR 0</span></div>
+            </div>
 
-                <div class="report-scroll" id="reportContent">
-                    <div class="text-muted text-center" style="padding:20px;">No items to report.</div>
+            <div class="card">
+                <div class="card-title">📜 Delivery History</div>
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <input type="date" id="deliveryDateFilter" style="flex:1; padding:8px 12px; border:2px solid #e2e8f0; border-radius:10px;" />
+                    <button class="btn btn-sm btn-outline" id="clearDeliveryFilter">Clear</button>
                 </div>
-
-                <div style="margin-top:12px; padding-top:12px; border-top:1px solid #eef2f6; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-                    <span class="text-muted" id="reportSummary">Total: 0 items</span>
-                    <span class="text-muted" id="reportValueSummary">Total Value: LKR 0</span>
+                <div class="report-scroll" id="deliveryHistoryList" style="max-height:300px;">
+                    <div class="text-muted text-center" style="padding:12px;">No deliveries recorded.</div>
                 </div>
             </div>
         </div>
@@ -1587,55 +1198,25 @@
         <!-- ─── TOAST ─── -->
         <div class="toast" id="toast"></div>
 
-        <!-- ─── MODAL: ITEM DETAIL ─── -->
-        <div class="modal-overlay" id="itemDetailModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="detailTitle">Item Details</h3>
-                    <button class="modal-close" id="detailCloseBtn">✕</button>
-                </div>
-                <div id="detailBody">
-                    <!-- rendered by JS -->
-                </div>
-            </div>
-        </div>
+        <!-- ─── MODALS ─── -->
+        <div class="modal-overlay" id="itemDetailModal"><div class="modal-content"><div class="modal-header"><h3 id="detailTitle">Details</h3><button class="modal-close" id="detailCloseBtn">✕</button></div><div id="detailBody"></div></div></div>
+        <div class="modal-overlay" id="categoryEditModal"><div class="modal-content"><div class="modal-header"><h3>Edit Category</h3><button class="modal-close" id="catEditCloseBtn">✕</button></div><input type="hidden" id="catEditId" /><div class="form-group"><label>Name</label><input type="text" id="catEditName" /></div><button class="btn btn-primary btn-block" id="catEditSaveBtn">Save</button></div></div>
 
-        <!-- ─── MODAL: CATEGORY EDIT ─── -->
-        <div class="modal-overlay" id="categoryEditModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Edit Category</h3>
-                    <button class="modal-close" id="catEditCloseBtn">✕</button>
-                </div>
-                <input type="hidden" id="catEditId" />
-                <div class="form-group">
-                    <label>Category Name</label>
-                    <input type="text" id="catEditName" placeholder="Category name..." />
-                </div>
-                <button class="btn btn-primary btn-block" id="catEditSaveBtn">💾 Save</button>
-            </div>
-        </div>
-
-        <!-- ─── HIDDEN FILE INPUT FOR RESTORE ─── -->
         <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
-
-        <!-- ─── HIDDEN FILE INPUT FOR OCR CAMERA ─── -->
-        <input type="file" id="ocrCameraInput" accept="image/*" capture="environment" style="display:none;" />
 
     </div>
 
     <script>
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  DATA LAYER
+        // DATA LAYER
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        const STORAGE_KEY = 'stockManagerProData';
+        const STORAGE_KEY = 'stockProFullData';
 
         let items = [];
         let categories = [];
+        let deliveries = [];
         let editingId = null;
 
-        // ─── Load / Save ───
         function loadData() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
@@ -1643,64 +1224,45 @@
                     const data = JSON.parse(raw);
                     items = data.items || [];
                     categories = data.categories || [];
+                    deliveries = data.deliveries || [];
                 } else {
-                    categories = [
-                        { id: 1, name: 'Cosmetics', createdAt: new Date().toISOString() },
-                        { id: 2, name: 'Electronics', createdAt: new Date().toISOString() },
-                        { id: 3, name: 'Food', createdAt: new Date().toISOString() },
-                    ];
+                    categories = [{ id: 1, name: 'Cosmetics' }, { id: 2, name: 'Electronics' }, { id: 3, name: 'Food' }];
                     items = [{
                         id: Date.now() + 1,
                         name: 'COLÖGNE SPRAY',
                         qty: 12,
                         price: 4500,
                         category: 'Cosmetics',
-                        desc: '3.4FL OZ · 100ml · OSCal Pad 90',
                         barcode: '1234567890123',
                         images: [],
                         status: 'active',
+                        desc: '3.4FL OZ · 100ml',
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString()
                     }];
+                    deliveries = [];
                     saveData();
                 }
-            } catch (_) {
-                items = [];
+            } catch (_) { items = [];
                 categories = [];
-            }
-            items = items.map(it => ({
-                ...it,
-                barcode: it.barcode || '',
-                images: it.images || [],
-                status: it.status || 'active',
-                desc: it.desc || '',
-                price: it.price || 0,
-                category: it.category || '',
-                updatedAt: it.updatedAt || it.createdAt || new Date().toISOString()
-            }));
+                deliveries = []; }
+            items = items.map(it => ({ ...it, barcode: it.barcode || '', images: it.images || [], status: it.status ||
+                    'active', desc: it.desc || '', price: it.price || 0, category: it.category || '' }));
             categories = categories.map(c => ({ ...c, id: c.id || Date.now() + Math.random() * 1000 }));
+            deliveries = deliveries.map(d => ({ ...d, id: d.id || Date.now() + Math.random() * 1000 }));
         }
 
         function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, categories }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, categories, deliveries }));
         }
 
         function generateId() { return Date.now() + Math.floor(Math.random() * 100000); }
 
-        function formatCurrency(val) {
-            return Number(val).toLocaleString('en-LK', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
+        function formatCurrency(val) { return Number(val).toLocaleString('en-LK', { minimumFractionDigits: 0,
+                maximumFractionDigits: 0 }); }
 
-        function getItemCountByCategory(catName) {
-            return items.filter(i => i.category === catName).length;
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
+        function escapeHtml(str) { if (!str) return ''; const d = document.createElement('div');
+            d.textContent = str; return d.innerHTML; }
 
         function showToast(msg, type = 'success') {
             const el = document.getElementById('toast');
@@ -1712,8 +1274,9 @@
             el._timer = setTimeout(() => el.classList.remove('show'), 2200);
         }
 
-        // ─── Image handling ───
-        function compressImage(file, maxWidth = 400, maxHeight = 400, quality = 0.7) {
+        function getItemCountByCategory(catName) { return items.filter(i => i.category === catName).length; }
+
+        function compressImage(file, maxW = 400, maxH = 400, quality = 0.7) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -1721,16 +1284,16 @@
                     img.onload = function() {
                         let w = img.width,
                             h = img.height;
-                        if (w > maxWidth) { h = h * maxWidth / w;
-                            w = maxWidth; }
-                        if (h > maxHeight) { w = w * maxHeight / h;
-                            h = maxHeight; }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = w;
-                        canvas.height = h;
-                        const ctx = canvas.getContext('2d');
+                        if (w > maxW) { h = h * maxW / w;
+                            w = maxW; }
+                        if (h > maxH) { w = w * maxH / h;
+                            h = maxH; }
+                        const c = document.createElement('canvas');
+                        c.width = w;
+                        c.height = h;
+                        const ctx = c.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                        resolve(c.toDataURL('image/jpeg', quality));
                     };
                     img.onerror = function() { resolve(null); };
                     img.src = e.target.result;
@@ -1741,345 +1304,7 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  TOTAL PRICE DISPLAY
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        function setupTotalPriceDisplay() {
-            const qtyInput = document.getElementById('itemQty');
-            const priceInput = document.getElementById('itemPrice');
-            const display = document.getElementById('totalPriceDisplay');
-            const amount = document.getElementById('totalPriceAmount');
-
-            function updateTotal() {
-                const qty = parseInt(qtyInput.value) || 0;
-                const price = parseFloat(priceInput.value) || 0;
-                const total = qty * price;
-
-                if (qty > 0 && price > 0) {
-                    display.classList.add('show');
-                    amount.textContent = 'LKR ' + formatCurrency(total);
-                } else {
-                    display.classList.remove('show');
-                }
-            }
-
-            qtyInput.addEventListener('input', updateTotal);
-            priceInput.addEventListener('input', updateTotal);
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  OCR (Image to Text)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        let ocrImageData = null;
-        let ocrExtractedText = '';
-        let ocrParsedData = {};
-
-        function setupOCR() {
-            const fileInput = document.getElementById('ocrFileInput');
-            const preview = document.getElementById('ocrPreview');
-            const placeholder = document.getElementById('ocrPlaceholder');
-            const removeBtn = document.getElementById('ocrRemoveBtn');
-            const uploadBox = document.getElementById('ocrUploadBox');
-            const cameraBtn = document.getElementById('ocrCameraBtn');
-            const cameraInput = document.getElementById('ocrCameraInput');
-
-            // ── File Upload ──
-            fileInput.addEventListener('change', function(e) {
-                const file = this.files[0];
-                if (!file) return;
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('Image too large. Max 5MB.', 'error');
-                    this.value = '';
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    ocrImageData = ev.target.result;
-                    preview.src = ocrImageData;
-                    preview.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    removeBtn.style.display = 'flex';
-                    showToast('✅ Image loaded. Click "Start OCR" to extract text.');
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // ── Camera Capture ──
-            cameraBtn.addEventListener('click', function() {
-                cameraInput.click();
-            });
-
-            cameraInput.addEventListener('change', function(e) {
-                const file = this.files[0];
-                if (!file) return;
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('Image too large. Max 5MB.', 'error');
-                    this.value = '';
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    ocrImageData = ev.target.result;
-                    preview.src = ocrImageData;
-                    preview.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    removeBtn.style.display = 'flex';
-                    showToast('📸 Photo captured! Click "Start OCR" to extract text.');
-                };
-                reader.readAsDataURL(file);
-                this.value = '';
-            });
-
-            // ── Remove ──
-            removeBtn.addEventListener('click', function() {
-                ocrImageData = null;
-                preview.src = '';
-                preview.style.display = 'none';
-                placeholder.style.display = 'block';
-                removeBtn.style.display = 'none';
-                fileInput.value = '';
-                document.getElementById('ocrResult').classList.remove('show');
-                document.getElementById('ocrResult').textContent = '';
-                document.getElementById('ocrExtractedData').classList.remove('show');
-                document.getElementById('ocrProgress').style.display = 'none';
-            });
-
-            // ── Upload box click ──
-            uploadBox.addEventListener('click', function(e) {
-                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IMG') {
-                    fileInput.click();
-                }
-            });
-
-            document.getElementById('ocrStartBtn').addEventListener('click', startOCR);
-            document.getElementById('ocrClearBtn').addEventListener('click', clearOCR);
-            document.getElementById('ocrFillFormBtn').addEventListener('click', fillFormFromOCR);
-        }
-
-        async function startOCR() {
-            if (!ocrImageData) {
-                showToast('Please upload or take a photo first.', 'error');
-                return;
-            }
-
-            const progress = document.getElementById('ocrProgress');
-            const progressFill = document.getElementById('ocrProgressFill');
-            const progressText = document.getElementById('ocrProgressText');
-            const resultDiv = document.getElementById('ocrResult');
-
-            progress.style.display = 'block';
-            progressFill.style.width = '0%';
-            progressText.textContent = 'Initializing OCR...';
-            resultDiv.classList.remove('show');
-            resultDiv.textContent = '';
-            document.getElementById('ocrExtractedData').classList.remove('show');
-
-            try {
-                const worker = await Tesseract.createWorker('eng');
-
-                progressText.textContent = 'Processing image...';
-                progressFill.style.width = '30%';
-
-                const { data: { text } } = await worker.recognize(ocrImageData);
-
-                progressFill.style.width = '80%';
-                progressText.textContent = 'Extracting data...';
-
-                ocrExtractedText = text || '';
-
-                await worker.terminate();
-
-                progressFill.style.width = '100%';
-                progressText.textContent = '✅ OCR Complete!';
-
-                if (ocrExtractedText.trim()) {
-                    resultDiv.textContent = ocrExtractedText.trim();
-                    resultDiv.classList.add('show');
-                    showToast('✅ Text extracted successfully!');
-                    parseOCRText(ocrExtractedText);
-                } else {
-                    resultDiv.textContent = '❌ No text found in the image. Try a clearer image.';
-                    resultDiv.classList.add('show');
-                    showToast('No text found.', 'error');
-                }
-
-            } catch (err) {
-                console.error('OCR Error:', err);
-                showToast('OCR failed: ' + err.message, 'error');
-                progressText.textContent = '❌ OCR failed';
-            }
-
-            setTimeout(() => {
-                progress.style.display = 'none';
-            }, 2000);
-        }
-
-        function parseOCRText(text) {
-            const data = {};
-            const lines = text.split('\n').filter(l => l.trim());
-
-            let nameFound = false;
-
-            for (let i = 0; i < Math.min(lines.length, 5); i++) {
-                const line = lines[i].trim();
-                if (/^[\d\s\-]+$/.test(line) && line.length > 8) {
-                    if (!data.barcode) {
-                        data.barcode = line.replace(/\s/g, '');
-                    }
-                    continue;
-                }
-                if (/Rs\.?|LKR|price/i.test(line) && /\d/.test(line)) {
-                    const priceMatch = line.match(/(\d+\.?\d*)/);
-                    if (priceMatch && !data.price) {
-                        data.price = parseFloat(priceMatch[1]);
-                    }
-                    continue;
-                }
-                if (!nameFound && line.length > 2 && line.length < 100) {
-                    data.name = line;
-                    nameFound = true;
-                }
-            }
-
-            const priceRegex = /(?:Rs\.?|LKR|price|Rs)\s*[:]?\s*(\d+\.?\d*)/i;
-            const priceMatch = text.match(priceRegex);
-            if (priceMatch && !data.price) {
-                data.price = parseFloat(priceMatch[1]);
-            }
-
-            const altPrice = text.match(/Rs\.?\s*(\d+\.?\d*)/i);
-            if (altPrice && !data.price) {
-                data.price = parseFloat(altPrice[1]);
-            }
-
-            const barcodeMatch = text.match(/\b(\d{8,})\b/);
-            if (barcodeMatch && !data.barcode) {
-                data.barcode = barcodeMatch[1];
-            }
-
-            if (data.name) {
-                const nameIndex = text.indexOf(data.name);
-                const descStart = nameIndex + data.name.length;
-                let desc = text.substring(descStart).trim();
-                if (data.price) {
-                    desc = desc.replace(new RegExp(`Rs\\.?\\s*${data.price}`, 'i'), '');
-                }
-                if (data.barcode) {
-                    desc = desc.replace(new RegExp(data.barcode, 'g'), '');
-                }
-                data.desc = desc.replace(/\s+/g, ' ').trim().substring(0, 200);
-            }
-
-            if (!data.name && lines.length > 0) {
-                data.name = lines[0].trim().substring(0, 50);
-            }
-
-            const categoriesList = categories.map(c => c.name);
-            for (const cat of categoriesList) {
-                if (text.toLowerCase().includes(cat.toLowerCase())) {
-                    data.category = cat;
-                    break;
-                }
-            }
-
-            data.qty = 1;
-            ocrParsedData = data;
-            displayExtractedData(data);
-        }
-
-        function displayExtractedData(data) {
-            const container = document.getElementById('ocrExtractedData');
-            const rows = document.getElementById('ocrDataRows');
-
-            if (!data.name && !data.barcode && !data.price) {
-                rows.innerHTML = `<div class="text-muted">Could not parse structured data from the text. Use the raw text above.</div>`;
-                container.classList.add('show');
-                return;
-            }
-
-            let html = '';
-            const fields = [
-                { label: '📝 Name', key: 'name' },
-                { label: '🔢 Barcode', key: 'barcode' },
-                { label: '💰 Price (LKR)', key: 'price' },
-                { label: '📦 Quantity', key: 'qty' },
-                { label: '🏷️ Category', key: 'category' },
-                { label: '📄 Description', key: 'desc' }
-            ];
-
-            for (const field of fields) {
-                if (data[field.key]) {
-                    html += `
-                        <div class="data-row">
-                            <span class="data-label">${field.label}</span>
-                            <span>${escapeHtml(String(data[field.key]))}</span>
-                        </div>
-                    `;
-                }
-            }
-
-            if (!html) {
-                html = `<div class="text-muted">No structured data found. Use the raw text above.</div>`;
-            }
-
-            rows.innerHTML = html;
-            container.classList.add('show');
-        }
-
-        function fillFormFromOCR() {
-            const data = ocrParsedData;
-            if (!data.name && !data.barcode) {
-                showToast('No data to fill. Try OCR first.', 'error');
-                return;
-            }
-
-            switchTab('add');
-
-            if (data.barcode) document.getElementById('itemBarcode').value = data.barcode;
-            if (data.name) document.getElementById('itemName').value = data.name;
-            if (data.qty) document.getElementById('itemQty').value = data.qty;
-            else document.getElementById('itemQty').value = 1;
-            if (data.price) document.getElementById('itemPrice').value = data.price;
-            if (data.category) {
-                const catSelect = document.getElementById('itemCategory');
-                const catExists = categories.some(c => c.name === data.category);
-                if (catExists) catSelect.value = data.category;
-                else if (categories.length > 0) catSelect.value = categories[0].name;
-            } else if (categories.length > 0) {
-                document.getElementById('itemCategory').value = categories[0].name;
-            }
-            if (data.desc) document.getElementById('itemDesc').value = data.desc;
-
-            // Update total display
-            const qty = parseInt(document.getElementById('itemQty').value) || 0;
-            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
-            if (qty > 0 && price > 0) {
-                document.getElementById('totalPriceDisplay').classList.add('show');
-                document.getElementById('totalPriceAmount').textContent = 'LKR ' + formatCurrency(qty * price);
-            }
-
-            showToast('✅ Form filled from OCR data!');
-        }
-
-        function clearOCR() {
-            ocrImageData = null;
-            ocrExtractedText = '';
-            ocrParsedData = {};
-            document.getElementById('ocrFileInput').value = '';
-            document.getElementById('ocrPreview').src = '';
-            document.getElementById('ocrPreview').style.display = 'none';
-            document.getElementById('ocrPlaceholder').style.display = 'block';
-            document.getElementById('ocrRemoveBtn').style.display = 'none';
-            document.getElementById('ocrResult').classList.remove('show');
-            document.getElementById('ocrResult').textContent = '';
-            document.getElementById('ocrExtractedData').classList.remove('show');
-            document.getElementById('ocrProgress').style.display = 'none';
-            showToast('🧹 OCR cleared');
-        }
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  RENDER FUNCTIONS
+        // RENDER FUNCTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function renderDashboard() {
@@ -2087,25 +1312,25 @@
             const totalQty = items.reduce((s, i) => s + i.qty, 0);
             const lowItems = items.filter(i => i.qty <= 5 && i.status === 'active');
             const totalValue = items.reduce((s, i) => s + (i.qty * i.price), 0);
+            const today = new Date().toDateString();
+            const todayDeliveries = deliveries.filter(d => new Date(d.date).toDateString() === today);
+            const todayQty = todayDeliveries.reduce((s, d) => s + d.qty, 0);
 
             document.getElementById('dashTotalItems').textContent = totalItems;
             document.getElementById('dashTotalQty').textContent = totalQty;
             document.getElementById('dashLowStock').textContent = lowItems.length;
             document.getElementById('dashCategories').textContent = categories.length;
+            document.getElementById('dashTodayDeliveries').textContent = todayQty;
             document.getElementById('dashTotalValue').textContent = 'LKR ' + formatCurrency(totalValue);
 
             const container = document.getElementById('dashLowStockList');
-            if (lowItems.length === 0) {
-                container.innerHTML = `<div class="text-muted text-center" style="padding:8px;">✅ All items are well-stocked.</div>`;
-            } else {
-                container.innerHTML = lowItems.map(i => `
-                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eef2f6; font-size:13px;">
-                        <span>⚠️ ${escapeHtml(i.name)}</span>
-                        <span style="color:#ef4444; font-weight:600;">${i.qty} left</span>
-                    </div>
-                `).join('');
+            if (lowItems.length === 0) container.innerHTML =
+                `<div class="text-muted text-center" style="padding:8px;">✅ All items are well-stocked.</div>`;
+            else {
+                container.innerHTML = lowItems.map(i =>
+                    `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eef2f6; font-size:13px;"><span>⚠️ ${escapeHtml(i.name)}</span><span style="color:#ef4444; font-weight:600;">${i.qty} left</span></div>`
+                    ).join('');
             }
-
             document.getElementById('itemCountBadge').textContent = totalItems;
         }
 
@@ -2116,70 +1341,38 @@
 
             let filtered = items.filter(it => {
                 const matchName = it.name.toLowerCase().includes(search);
-                const matchCat = catFilter === 'all' || it.category === catFilter;
                 const matchBarcode = it.barcode && it.barcode.includes(search);
+                const matchCat = catFilter === 'all' || it.category === catFilter;
                 return (matchName || matchBarcode) && matchCat && it.status !== 'inactive';
             });
-
-            filtered.sort((a, b) => {
-                switch (sortBy) {
-                    case 'name':
-                        return a.name.localeCompare(b.name);
-                    case 'qty':
-                        return a.qty - b.qty;
-                    case 'price':
-                        return a.price - b.price;
-                    case 'value':
-                        return (a.qty * a.price) - (b.qty * b.price);
-                    case 'newest':
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    default:
-                        return a.name.localeCompare(b.name);
-                }
-            });
+            filtered.sort((a, b) => { switch (sortBy) { case 'qty': return a.qty - b.qty; case 'price': return a.price - b
+                        .price; default: return a.name.localeCompare(b.name); } });
 
             const container = document.getElementById('inventoryList');
             if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📭</div>
-                        <p>${items.length === 0 ? 'No items yet. Tap "Add" or "Scan" to get started!' : 'No matches found.'}</p>
-                    </div>
-                `;
+                container.innerHTML =
+                    `<div class="empty-state"><div class="icon">📭</div><p>${items.length===0?'No items. Add one!':'No matches.'}</p></div>`;
                 return;
             }
-
             container.innerHTML = filtered.map(item => {
                 const low = item.qty <= 5;
-                const qtyClass = low ? 'item-qty-badge low' : 'item-qty-badge';
                 const thumb = item.images && item.images[0] ? item.images[0] : null;
-                const catName = item.category || 'Uncategorized';
-                const totalValue = item.qty * item.price;
                 const barcodeDisplay = item.barcode ? `<span class="barcode-badge">🔢 ${escapeHtml(item.barcode)}</span>` :
                     '';
-
                 return `
                     <div class="item-card" data-id="${item.id}">
-                        <div class="item-thumb">
-                            ${thumb ? `<img src="${thumb}" alt="${escapeHtml(item.name)}" />` : '📦'}
-                        </div>
+                        <div class="item-thumb">${thumb ? `<img src="${thumb}" />` : '📦'}</div>
                         <div class="item-info">
                             <div class="name">${escapeHtml(item.name)}</div>
-                            <div class="meta">
-                                <span class="cat-badge">${escapeHtml(catName)}</span>
-                                <span>💰 ${formatCurrency(item.price)}</span>
-                                <span class="total-value">📊 ${formatCurrency(totalValue)}</span>
-                                ${barcodeDisplay}
-                                ${item.desc ? `<span>📝 ${escapeHtml(item.desc.substring(0,30))}${item.desc.length>30?'…':''}</span>` : ''}
-                            </div>
+                            <div class="meta"><span class="cat-badge">${escapeHtml(item.category||'Uncategorized')}</span><span>💰 ${formatCurrency(item.price)}</span>${barcodeDisplay}</div>
                         </div>
-                        <div class="${qtyClass}">${item.qty}</div>
+                        <div class="${low?'item-qty-badge low':'item-qty-badge'}">${item.qty}</div>
                         <div class="item-actions">
-                            <button class="btn-icon-sm" data-action="view" data-id="${item.id}" title="View">👁️</button>
-                            <button class="btn-icon-sm" data-action="edit" data-id="${item.id}" title="Edit">✏️</button>
-                            <button class="btn-icon-sm" data-action="inc" data-id="${item.id}" title="+1">➕</button>
-                            <button class="btn-icon-sm" data-action="dec" data-id="${item.id}" title="-1">➖</button>
-                            <button class="btn-icon-sm danger" data-action="delete" data-id="${item.id}" title="Delete">✕</button>
+                            <button class="btn-icon-sm" data-action="view" data-id="${item.id}">👁️</button>
+                            <button class="btn-icon-sm" data-action="edit" data-id="${item.id}">✏️</button>
+                            <button class="btn-icon-sm" data-action="inc" data-id="${item.id}">➕</button>
+                            <button class="btn-icon-sm" data-action="dec" data-id="${item.id}">➖</button>
+                            <button class="btn-icon-sm danger" data-action="delete" data-id="${item.id}">✕</button>
                         </div>
                     </div>
                 `;
@@ -2188,72 +1381,57 @@
 
         function renderCategories() {
             const container = document.getElementById('categoryList');
-
-            if (categories.length === 0) {
-                container.innerHTML = `<div class="text-muted text-center" style="padding:8px; width:100%;">No categories yet. Add one above.</div>`;
-            } else {
-                container.innerHTML = categories.map(c => {
-                    const count = getItemCountByCategory(c.name);
-                    return `
-                        <span class="category-chip">
-                            <span class="color-dot" style="background:#3b82f6;"></span>
-                            ${escapeHtml(c.name)}
-                            <span class="count">${count}</span>
-                            <span class="edit" data-id="${c.id}" title="Edit">✏️</span>
-                            <span class="del" data-id="${c.id}" title="Delete">✕</span>
-                        </span>
-                    `;
-                }).join('');
+            if (categories.length === 0) container.innerHTML =
+                `<div class="text-muted text-center" style="padding:8px; width:100%;">No categories.</div>`;
+            else {
+                container.innerHTML = categories.map(c =>
+                    `<span class="category-chip"><span class="color-dot" style="background:#3b82f6;"></span>${escapeHtml(c.name)}<span class="count">${getItemCountByCategory(c.name)}</span><span class="edit" data-id="${c.id}">✏️</span><span class="del" data-id="${c.id}">✕</span></span>`
+                    ).join('');
             }
-
-            const statsContainer = document.getElementById('categoryStats');
-            if (categories.length === 0) {
-                statsContainer.innerHTML = `<div class="text-muted text-center" style="padding:8px;">No categories yet.</div>`;
-            } else {
-                statsContainer.innerHTML = categories.map(c => {
-                    const count = getItemCountByCategory(c.name);
-                    return `
-                        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #eef2f6; font-size:13px;">
-                            <span>${escapeHtml(c.name)}</span>
-                            <span>${count} item${count!==1?'s':''}</span>
-                        </div>
-                    `;
-                }).join('');
+            const stats = document.getElementById('categoryStats');
+            if (categories.length === 0) stats.innerHTML =
+            `<div class="text-muted text-center" style="padding:8px;">No categories.</div>`;
+            else {
+                stats.innerHTML = categories.map(c =>
+                    `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #eef2f6; font-size:13px;"><span>${escapeHtml(c.name)}</span><span>${getItemCountByCategory(c.name)} items</span></div>`
+                    ).join('');
             }
-
             populateCategoryDropdowns();
         }
 
         function populateCategoryDropdowns() {
-            const selects = ['itemCategory', 'filterCategory', 'reportCategoryFilter'];
-            const values = {};
-            selects.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) values[id] = el.value;
-            });
-
+            const selects = ['itemCategory', 'filterCategory', 'reportCategoryFilter', 'deliveryItemSelect'];
+            const vals = {};
+            selects.forEach(id => { const el = document.getElementById(id); if (el) vals[id] = el.value; });
             selects.forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
-                const currentVal = values[id] || el.value || '';
-                el.innerHTML = '<option value="all">All Categories</option>';
-                categories.forEach(c => {
-                    const opt = document.createElement('option');
+                const current = vals[id] || el.value || '';
+                if (id === 'deliveryItemSelect') {
+                    el.innerHTML = '<option value="">-- Select Item --</option>';
+                    items.filter(i => i.status === 'active' && i.qty > 0).forEach(i => {
+                        const opt = document.createElement('option');
+                        opt.value = i.id;
+                        opt.textContent = `${i.name} (${i.qty} left)`;
+                        el.appendChild(opt);
+                    });
+                    if (current && [...el.options].some(o => o.value == current)) el.value = current;
+                    else el.value = '';
+                    return;
+                }
+                el.innerHTML = '<option value="all">All</option>';
+                categories.forEach(c => { const opt = document.createElement('option');
                     opt.value = c.name;
                     opt.textContent = c.name;
-                    el.appendChild(opt);
-                });
-                if (currentVal && [...el.options].some(o => o.value === currentVal)) {
-                    el.value = currentVal;
-                } else {
-                    el.value = 'all';
-                }
+                    el.appendChild(opt); });
+                if (current && [...el.options].some(o => o.value === current)) el.value = current;
+                else el.value = 'all';
                 if (id === 'itemCategory') {
-                    const emptyOpt = document.createElement('option');
-                    emptyOpt.value = '';
-                    emptyOpt.textContent = 'Select category...';
-                    el.prepend(emptyOpt);
-                    el.value = currentVal || '';
+                    const empty = document.createElement('option');
+                    empty.value = '';
+                    empty.textContent = 'Select...';
+                    el.prepend(empty);
+                    el.value = current || '';
                 }
             });
         }
@@ -2261,90 +1439,122 @@
         function renderReports() {
             const catFilter = document.getElementById('reportCategoryFilter').value;
             const sortBy = document.getElementById('reportSortBy').value;
-
             let filtered = items.filter(it => it.status !== 'inactive');
-            if (catFilter !== 'all') {
-                filtered = filtered.filter(it => it.category === catFilter);
-            }
-
-            filtered.sort((a, b) => {
-                switch (sortBy) {
-                    case 'name':
-                        return a.name.localeCompare(b.name);
-                    case 'qty':
-                        return a.qty - b.qty;
-                    case 'value':
-                        return (a.qty * a.price) - (b.qty * b.price);
-                    default:
-                        return a.name.localeCompare(b.name);
-                }
-            });
+            if (catFilter !== 'all') filtered = filtered.filter(it => it.category === catFilter);
+            filtered.sort((a, b) => { if (sortBy === 'qty') return a.qty - b.qty; return a.name.localeCompare(b.name); });
 
             const container = document.getElementById('reportContent');
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-muted text-center" style="padding:20px;">No items to report.</div>`;
-                document.getElementById('reportSummary').textContent = 'Total: 0 items';
-                document.getElementById('reportValueSummary').textContent = 'Total Value: LKR 0';
-                return;
-            }
-
-            let html = `
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Category</th>
-                            <th class="text-right">Qty</th>
-                            <th class="text-right">Price</th>
-                            <th class="text-right">Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            let totalValue = 0;
-            filtered.forEach(i => {
-                const val = i.qty * i.price;
-                totalValue += val;
-                html += `
-                    <tr>
-                        <td>${escapeHtml(i.name)}</td>
-                        <td>${escapeHtml(i.category || '—')}</td>
-                        <td class="text-right">${i.qty}</td>
-                        <td class="text-right">${formatCurrency(i.price)}</td>
-                        <td class="text-right">${formatCurrency(val)}</td>
-                    </tr>
-                `;
-            });
-
-            html += `
-                    </tbody>
-                </table>
-            `;
-
+            if (filtered.length === 0) { container.innerHTML =
+                    `<div class="text-muted text-center" style="padding:20px;">No items.</div>`;
+                document.getElementById('reportSummary').textContent = 'Total: 0';
+                document.getElementById('reportValueSummary').textContent = 'Value: LKR 0'; return; }
+            let html =
+                `<table class="report-table"><thead><tr><th>Item</th><th>Category</th><th class="text-right">Qty</th><th class="text-right">Price</th><th class="text-right">Value</th></tr></thead><tbody>`;
+            let totalVal = 0;
+            filtered.forEach(i => { const v = i.qty * i.price;
+                totalVal += v;
+                html +=
+                    `<tr><td>${escapeHtml(i.name)}</td><td>${escapeHtml(i.category||'—')}</td><td class="text-right">${i.qty}</td><td class="text-right">${formatCurrency(i.price)}</td><td class="text-right">${formatCurrency(v)}</td></tr>`; });
+            html += `</tbody></table>`;
             container.innerHTML = html;
-            document.getElementById('reportSummary').textContent = `Total: ${filtered.length} items`;
-            document.getElementById('reportValueSummary').textContent = `Total Value: LKR ${formatCurrency(totalValue)}`;
+            document.getElementById('reportSummary').textContent = `Total: ${filtered.length}`;
+            document.getElementById('reportValueSummary').textContent = `Value: LKR ${formatCurrency(totalVal)}`;
+
+            // Delivery History
+            renderDeliveryHistory();
         }
 
-        function renderAll() {
-            renderDashboard();
-            renderInventory();
-            renderCategories();
-            renderReports();
-            document.getElementById('itemCountBadge').textContent = items.length;
+        function renderDeliveryHistory() {
+            const dateFilter = document.getElementById('deliveryDateFilter').value;
+            let filtered = [...deliveries];
+            if (dateFilter) {
+                const d = new Date(dateFilter);
+                filtered = filtered.filter(del => new Date(del.date).toDateString() === d.toDateString());
+            }
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const container = document.getElementById('deliveryHistoryList');
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-muted text-center" style="padding:12px;">No deliveries found.</div>`;
+                return;
+            }
+            container.innerHTML = filtered.map(d =>
+                `<div class="delivery-item"><span><strong>${escapeHtml(d.customer)}</strong> → ${escapeHtml(d.itemName)}</span><span>${d.qty} pcs <span class="text-muted">(${new Date(d.date).toLocaleDateString()})</span></span></div>`
+                ).join('');
+        }
+
+        function renderDeliverForm() {
+            const select = document.getElementById('deliveryItemSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Select Item --</option>';
+            items.filter(i => i.status === 'active' && i.qty > 0).forEach(i => {
+                const opt = document.createElement('option');
+                opt.value = i.id;
+                opt.textContent = `${i.name} (${i.qty} left)`;
+                select.appendChild(opt);
+            });
+            if (currentVal && [...select.options].some(o => o.value == currentVal)) select.value = currentVal;
+            else select.value = '';
+            updateAvailableQty();
+        }
+
+        function updateAvailableQty() {
+            const select = document.getElementById('deliveryItemSelect');
+            const id = parseInt(select.value);
+            const item = items.find(i => i.id === id);
+            document.getElementById('deliveryAvailableQty').value = item ? item.qty : '0';
+        }
+
+        // ─── Deliver Action ───
+        function handleDeliverySubmit(e) {
+            e.preventDefault();
+            const customer = document.getElementById('deliveryCustomer').value.trim();
+            const itemId = parseInt(document.getElementById('deliveryItemSelect').value);
+            const qty = parseInt(document.getElementById('deliveryQty').value);
+
+            if (!customer) { showToast('Enter customer name.', 'error'); return; }
+            if (!itemId) { showToast('Select an item.', 'error'); return; }
+            if (!qty || qty < 1) { showToast('Enter valid quantity.', 'error'); return; }
+
+            const item = items.find(i => i.id === itemId);
+            if (!item) { showToast('Item not found.', 'error'); return; }
+            if (item.qty < qty) { showToast(`Insufficient stock! Available: ${item.qty}`, 'error'); return; }
+
+            // Reduce stock
+            item.qty -= qty;
+            item.updatedAt = new Date().toISOString();
+
+            // Log delivery
+            deliveries.push({
+                id: generateId(),
+                customer: customer,
+                itemId: item.id,
+                itemName: item.name,
+                qty: qty,
+                price: item.price,
+                total: qty * item.price,
+                date: new Date().toISOString()
+            });
+
+            saveData();
+            renderAll();
+            document.getElementById('deliverForm').reset();
+            document.getElementById('deliveryAvailableQty').value = '0';
+            renderDeliverForm();
+            showToast(`✅ ${qty} ${item.name} delivered to ${customer}!`);
+            switchTab('deliver');
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  FORM: ADD / EDIT
+        // FORM HANDLERS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function resetForm() {
             document.getElementById('addForm').reset();
             document.getElementById('editId').value = '';
             document.getElementById('editIdDisplay').textContent = '';
-            document.getElementById('formTitle').textContent = '➕ Add New Item';
-            document.getElementById('submitBtn').textContent = '💾 Save Item';
+            document.getElementById('formTitle').textContent = '➕ Add Item';
+            document.getElementById('submitBtn').textContent = '💾 Save';
             document.getElementById('cancelEditBtn').style.display = 'none';
             document.getElementById('itemBarcode').value = '';
             clearImagePreviews();
@@ -2352,7 +1562,6 @@
             const catSelect = document.getElementById('itemCategory');
             if (categories.length > 0) catSelect.value = categories[0].name;
             else catSelect.value = '';
-            document.getElementById('totalPriceDisplay').classList.remove('show');
         }
 
         function clearImagePreviews() {
@@ -2371,14 +1580,22 @@
             }
         }
 
+        function getImagesFromForm() {
+            const images = [];
+            for (let i = 1; i <= 2; i++) {
+                const box = document.getElementById('imgBox' + i);
+                if (box.dataset.imageData) images.push(box.dataset.imageData);
+            }
+            return images;
+        }
+
         function loadItemIntoForm(item) {
             editingId = item.id;
             document.getElementById('editId').value = item.id;
             document.getElementById('editIdDisplay').textContent = '✏️ Editing';
             document.getElementById('formTitle').textContent = '✏️ Edit Item';
-            document.getElementById('submitBtn').textContent = '💾 Update Item';
+            document.getElementById('submitBtn').textContent = '💾 Update';
             document.getElementById('cancelEditBtn').style.display = 'inline-flex';
-
             document.getElementById('itemBarcode').value = item.barcode || '';
             document.getElementById('itemName').value = item.name || '';
             document.getElementById('itemQty').value = item.qty || 0;
@@ -2386,7 +1603,6 @@
             document.getElementById('itemCategory').value = item.category || '';
             document.getElementById('itemStatus').value = item.status || 'active';
             document.getElementById('itemDesc').value = item.desc || '';
-
             clearImagePreviews();
             if (item.images && item.images.length > 0) {
                 for (let i = 0; i < Math.min(item.images.length, 2); i++) {
@@ -2401,19 +1617,9 @@
                     box.dataset.imageData = item.images[i];
                 }
             }
-
-            // Update total display
-            const qty = parseInt(document.getElementById('itemQty').value) || 0;
-            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
-            if (qty > 0 && price > 0) {
-                document.getElementById('totalPriceDisplay').classList.add('show');
-                document.getElementById('totalPriceAmount').textContent = 'LKR ' + formatCurrency(qty * price);
-            }
-
             switchTab('add');
         }
 
-        // ─── Image upload handlers ───
         function setupImageUploads() {
             for (let i = 1; i <= 2; i++) {
                 const box = document.getElementById('imgBox' + i);
@@ -2425,13 +1631,10 @@
                 input.addEventListener('change', async function(e) {
                     const file = this.files[0];
                     if (!file) return;
-                    if (file.size > 2 * 1024 * 1024) {
-                        showToast('Image too large. Max 2MB.', 'error');
-                        this.value = '';
-                        return;
-                    }
+                    if (file.size > 2 * 1024 * 1024) { showToast('Max 2MB.', 'error');
+                        this.value = ''; return; }
                     try {
-                        const dataUrl = await compressImage(file, 400, 400, 0.7);
+                        const dataUrl = await compressImage(file);
                         if (dataUrl) {
                             img.src = dataUrl;
                             img.style.display = 'block';
@@ -2439,15 +1642,10 @@
                             removeBtn.classList.remove('hidden');
                             box.dataset.imageData = dataUrl;
                             showToast('✅ Image uploaded!');
-                        } else {
-                            showToast('Failed to process image.', 'error');
-                        }
-                    } catch (err) {
-                        showToast('Error processing image.', 'error');
-                    }
+                        } else showToast('Failed.', 'error');
+                    } catch (err) { showToast('Error.', 'error'); }
                     this.value = '';
                 });
-
                 removeBtn.addEventListener('click', function() {
                     img.src = '';
                     img.style.display = 'none';
@@ -2456,29 +1654,14 @@
                     box.dataset.imageData = '';
                     input.value = '';
                 });
-
                 box.addEventListener('click', function(e) {
-                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IMG') {
-                        input.click();
-                    }
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IMG') input.click();
                 });
             }
         }
 
-        function getImagesFromForm() {
-            const images = [];
-            for (let i = 1; i <= 2; i++) {
-                const box = document.getElementById('imgBox' + i);
-                const data = box.dataset.imageData;
-                if (data) images.push(data);
-            }
-            return images;
-        }
-
-        // ─── Submit form ───
         function handleFormSubmit(e) {
             e.preventDefault();
-
             const barcode = document.getElementById('itemBarcode').value.trim();
             const name = document.getElementById('itemName').value.trim();
             const qty = parseInt(document.getElementById('itemQty').value) || 0;
@@ -2488,58 +1671,23 @@
             const desc = document.getElementById('itemDesc').value.trim();
             const images = getImagesFromForm();
             const editId = document.getElementById('editId').value;
-
-            if (!name) {
-                showToast('Please enter an item name.', 'error');
-                return;
-            }
-            if (qty < 0) {
-                showToast('Quantity cannot be negative.', 'error');
-                return;
-            }
-
-            if (category && !categories.some(c => c.name === category)) {
-                showToast('Please select a valid category.', 'error');
-                return;
-            }
+            if (!name) { showToast('Enter item name.', 'error'); return; }
+            if (qty < 0) { showToast('Invalid qty.', 'error'); return; }
+            if (category && !categories.some(c => c.name === category)) { showToast('Invalid category.', 'error'); return; }
 
             if (editId) {
                 const idx = items.findIndex(i => i.id === Number(editId));
-                if (idx === -1) {
-                    showToast('Item not found.', 'error');
-                    return;
-                }
-                items[idx] = {
-                    ...items[idx],
-                    barcode: barcode,
-                    name,
-                    qty,
-                    price,
-                    category,
-                    status,
-                    desc,
-                    images: images.length > 0 ? images : items[idx].images,
-                    updatedAt: new Date().toISOString()
-                };
+                if (idx === -1) { showToast('Not found.', 'error'); return; }
+                items[idx] = { ...items[idx], barcode, name, qty, price, category, status, desc,
+                    images: images.length > 0 ? images : items[idx].images, updatedAt: new Date().toISOString() };
                 saveData();
                 renderAll();
                 resetForm();
                 showToast(`✅ "${name}" updated!`);
                 switchTab('inventory');
             } else {
-                const newItem = {
-                    id: generateId(),
-                    barcode: barcode,
-                    name,
-                    qty,
-                    price,
-                    category,
-                    status,
-                    desc,
-                    images,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
+                const newItem = { id: generateId(), barcode, name, qty, price, category, status, desc, images,
+                    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
                 items.push(newItem);
                 saveData();
                 renderAll();
@@ -2548,37 +1696,31 @@
                 document.getElementById('addForm').reset();
                 clearImagePreviews();
                 document.getElementById('itemBarcode').value = '';
-                document.getElementById('totalPriceDisplay').classList.remove('show');
                 if (categories.length > 0) document.getElementById('itemCategory').value = categories[0].name;
                 switchTab('inventory');
             }
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  ITEM ACTIONS
+        // ITEM ACTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function updateQty(id, delta) {
             const idx = items.findIndex(i => i.id === id);
             if (idx === -1) return;
             const newQty = items[idx].qty + delta;
-            if (newQty < 0) {
-                showToast('❌ Quantity cannot be negative.', 'error');
-                return;
-            }
+            if (newQty < 0) { showToast('❌ Negative not allowed.', 'error'); return; }
             items[idx].qty = newQty;
             items[idx].updatedAt = new Date().toISOString();
             saveData();
             renderAll();
-            if (delta !== 0) {
-                showToast(`${delta > 0 ? '➕' : '➖'} ${items[idx].name} → ${newQty}`);
-            }
+            if (delta !== 0) showToast(`${delta>0?'➕':'➖'} ${items[idx].name} → ${newQty}`);
         }
 
         function deleteItem(id) {
             const item = items.find(i => i.id === id);
             if (!item) return;
-            if (confirm(`Delete "${item.name}" permanently?`)) {
+            if (confirm(`Delete "${item.name}"?`)) {
                 items = items.filter(i => i.id !== id);
                 saveData();
                 renderAll();
@@ -2588,37 +1730,26 @@
 
         function viewItemDetail(id) {
             const item = items.find(i => i.id === id);
-            if (!item) {
-                showToast('Item not found.', 'error');
-                return;
-            }
-
+            if (!item) { showToast('Not found.', 'error'); return; }
             const modal = document.getElementById('itemDetailModal');
             document.getElementById('detailTitle').textContent = '📦 ' + escapeHtml(item.name);
-
             const imagesHtml = item.images && item.images.length > 0 ?
-                item.images.map(img => `<img src="${img}" style="width:100%; max-height:150px; object-fit:contain; border-radius:8px;" />`).join(
-                    '') :
+                item.images.map(img => `<img src="${img}" style="width:100%; max-height:150px; object-fit:contain; border-radius:8px;" />`)
+                .join('') :
                 '<div class="text-muted">No images</div>';
-
             document.getElementById('detailBody').innerHTML = `
                 <div style="display:grid; gap:8px; font-size:14px;">
                     <div style="display:flex; gap:20px; flex-wrap:wrap; background:#f8fafc; padding:12px; border-radius:10px;">
-                        <div><strong>🔢 Barcode:</strong> ${escapeHtml(item.barcode || '—')}</div>
-                        <div><strong>Quantity:</strong> ${item.qty}</div>
+                        <div><strong>🔢 Barcode:</strong> ${escapeHtml(item.barcode||'—')}</div>
+                        <div><strong>Qty:</strong> ${item.qty}</div>
                         <div><strong>Price:</strong> LKR ${formatCurrency(item.price)}</div>
-                        <div><strong>Total Value:</strong> LKR ${formatCurrency(item.qty * item.price)}</div>
-                        <div><strong>Category:</strong> ${escapeHtml(item.category || '—')}</div>
+                        <div><strong>Category:</strong> ${escapeHtml(item.category||'—')}</div>
                         <div><strong>Status:</strong> ${item.status === 'active' ? '✅ Active' : '⛔ Inactive'}</div>
                     </div>
                     ${item.desc ? `<div><strong>Description:</strong><br>${escapeHtml(item.desc)}</div>` : ''}
                     <div><strong>📸 Images:</strong></div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        ${imagesHtml}
-                    </div>
-                    <div class="text-muted" style="font-size:12px; margin-top:4px;">
-                        Created: ${new Date(item.createdAt).toLocaleString()} ${item.updatedAt ? '· Updated: '+new Date(item.updatedAt).toLocaleString() : ''}
-                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">${imagesHtml}</div>
+                    <div class="text-muted" style="font-size:12px;">Created: ${new Date(item.createdAt).toLocaleString()}</div>
                 </div>
                 <div style="display:flex; gap:8px; margin-top:14px;">
                     <button class="btn btn-sm btn-primary" id="detailEditBtn" data-id="${item.id}">✏️ Edit</button>
@@ -2626,47 +1757,33 @@
                     <button class="btn btn-sm btn-outline" id="detailCloseBtn2">Close</button>
                 </div>
             `;
-
             modal.classList.add('open');
-
             document.getElementById('detailEditBtn')?.addEventListener('click', function() {
                 modal.classList.remove('open');
                 const id = Number(this.dataset.id);
-                const item = items.find(i => i.id === id);
-                if (item) loadItemIntoForm(item);
+                const it = items.find(i => i.id === id);
+                if (it) loadItemIntoForm(it);
             });
-
             document.getElementById('detailDeleteBtn')?.addEventListener('click', function() {
                 modal.classList.remove('open');
                 deleteItem(Number(this.dataset.id));
             });
-
             document.getElementById('detailCloseBtn2')?.addEventListener('click', () => modal.classList.remove('open'));
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  CATEGORY ACTIONS
+        // CATEGORY ACTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function addCategory(name) {
             name = name.trim();
-            if (!name) {
-                showToast('Please enter a category name.', 'error');
-                return;
-            }
-            if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-                showToast('Category already exists.', 'warning');
-                return;
-            }
-            categories.push({
-                id: generateId(),
-                name: name,
-                createdAt: new Date().toISOString()
-            });
+            if (!name) { showToast('Enter name.', 'error'); return; }
+            if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) { showToast('Exists.', 'warning'); return; }
+            categories.push({ id: generateId(), name, createdAt: new Date().toISOString() });
             saveData();
             renderAll();
             document.getElementById('newCategoryInput').value = '';
-            showToast(`✅ Category "${name}" added!`);
+            showToast(`✅ "${name}" added!`);
         }
 
         function deleteCategory(id) {
@@ -2674,74 +1791,57 @@
             if (!cat) return;
             const count = getItemCountByCategory(cat.name);
             if (count > 0) {
-                if (!confirm(`Category "${cat.name}" has ${count} item(s). Delete anyway? Items will become uncategorized.`))
-                return;
-                items.forEach(i => {
-                    if (i.category === cat.name) i.category = '';
-                });
-            } else {
-                if (!confirm(`Delete category "${cat.name}"?`)) return;
-            }
+                if (!confirm(`"${cat.name}" has ${count} items. Delete? Items uncategorized.`)) return;
+                items.forEach(i => { if (i.category === cat.name) i.category = ''; });
+            } else { if (!confirm(`Delete "${cat.name}"?`)) return; }
             categories = categories.filter(c => c.id !== id);
             saveData();
             renderAll();
-            showToast(`🗑️ Category removed.`);
+            showToast(`🗑️ Removed.`);
         }
 
         function editCategory(id, newName) {
             newName = newName.trim();
-            if (!newName) {
-                showToast('Category name cannot be empty.', 'error');
-                return;
-            }
+            if (!newName) { showToast('Enter name.', 'error'); return; }
             const cat = categories.find(c => c.id === id);
             if (!cat) return;
-            if (categories.some(c => c.name.toLowerCase() === newName.toLowerCase() && c.id !== id)) {
-                showToast('Another category with this name exists.', 'warning');
-                return;
-            }
-            const oldName = cat.name;
+            if (categories.some(c => c.name.toLowerCase() === newName.toLowerCase() && c.id !== id)) { showToast(
+                    'Exists.', 'warning'); return; }
+            const old = cat.name;
             cat.name = newName;
-            items.forEach(i => {
-                if (i.category === oldName) i.category = newName;
-            });
+            items.forEach(i => { if (i.category === old) i.category = newName; });
             saveData();
             renderAll();
-            showToast(`✅ Category updated to "${newName}"`);
+            showToast(`✅ Updated to "${newName}"`);
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  EXPORT / IMPORT
+        // EXPORT / BACKUP
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function exportCSV() {
-            if (items.length === 0) {
-                showToast('No items to export.', 'error');
-                return;
-            }
-            let csv = 'Barcode,Name,Category,Quantity,Price,Value,Status,Description\n';
-            items.forEach(i => {
-                const val = i.qty * i.price;
+            if (items.length === 0) { showToast('No items.', 'error'); return; }
+            let csv = 'Barcode,Name,Category,Qty,Price,Value,Status\n';
+            items.forEach(i => { const v = i.qty * i.price;
                 csv +=
-                    `"${i.barcode||''}","${i.name}","${i.category||''}",${i.qty},${i.price},${val},"${i.status||'active'}","${i.desc||''}"\n`;
-            });
+                    `"${i.barcode||''}","${i.name}","${i.category||''}",${i.qty},${i.price},${v},"${i.status}"\n`; });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `stock_report_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `stock_${new Date().toISOString().slice(0,10)}.csv`;
             a.click();
             URL.revokeObjectURL(url);
             showToast('📥 CSV exported!');
         }
 
         function backupData() {
-            const data = JSON.stringify({ items, categories }, null, 2);
+            const data = JSON.stringify({ items, categories, deliveries }, null, 2);
             const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `stock_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `backup_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
             showToast('💾 Backup downloaded!');
@@ -2752,49 +1852,33 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!data.items || !data.categories) {
-                        showToast('Invalid backup file.', 'error');
-                        return;
-                    }
-                    if (!confirm('This will replace ALL current data. Continue?')) return;
-                    items = data.items || [];
-                    categories = data.categories || [];
+                    if (!data.items || !data.categories || !data.deliveries) { showToast('Invalid backup.', 'error'); return; }
+                    if (!confirm('Replace ALL current data?')) return;
+                    items = data.items;
+                    categories = data.categories;
+                    deliveries = data.deliveries;
                     saveData();
                     renderAll();
-                    showToast('✅ Data restored successfully!');
-                } catch (err) {
-                    showToast('Failed to restore data.', 'error');
-                }
+                    showToast('✅ Restored!');
+                } catch (err) { showToast('Failed.', 'error'); }
             };
             reader.readAsText(file);
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  SCANNER LOGIC
+        // SCANNER LOGIC
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-        let html5QrCode = null;
-        let isScannerRunning = false;
-        let lastScannedCode = '';
-
-        const scannerContainer = document.getElementById('scanner-container');
-        const scannerReader = document.getElementById('scanner-reader');
-        const startBtn = document.getElementById('startScanBtn');
-        const stopBtn = document.getElementById('stopScanBtn');
-        const scanResultBox = document.getElementById('scanResultBox');
-        const scannedCodeEl = document.getElementById('scannedCode');
-        const useScannedBtn = document.getElementById('useScannedBtn');
-        const scanErrorEl = document.getElementById('scanError');
+        let html5QrCode = null,
+            isScannerRunning = false,
+            lastScannedCode = '';
+        const startBtn = document.getElementById('startScanBtn'),
+            stopBtn = document.getElementById('stopScanBtn');
 
         function initScanner() {
             if (!html5QrCode) {
-                try {
-                    html5QrCode = new Html5Qrcode("scanner-reader");
-                } catch (e) {
-                    console.error("Scanner init error", e);
-                    showToast("Scanner not supported on this device.", "error");
-                    return false;
-                }
+                try { html5QrCode = new Html5Qrcode("scanner-reader"); } catch (e) { showToast('Scanner not supported.',
+                        'error'); return false; }
             }
             return true;
         }
@@ -2802,42 +1886,38 @@
         function startScanner() {
             if (isScannerRunning) return;
             if (!initScanner()) return;
-
-            const config = {
-                fps: 15,
-                qrbox: { width: 250, height: 150 },
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
+            const config = { fps: 15, qrbox: { width: 250, height: 150 },
+                formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.CODE_128,
                     Html5QrcodeSupportedFormats.QR_CODE
-                ]
-            };
-
+                ] };
             document.getElementById('scannerPlaceholder').style.display = 'none';
-            scannerReader.style.display = 'block';
-            scanErrorEl.style.display = 'none';
-            scanResultBox.classList.remove('show');
+            document.getElementById('scanner-reader').style.display = 'block';
+            document.getElementById('scanError').style.display = 'none';
+            document.getElementById('scanResultBox').classList.remove('show');
 
-            html5QrCode.start({ facingMode: "environment" },
-                config,
-                onScanSuccess,
-                onScanError
-            ).then(() => {
-                isScannerRunning = true;
+            html5QrCode.start({ facingMode: "environment" }, config, (decoded) => {
+                stopScanner();
+                lastScannedCode = decoded;
+                document.getElementById('scannedCode').textContent = decoded;
+                document.getElementById('scanResultBox').classList.add('show');
+                document.getElementById('itemBarcode').value = decoded;
+                document.getElementById('itemName').value = `Item ${decoded.slice(-6)}`;
+                document.getElementById('itemDesc').value = `Barcode: ${decoded}`;
+                document.getElementById('itemQty').value = '1';
+                if (categories.length > 0) document.getElementById('itemCategory').value = categories[0].name;
+                showToast(`✅ Scanned: ${decoded}`);
+                switchTab('add');
+            }, () => {}).then(() => { isScannerRunning = true;
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
-                showToast("📷 Camera started. Point at a barcode.");
-            }).catch(err => {
-                console.error("Camera start error", err);
-                scanErrorEl.textContent = "❌ Camera access denied or not available. Please allow camera permissions. If using Chrome, make sure you are on HTTPS or localhost. You can also use the manual barcode entry below.";
-                scanErrorEl.style.display = 'block';
-                showToast("❌ Could not start camera.", "error");
+                showToast('📷 Camera started.'); }).catch(err => {
+                document.getElementById('scanError').textContent =
+                    '❌ Camera denied. Use manual entry.';
+                document.getElementById('scanError').style.display = 'block';
+                showToast('❌ Camera error.', 'error');
                 document.getElementById('scannerPlaceholder').style.display = 'block';
-                scannerReader.style.display = 'none';
+                document.getElementById('scanner-reader').style.display = 'none';
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
             });
@@ -2845,229 +1925,167 @@
 
         function stopScanner() {
             if (html5QrCode && isScannerRunning) {
-                html5QrCode.stop().then(() => {
-                    isScannerRunning = false;
+                html5QrCode.stop().then(() => { isScannerRunning = false;
                     startBtn.disabled = false;
                     stopBtn.disabled = true;
                     document.getElementById('scannerPlaceholder').style.display = 'block';
-                    scannerReader.style.display = 'none';
-                    showToast("⏹ Scanner stopped.");
-                }).catch(err => {
-                    console.error("Stop error", err);
-                });
-            } else {
-                startBtn.disabled = false;
+                    document.getElementById('scanner-reader').style.display = 'none';
+                    showToast('⏹ Stopped.'); }).catch(() => {});
+            } else { startBtn.disabled = false;
                 stopBtn.disabled = true;
                 document.getElementById('scannerPlaceholder').style.display = 'block';
-                scannerReader.style.display = 'none';
-            }
+                document.getElementById('scanner-reader').style.display = 'none'; }
         }
-
-        function onScanSuccess(decodedText, decodedResult) {
-            stopScanner();
-            lastScannedCode = decodedText;
-            scannedCodeEl.textContent = decodedText;
-            scanResultBox.classList.add('show');
-            showToast(`✅ Scanned: ${decodedText}`, 'success');
-
-            document.getElementById('itemBarcode').value = decodedText;
-            document.getElementById('itemName').value = `Item ${decodedText.slice(-6)}`;
-            document.getElementById('itemDesc').value = `Barcode: ${decodedText}`;
-            document.getElementById('itemQty').value = '1';
-            if (categories.length > 0) {
-                document.getElementById('itemCategory').value = categories[0].name;
-            }
-            switchTab('add');
-        }
-
-        function onScanError(err) {}
 
         function useScannedCode() {
-            if (!lastScannedCode) {
-                showToast("No barcode scanned yet.", "error");
-                return;
-            }
+            if (!lastScannedCode) { showToast('No code.', 'error'); return; }
             document.getElementById('itemBarcode').value = lastScannedCode;
             const name = document.getElementById('itemName').value.trim() || `Item ${lastScannedCode.slice(-6)}`;
             document.getElementById('itemName').value = name;
             document.getElementById('itemDesc').value = `Barcode: ${lastScannedCode}`;
-            if (!document.getElementById('itemQty').value || document.getElementById('itemQty').value === '0') {
-                document.getElementById('itemQty').value = '1';
-            }
-            if (categories.length > 0 && !document.getElementById('itemCategory').value) {
-                document.getElementById('itemCategory').value = categories[0].name;
-            }
+            if (!document.getElementById('itemQty').value || document.getElementById('itemQty').value === '0') document
+                .getElementById('itemQty').value = '1';
             switchTab('add');
-            showToast(`📦 Barcode ${lastScannedCode} ready to add!`, 'success');
-            scanResultBox.classList.remove('show');
+            showToast(`📦 Barcode ready!`);
+            document.getElementById('scanResultBox').classList.remove('show');
             lastScannedCode = '';
         }
 
         function handleManualBarcode() {
-            const input = document.getElementById('manualBarcode');
-            const code = input.value.trim();
-            if (!code) {
-                showToast('Please enter a barcode number.', 'error');
-                return;
-            }
+            const code = document.getElementById('manualBarcode').value.trim();
+            if (!code) { showToast('Enter code.', 'error'); return; }
             lastScannedCode = code;
-            scannedCodeEl.textContent = code;
-            scanResultBox.classList.add('show');
+            document.getElementById('scannedCode').textContent = code;
+            document.getElementById('scanResultBox').classList.add('show');
             document.getElementById('itemBarcode').value = code;
             document.getElementById('itemName').value = `Item ${code.slice(-6)}`;
             document.getElementById('itemDesc').value = `Barcode: ${code}`;
             document.getElementById('itemQty').value = '1';
-            if (categories.length > 0) {
-                document.getElementById('itemCategory').value = categories[0].name;
-            }
+            if (categories.length > 0) document.getElementById('itemCategory').value = categories[0].name;
             switchTab('add');
-            showToast(`✅ Barcode ${code} ready to add!`);
-            input.value = '';
+            showToast(`✅ Code ready!`);
+            document.getElementById('manualBarcode').value = '';
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  TABS
+        // TABS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.tab === tabId);
-            });
-            document.querySelectorAll('.panel').forEach(p => {
-                p.classList.toggle('active', p.id === 'panel-' + tabId);
-            });
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+            document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tabId));
             if (tabId === 'dashboard') renderDashboard();
             if (tabId === 'inventory') renderInventory();
             if (tabId === 'reports') renderReports();
             if (tabId === 'categories') renderCategories();
-            if (tabId !== 'scan' && isScannerRunning) {
-                stopScanner();
-            }
+            if (tabId === 'deliver') { renderDeliverForm();
+                renderDeliveryHistory(); }
+            if (tabId !== 'scan' && isScannerRunning) stopScanner();
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  INIT
+        // RENDER ALL
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function renderAll() {
+            renderDashboard();
+            renderInventory();
+            renderCategories();
+            renderReports();
+            renderDeliverForm();
+            renderDeliveryHistory();
+            document.getElementById('itemCountBadge').textContent = items.length;
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // INIT
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         function init() {
             loadData();
 
-            // ── Tabs ──
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    switchTab(btn.dataset.tab);
-                });
-            });
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
-            // ── Dashboard quick actions ──
+            // Dashboard buttons
             document.getElementById('dashAddBtn').addEventListener('click', () => { resetForm();
                 switchTab('add'); });
-            document.getElementById('dashAddCategoryBtn').addEventListener('click', () => switchTab('categories'));
+            document.getElementById('dashDeliverBtn').addEventListener('click', () => switchTab('deliver'));
             document.getElementById('dashPrintBtn').addEventListener('click', () => window.print());
             document.getElementById('dashExportBtn').addEventListener('click', exportCSV);
 
-            // ── Form ──
+            // Add Form
             document.getElementById('addForm').addEventListener('submit', handleFormSubmit);
             document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
-
-            // ✅ Clear Button
-            document.getElementById('clearFormBtn').addEventListener('click', function() {
-                if (editingId) {
-                    if (!confirm('Clear form and cancel editing?')) return;
-                }
-                resetForm();
-                showToast('🧹 Form cleared');
-            });
-
-            // ── Total Price Display ──
-            setupTotalPriceDisplay();
-
-            // ── Quick fill ──
             document.getElementById('quickAddBtn').addEventListener('click', function() {
                 resetForm();
                 document.getElementById('itemBarcode').value = '1234567890123';
                 document.getElementById('itemName').value = 'COLÖGNE SPRAY';
                 document.getElementById('itemQty').value = '10';
                 document.getElementById('itemPrice').value = '4500';
-                if (categories.some(c => c.name === 'Cosmetics')) {
-                    document.getElementById('itemCategory').value = 'Cosmetics';
-                }
-                document.getElementById('itemDesc').value = '3.4FL OZ · 100ml · OSCal Pad 90';
+                if (categories.some(c => c.name === 'Cosmetics')) document.getElementById('itemCategory').value =
+                    'Cosmetics';
+                document.getElementById('itemDesc').value = '3.4FL OZ · 100ml';
                 document.getElementById('itemStatus').value = 'active';
-                // Update total display
-                document.getElementById('totalPriceDisplay').classList.add('show');
-                document.getElementById('totalPriceAmount').textContent = 'LKR ' + formatCurrency(10 * 4500);
-                showToast('📸 Pre-filled with sample data!');
+                showToast('📸 Pre-filled!');
                 switchTab('add');
             });
 
-            // ── Search / filter / sort ──
+            // Inventory filters
             document.getElementById('searchInput').addEventListener('input', renderInventory);
             document.getElementById('filterCategory').addEventListener('change', renderInventory);
             document.getElementById('sortBy').addEventListener('change', renderInventory);
 
-            // ── Report filters ──
+            // Reports
             document.getElementById('reportCategoryFilter').addEventListener('change', renderReports);
             document.getElementById('reportSortBy').addEventListener('change', renderReports);
-            document.getElementById('reportPrintBtn').addEventListener('click', () => window.print());
             document.getElementById('reportExportBtn').addEventListener('click', exportCSV);
 
-            // ── Categories ──
-            document.getElementById('addCategoryBtn').addEventListener('click', function() {
-                const input = document.getElementById('newCategoryInput');
-                addCategory(input.value);
-            });
-            document.getElementById('newCategoryInput').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addCategory(this.value);
-                }
+            // Deliveries
+            document.getElementById('deliveryItemSelect').addEventListener('change', updateAvailableQty);
+            document.getElementById('deliverForm').addEventListener('submit', handleDeliverySubmit);
+            document.getElementById('deliveryDateFilter').addEventListener('change', renderDeliveryHistory);
+            document.getElementById('clearDeliveryFilter').addEventListener('click', function() {
+                document.getElementById('deliveryDateFilter').value = '';
+                renderDeliveryHistory();
             });
 
-            // Category list delegation
+            // Categories
+            document.getElementById('addCategoryBtn').addEventListener('click', function() {
+                addCategory(document.getElementById('newCategoryInput').value);
+            });
+            document.getElementById('newCategoryInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault();
+                    addCategory(this.value); }
+            });
             document.getElementById('categoryList').addEventListener('click', function(e) {
-                const target = e.target;
-                if (target.classList.contains('del')) {
-                    const id = Number(target.dataset.id);
-                    deleteCategory(id);
-                }
-                if (target.classList.contains('edit')) {
-                    const id = Number(target.dataset.id);
-                    const cat = categories.find(c => c.id === id);
+                const t = e.target;
+                if (t.classList.contains('del')) deleteCategory(Number(t.dataset.id));
+                if (t.classList.contains('edit')) {
+                    const cat = categories.find(c => c.id === Number(t.dataset.id));
                     if (cat) {
-                        document.getElementById('catEditId').value = id;
+                        document.getElementById('catEditId').value = cat.id;
                         document.getElementById('catEditName').value = cat.name;
                         document.getElementById('categoryEditModal').classList.add('open');
                     }
                 }
             });
-
-            // ── Category edit modal ──
-            document.getElementById('catEditCloseBtn').addEventListener('click', () => {
-                document.getElementById('categoryEditModal').classList.remove('open');
-            });
+            document.getElementById('catEditCloseBtn').addEventListener('click', () => document.getElementById(
+                'categoryEditModal').classList.remove('open'));
             document.getElementById('catEditSaveBtn').addEventListener('click', function() {
                 const id = Number(document.getElementById('catEditId').value);
                 const name = document.getElementById('catEditName').value;
                 editCategory(id, name);
                 document.getElementById('categoryEditModal').classList.remove('open');
             });
-            document.getElementById('catEditName').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    document.getElementById('catEditSaveBtn').click();
-                }
-            });
 
-            // ── Item list delegation ──
+            // Item list actions
             document.getElementById('inventoryList').addEventListener('click', function(e) {
                 const target = e.target.closest('button');
                 if (!target) return;
                 const id = Number(target.dataset.id);
                 if (isNaN(id)) return;
-                const action = target.dataset.action;
-
-                switch (action) {
+                switch (target.dataset.action) {
                     case 'inc':
                         updateQty(id, 1);
                         break;
@@ -3077,65 +2095,53 @@
                     case 'delete':
                         deleteItem(id);
                         break;
-                    case 'edit':
+                    case 'edit': {
                         const item = items.find(i => i.id === id);
                         if (item) loadItemIntoForm(item);
                         break;
+                    }
                     case 'view':
                         viewItemDetail(id);
                         break;
                 }
             });
 
-            // ── Detail modal ──
-            document.getElementById('detailCloseBtn').addEventListener('click', () => {
-                document.getElementById('itemDetailModal').classList.remove('open');
-            });
+            // Detail modal
+            document.getElementById('detailCloseBtn').addEventListener('click', () => document.getElementById(
+                'itemDetailModal').classList.remove('open'));
             document.getElementById('itemDetailModal').addEventListener('click', function(e) {
                 if (e.target === this) this.classList.remove('open');
             });
 
-            // ── Image upload ──
+            // Image upload
             setupImageUploads();
 
-            // ── Backup / Restore ──
+            // Backup / Restore
             document.getElementById('backupBtn').addEventListener('click', backupData);
             document.getElementById('restoreBtn').addEventListener('click', function() {
                 document.getElementById('restoreFileInput').click();
             });
             document.getElementById('restoreFileInput').addEventListener('change', function(e) {
-                if (this.files && this.files[0]) {
-                    restoreData(this.files[0]);
-                }
+                if (this.files && this.files[0]) { restoreData(this.files[0]); }
                 this.value = '';
             });
 
-            // ── Scanner buttons ──
+            // Scanner
             document.getElementById('startScanBtn').addEventListener('click', startScanner);
             document.getElementById('stopScanBtn').addEventListener('click', stopScanner);
             document.getElementById('useScannedBtn').addEventListener('click', useScannedCode);
             document.getElementById('manualBarcodeBtn').addEventListener('click', handleManualBarcode);
             document.getElementById('manualBarcode').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleManualBarcode();
-                }
+                if (e.key === 'Enter') { e.preventDefault();
+                    handleManualBarcode(); }
             });
 
-            // ── OCR Setup ──
-            setupOCR();
-
-            // ── Initial render ──
+            // Initial render
             renderAll();
 
-            // ── Welcome ──
             setTimeout(() => {
-                const total = items.length;
-                if (total > 0) {
-                    showToast(`📦 ${total} items loaded. Welcome!`);
-                } else {
-                    showToast('👋 Welcome! Add your first item.');
-                }
+                if (items.length > 0) showToast(`📦 ${items.length} items loaded.`);
+                else showToast('👋 Welcome!');
             }, 400);
         }
 
