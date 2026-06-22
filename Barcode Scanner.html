@@ -249,6 +249,28 @@
             gap: 10px;
         }
 
+        /* ───────────── TOTAL PRICE DISPLAY ───────────── */
+        .total-price-display {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 10px;
+            padding: 8px 14px;
+            margin-top: 8px;
+            display: none;
+            font-weight: 600;
+            font-size: 15px;
+            color: #0f172a;
+            text-align: center;
+        }
+
+        .total-price-display.show {
+            display: block;
+        }
+        .total-price-display .amount {
+            color: #16a34a;
+            font-size: 18px;
+        }
+
         /* ───────────── BUTTONS ───────────── */
         .btn {
             display: inline-flex;
@@ -489,6 +511,18 @@
             margin: 4px auto 0;
         }
 
+        .ocr-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ocr-buttons .btn {
+            flex: 1;
+            min-width: 80px;
+        }
+
         .ocr-progress {
             margin-top: 10px;
             display: none;
@@ -711,6 +745,12 @@
             border-radius: 10px;
             font-size: 10px;
             font-family: monospace;
+        }
+
+        .item-info .meta .total-value {
+            color: #16a34a;
+            font-weight: 600;
+            font-size: 11px;
         }
 
         .item-qty-badge {
@@ -1124,6 +1164,10 @@
             .tab-btn .label {
                 display: none;
             }
+            .ocr-buttons .btn {
+                flex: none;
+                width: 100%;
+            }
         }
 
         @media (min-width: 600px) {
@@ -1274,6 +1318,7 @@
                         <option value="name">Sort: Name</option>
                         <option value="qty">Sort: Quantity</option>
                         <option value="price">Sort: Price</option>
+                        <option value="value">Sort: Total Value</option>
                         <option value="newest">Sort: Newest</option>
                     </select>
                 </div>
@@ -1314,6 +1359,11 @@
                             <label>Price (LKR)</label>
                             <input type="number" id="itemPrice" placeholder="0.00" min="0" step="0.01" />
                         </div>
+                    </div>
+
+                    <!-- ✅ Total Price Display -->
+                    <div class="total-price-display" id="totalPriceDisplay">
+                        💰 Total Value: <span class="amount" id="totalPriceAmount">LKR 0</span>
                     </div>
 
                     <div class="form-row">
@@ -1359,9 +1409,11 @@
                         </div>
                     </div>
 
-                    <div style="display:flex; gap:8px; margin-top:4px;">
+                    <div style="display:flex; gap:8px; margin-top:4px; flex-wrap:wrap;">
                         <button type="submit" class="btn btn-primary" id="submitBtn">💾 Save Item</button>
                         <button type="button" class="btn btn-outline" id="cancelEditBtn" style="display:none;">Cancel</button>
+                        <!-- ✅ Clear Button -->
+                        <button type="button" class="btn btn-danger" id="clearFormBtn">🗑️ Clear</button>
                     </div>
                 </form>
             </div>
@@ -1425,7 +1477,7 @@
         </div>
 
         <!-- ══════════════════════════════════════════════ -->
-        <!-- PANEL: OCR (Image to Text Scanner) - NEW -->
+        <!-- PANEL: OCR (Image to Text Scanner) - UPDATED -->
         <!-- ══════════════════════════════════════════════ -->
         <div class="panel" id="panel-ocr" role="tabpanel">
             <div class="card">
@@ -1435,14 +1487,21 @@
                 </p>
 
                 <div class="ocr-section">
-                    <div class="ocr-title">📸 Upload Image</div>
+                    <div class="ocr-title">📸 Upload or Take Photo</div>
                     <div class="ocr-upload-area">
                         <div class="ocr-upload-box" id="ocrUploadBox">
-                            <input type="file" id="ocrFileInput" accept="image/*" capture="environment" />
+                            <input type="file" id="ocrFileInput" accept="image/*" />
                             <img class="ocr-preview" id="ocrPreview" />
-                            <span class="ocr-placeholder-text" id="ocrPlaceholder">📷 Tap to upload or take photo</span>
+                            <span class="ocr-placeholder-text" id="ocrPlaceholder">📷 Tap to upload image</span>
                             <button type="button" class="remove-ocr-img" id="ocrRemoveBtn">✕</button>
                         </div>
+                    </div>
+
+                    <!-- ✅ Camera Capture Button -->
+                    <div class="ocr-buttons">
+                        <button class="btn btn-primary" id="ocrCameraBtn">📸 Take Photo</button>
+                        <button class="btn btn-success" id="ocrStartBtn">🔍 Start OCR</button>
+                        <button class="btn btn-outline" id="ocrClearBtn">🗑️ Clear</button>
                     </div>
                 </div>
 
@@ -1461,11 +1520,6 @@
                     <button class="btn btn-success btn-sm" id="ocrFillFormBtn" style="width:100%;margin-top:8px;">
                         ⚡ Auto-fill Form
                     </button>
-                </div>
-
-                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-                    <button class="btn btn-primary" id="ocrStartBtn">🔍 Start OCR</button>
-                    <button class="btn btn-outline" id="ocrClearBtn">🗑️ Clear</button>
                 </div>
             </div>
         </div>
@@ -1565,6 +1619,9 @@
         <!-- ─── HIDDEN FILE INPUT FOR RESTORE ─── -->
         <input type="file" id="restoreFileInput" accept=".json" style="display:none;" />
 
+        <!-- ─── HIDDEN FILE INPUT FOR OCR CAMERA ─── -->
+        <input type="file" id="ocrCameraInput" accept="image/*" capture="environment" style="display:none;" />
+
     </div>
 
     <script>
@@ -1587,7 +1644,6 @@
                     items = data.items || [];
                     categories = data.categories || [];
                 } else {
-                    // Seed data
                     categories = [
                         { id: 1, name: 'Cosmetics', createdAt: new Date().toISOString() },
                         { id: 2, name: 'Electronics', createdAt: new Date().toISOString() },
@@ -1629,26 +1685,10 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, categories }));
         }
 
-        // ─── Helpers ───
         function generateId() { return Date.now() + Math.floor(Math.random() * 100000); }
 
         function formatCurrency(val) {
             return Number(val).toLocaleString('en-LK', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        }
-
-        function getCategoryName(id) {
-            const cat = categories.find(c => c.id === id);
-            return cat ? cat.name : id;
-        }
-
-        function getCategoryIdByName(name) {
-            const cat = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
-            return cat ? cat.id : null;
-        }
-
-        function getCategoryNameById(id) {
-            const cat = categories.find(c => c.id === id);
-            return cat ? cat.name : '';
         }
 
         function getItemCountByCategory(catName) {
@@ -1701,7 +1741,34 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  OCR (Image to Text) - NEW
+        //  TOTAL PRICE DISPLAY
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        function setupTotalPriceDisplay() {
+            const qtyInput = document.getElementById('itemQty');
+            const priceInput = document.getElementById('itemPrice');
+            const display = document.getElementById('totalPriceDisplay');
+            const amount = document.getElementById('totalPriceAmount');
+
+            function updateTotal() {
+                const qty = parseInt(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const total = qty * price;
+
+                if (qty > 0 && price > 0) {
+                    display.classList.add('show');
+                    amount.textContent = 'LKR ' + formatCurrency(total);
+                } else {
+                    display.classList.remove('show');
+                }
+            }
+
+            qtyInput.addEventListener('input', updateTotal);
+            priceInput.addEventListener('input', updateTotal);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  OCR (Image to Text)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         let ocrImageData = null;
@@ -1714,17 +1781,18 @@
             const placeholder = document.getElementById('ocrPlaceholder');
             const removeBtn = document.getElementById('ocrRemoveBtn');
             const uploadBox = document.getElementById('ocrUploadBox');
+            const cameraBtn = document.getElementById('ocrCameraBtn');
+            const cameraInput = document.getElementById('ocrCameraInput');
 
+            // ── File Upload ──
             fileInput.addEventListener('change', function(e) {
                 const file = this.files[0];
                 if (!file) return;
-
                 if (file.size > 5 * 1024 * 1024) {
                     showToast('Image too large. Max 5MB.', 'error');
                     this.value = '';
                     return;
                 }
-
                 const reader = new FileReader();
                 reader.onload = function(ev) {
                     ocrImageData = ev.target.result;
@@ -1737,6 +1805,33 @@
                 reader.readAsDataURL(file);
             });
 
+            // ── Camera Capture ──
+            cameraBtn.addEventListener('click', function() {
+                cameraInput.click();
+            });
+
+            cameraInput.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Image too large. Max 5MB.', 'error');
+                    this.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    ocrImageData = ev.target.result;
+                    preview.src = ocrImageData;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    removeBtn.style.display = 'flex';
+                    showToast('📸 Photo captured! Click "Start OCR" to extract text.');
+                };
+                reader.readAsDataURL(file);
+                this.value = '';
+            });
+
+            // ── Remove ──
             removeBtn.addEventListener('click', function() {
                 ocrImageData = null;
                 preview.src = '';
@@ -1750,6 +1845,7 @@
                 document.getElementById('ocrProgress').style.display = 'none';
             });
 
+            // ── Upload box click ──
             uploadBox.addEventListener('click', function(e) {
                 if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IMG') {
                     fileInput.click();
@@ -1763,7 +1859,7 @@
 
         async function startOCR() {
             if (!ocrImageData) {
-                showToast('Please upload an image first.', 'error');
+                showToast('Please upload or take a photo first.', 'error');
                 return;
             }
 
@@ -1780,7 +1876,6 @@
             document.getElementById('ocrExtractedData').classList.remove('show');
 
             try {
-                // Use Tesseract.js for OCR
                 const worker = await Tesseract.createWorker('eng');
 
                 progressText.textContent = 'Processing image...';
@@ -1798,13 +1893,10 @@
                 progressFill.style.width = '100%';
                 progressText.textContent = '✅ OCR Complete!';
 
-                // Show raw text
                 if (ocrExtractedText.trim()) {
                     resultDiv.textContent = ocrExtractedText.trim();
                     resultDiv.classList.add('show');
                     showToast('✅ Text extracted successfully!');
-
-                    // Parse extracted text
                     parseOCRText(ocrExtractedText);
                 } else {
                     resultDiv.textContent = '❌ No text found in the image. Try a clearer image.';
@@ -1827,20 +1919,16 @@
             const data = {};
             const lines = text.split('\n').filter(l => l.trim());
 
-            // Try to find product name - usually the first few lines
             let nameFound = false;
 
             for (let i = 0; i < Math.min(lines.length, 5); i++) {
                 const line = lines[i].trim();
-                // Skip if it looks like a number or barcode
                 if (/^[\d\s\-]+$/.test(line) && line.length > 8) {
-                    // Could be barcode
                     if (!data.barcode) {
                         data.barcode = line.replace(/\s/g, '');
                     }
                     continue;
                 }
-                // Skip if it's a price
                 if (/Rs\.?|LKR|price/i.test(line) && /\d/.test(line)) {
                     const priceMatch = line.match(/(\d+\.?\d*)/);
                     if (priceMatch && !data.price) {
@@ -1848,38 +1936,32 @@
                     }
                     continue;
                 }
-                // First non-numeric line could be name
                 if (!nameFound && line.length > 2 && line.length < 100) {
                     data.name = line;
                     nameFound = true;
                 }
             }
 
-            // Find price
             const priceRegex = /(?:Rs\.?|LKR|price|Rs)\s*[:]?\s*(\d+\.?\d*)/i;
             const priceMatch = text.match(priceRegex);
             if (priceMatch && !data.price) {
                 data.price = parseFloat(priceMatch[1]);
             }
 
-            // Alternative price: just numbers with Rs
             const altPrice = text.match(/Rs\.?\s*(\d+\.?\d*)/i);
             if (altPrice && !data.price) {
                 data.price = parseFloat(altPrice[1]);
             }
 
-            // Find barcode
             const barcodeMatch = text.match(/\b(\d{8,})\b/);
             if (barcodeMatch && !data.barcode) {
                 data.barcode = barcodeMatch[1];
             }
 
-            // Find description - everything after name and price
             if (data.name) {
                 const nameIndex = text.indexOf(data.name);
                 const descStart = nameIndex + data.name.length;
                 let desc = text.substring(descStart).trim();
-                // Remove price and barcode from description
                 if (data.price) {
                     desc = desc.replace(new RegExp(`Rs\\.?\\s*${data.price}`, 'i'), '');
                 }
@@ -1889,12 +1971,10 @@
                 data.desc = desc.replace(/\s+/g, ' ').trim().substring(0, 200);
             }
 
-            // If no name found, use first line
             if (!data.name && lines.length > 0) {
                 data.name = lines[0].trim().substring(0, 50);
             }
 
-            // Try to find category from text
             const categoriesList = categories.map(c => c.name);
             for (const cat of categoriesList) {
                 if (text.toLowerCase().includes(cat.toLowerCase())) {
@@ -1903,12 +1983,8 @@
                 }
             }
 
-            // Set default qty if not found
             data.qty = 1;
-
             ocrParsedData = data;
-
-            // Display extracted data
             displayExtractedData(data);
         }
 
@@ -1953,44 +2029,34 @@
 
         function fillFormFromOCR() {
             const data = ocrParsedData;
-
             if (!data.name && !data.barcode) {
                 showToast('No data to fill. Try OCR first.', 'error');
                 return;
             }
 
-            // Switch to Add tab
             switchTab('add');
 
-            // Fill form
-            if (data.barcode) {
-                document.getElementById('itemBarcode').value = data.barcode;
-            }
-            if (data.name) {
-                document.getElementById('itemName').value = data.name;
-            }
-            if (data.qty) {
-                document.getElementById('itemQty').value = data.qty;
-            } else {
-                document.getElementById('itemQty').value = 1;
-            }
-            if (data.price) {
-                document.getElementById('itemPrice').value = data.price;
-            }
+            if (data.barcode) document.getElementById('itemBarcode').value = data.barcode;
+            if (data.name) document.getElementById('itemName').value = data.name;
+            if (data.qty) document.getElementById('itemQty').value = data.qty;
+            else document.getElementById('itemQty').value = 1;
+            if (data.price) document.getElementById('itemPrice').value = data.price;
             if (data.category) {
                 const catSelect = document.getElementById('itemCategory');
-                // Check if category exists
                 const catExists = categories.some(c => c.name === data.category);
-                if (catExists) {
-                    catSelect.value = data.category;
-                } else if (categories.length > 0) {
-                    catSelect.value = categories[0].name;
-                }
+                if (catExists) catSelect.value = data.category;
+                else if (categories.length > 0) catSelect.value = categories[0].name;
             } else if (categories.length > 0) {
                 document.getElementById('itemCategory').value = categories[0].name;
             }
-            if (data.desc) {
-                document.getElementById('itemDesc').value = data.desc;
+            if (data.desc) document.getElementById('itemDesc').value = data.desc;
+
+            // Update total display
+            const qty = parseInt(document.getElementById('itemQty').value) || 0;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            if (qty > 0 && price > 0) {
+                document.getElementById('totalPriceDisplay').classList.add('show');
+                document.getElementById('totalPriceAmount').textContent = 'LKR ' + formatCurrency(qty * price);
             }
 
             showToast('✅ Form filled from OCR data!');
@@ -2016,7 +2082,6 @@
         //  RENDER FUNCTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-        // ─── Dashboard ───
         function renderDashboard() {
             const totalItems = items.length;
             const totalQty = items.reduce((s, i) => s + i.qty, 0);
@@ -2044,7 +2109,6 @@
             document.getElementById('itemCountBadge').textContent = totalItems;
         }
 
-        // ─── Inventory ───
         function renderInventory() {
             const search = document.getElementById('searchInput').value.toLowerCase().trim();
             const catFilter = document.getElementById('filterCategory').value;
@@ -2065,6 +2129,8 @@
                         return a.qty - b.qty;
                     case 'price':
                         return a.price - b.price;
+                    case 'value':
+                        return (a.qty * a.price) - (b.qty * b.price);
                     case 'newest':
                         return new Date(b.createdAt) - new Date(a.createdAt);
                     default:
@@ -2088,6 +2154,7 @@
                 const qtyClass = low ? 'item-qty-badge low' : 'item-qty-badge';
                 const thumb = item.images && item.images[0] ? item.images[0] : null;
                 const catName = item.category || 'Uncategorized';
+                const totalValue = item.qty * item.price;
                 const barcodeDisplay = item.barcode ? `<span class="barcode-badge">🔢 ${escapeHtml(item.barcode)}</span>` :
                     '';
 
@@ -2101,6 +2168,7 @@
                             <div class="meta">
                                 <span class="cat-badge">${escapeHtml(catName)}</span>
                                 <span>💰 ${formatCurrency(item.price)}</span>
+                                <span class="total-value">📊 ${formatCurrency(totalValue)}</span>
                                 ${barcodeDisplay}
                                 ${item.desc ? `<span>📝 ${escapeHtml(item.desc.substring(0,30))}${item.desc.length>30?'…':''}</span>` : ''}
                             </div>
@@ -2118,7 +2186,6 @@
             }).join('');
         }
 
-        // ─── Categories ───
         function renderCategories() {
             const container = document.getElementById('categoryList');
 
@@ -2191,7 +2258,6 @@
             });
         }
 
-        // ─── Reports ───
         function renderReports() {
             const catFilter = document.getElementById('reportCategoryFilter').value;
             const sortBy = document.getElementById('reportSortBy').value;
@@ -2261,7 +2327,6 @@
             document.getElementById('reportValueSummary').textContent = `Total Value: LKR ${formatCurrency(totalValue)}`;
         }
 
-        // ─── Render All ───
         function renderAll() {
             renderDashboard();
             renderInventory();
@@ -2287,6 +2352,7 @@
             const catSelect = document.getElementById('itemCategory');
             if (categories.length > 0) catSelect.value = categories[0].name;
             else catSelect.value = '';
+            document.getElementById('totalPriceDisplay').classList.remove('show');
         }
 
         function clearImagePreviews() {
@@ -2334,6 +2400,14 @@
                     removeBtn.classList.remove('hidden');
                     box.dataset.imageData = item.images[i];
                 }
+            }
+
+            // Update total display
+            const qty = parseInt(document.getElementById('itemQty').value) || 0;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            if (qty > 0 && price > 0) {
+                document.getElementById('totalPriceDisplay').classList.add('show');
+                document.getElementById('totalPriceAmount').textContent = 'LKR ' + formatCurrency(qty * price);
             }
 
             switchTab('add');
@@ -2474,6 +2548,7 @@
                 document.getElementById('addForm').reset();
                 clearImagePreviews();
                 document.getElementById('itemBarcode').value = '';
+                document.getElementById('totalPriceDisplay').classList.remove('show');
                 if (categories.length > 0) document.getElementById('itemCategory').value = categories[0].name;
                 switchTab('inventory');
             }
@@ -2532,6 +2607,7 @@
                         <div><strong>🔢 Barcode:</strong> ${escapeHtml(item.barcode || '—')}</div>
                         <div><strong>Quantity:</strong> ${item.qty}</div>
                         <div><strong>Price:</strong> LKR ${formatCurrency(item.price)}</div>
+                        <div><strong>Total Value:</strong> LKR ${formatCurrency(item.qty * item.price)}</div>
                         <div><strong>Category:</strong> ${escapeHtml(item.category || '—')}</div>
                         <div><strong>Status:</strong> ${item.status === 'active' ? '✅ Active' : '⛔ Inactive'}</div>
                     </div>
@@ -2694,7 +2770,7 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  SCANNER LOGIC (html5-qrcode)
+        //  SCANNER LOGIC
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
         let html5QrCode = null;
@@ -2725,7 +2801,6 @@
 
         function startScanner() {
             if (isScannerRunning) return;
-
             if (!initScanner()) return;
 
             const config = {
@@ -2868,7 +2943,6 @@
             if (tabId !== 'scan' && isScannerRunning) {
                 stopScanner();
             }
-            // OCR panel - nothing special needed
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2896,6 +2970,18 @@
             document.getElementById('addForm').addEventListener('submit', handleFormSubmit);
             document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
 
+            // ✅ Clear Button
+            document.getElementById('clearFormBtn').addEventListener('click', function() {
+                if (editingId) {
+                    if (!confirm('Clear form and cancel editing?')) return;
+                }
+                resetForm();
+                showToast('🧹 Form cleared');
+            });
+
+            // ── Total Price Display ──
+            setupTotalPriceDisplay();
+
             // ── Quick fill ──
             document.getElementById('quickAddBtn').addEventListener('click', function() {
                 resetForm();
@@ -2908,6 +2994,9 @@
                 }
                 document.getElementById('itemDesc').value = '3.4FL OZ · 100ml · OSCal Pad 90';
                 document.getElementById('itemStatus').value = 'active';
+                // Update total display
+                document.getElementById('totalPriceDisplay').classList.add('show');
+                document.getElementById('totalPriceAmount').textContent = 'LKR ' + formatCurrency(10 * 4500);
                 showToast('📸 Pre-filled with sample data!');
                 switchTab('add');
             });
