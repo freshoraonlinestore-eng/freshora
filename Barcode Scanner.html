@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>📦 Stock Manager Pro + Scanner</title>
+    <title>📦 Stock Manager Pro + Scanner + OCR</title>
 
     <!-- Barcode scanner library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
+    </script>
+
+    <!-- Tesseract.js for OCR (Image to Text) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
     </script>
 
     <style>
@@ -104,12 +108,12 @@
 
         .tab-btn {
             flex: 1;
-            min-width: 44px;
-            padding: 9px 0;
+            min-width: 40px;
+            padding: 8px 0;
             border: none;
             border-radius: 11px;
             background: transparent;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: #64748b;
             cursor: pointer;
@@ -117,7 +121,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
         }
 
         .tab-btn.active {
@@ -411,6 +415,154 @@
             font-size: 13px;
             margin-top: 8px;
             display: none;
+        }
+
+        /* ───────────── OCR SECTION ───────────── */
+        .ocr-section {
+            margin-top: 14px;
+            border-top: 2px dashed #e2e8f0;
+            padding-top: 14px;
+        }
+
+        .ocr-section .ocr-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .ocr-upload-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ocr-upload-box {
+            flex: 1;
+            min-width: 120px;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fafafa;
+        }
+
+        .ocr-upload-box:hover {
+            border-color: #3b82f6;
+            background: #f0f7ff;
+        }
+
+        .ocr-upload-box .ocr-preview {
+            width: 100%;
+            max-height: 150px;
+            object-fit: contain;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .ocr-upload-box .ocr-placeholder-text {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .ocr-upload-box input[type="file"] {
+            display: none;
+        }
+
+        .ocr-upload-box .remove-ocr-img {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            margin: 4px auto 0;
+        }
+
+        .ocr-progress {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .ocr-progress .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .ocr-progress .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #22c55e);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .ocr-progress .progress-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        .ocr-result {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .ocr-result.show {
+            display: block;
+        }
+
+        .ocr-extracted-data {
+            margin-top: 10px;
+            display: none;
+            background: #f0fdf4;
+            border: 1px solid #22c55e;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .ocr-extracted-data.show {
+            display: block;
+        }
+
+        .ocr-extracted-data .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #eef2f6;
+            font-size: 13px;
+        }
+
+        .ocr-extracted-data .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .ocr-extracted-data .data-label {
+            font-weight: 600;
+            color: #475569;
         }
 
         /* ───────────── IMAGE UPLOAD ───────────── */
@@ -966,8 +1118,8 @@
                 font-size: 17px;
             }
             .tab-btn {
-                font-size: 11px;
-                padding: 7px 0;
+                font-size: 10px;
+                padding: 6px 0;
             }
             .tab-btn .label {
                 display: none;
@@ -986,7 +1138,6 @@
             }
         }
 
-        /* Category color dots */
         .color-dot {
             display: inline-block;
             width: 10px;
@@ -995,7 +1146,6 @@
             margin-right: 4px;
         }
 
-        /* Low stock pulse */
         .pulse {
             animation: pulse 1.5s ease-in-out infinite;
         }
@@ -1010,7 +1160,6 @@
             }
         }
 
-        /* Print styles */
         @media print {
             .tabs,
             .header-actions,
@@ -1060,6 +1209,7 @@
             <button class="tab-btn" data-tab="inventory" role="tab">📋 <span class="label">Items</span></button>
             <button class="tab-btn" data-tab="add" role="tab">➕ <span class="label">Add</span></button>
             <button class="tab-btn" data-tab="scan" role="tab">📷 <span class="label">Scan</span></button>
+            <button class="tab-btn" data-tab="ocr" role="tab">🖼️ <span class="label">OCR</span></button>
             <button class="tab-btn" data-tab="categories" role="tab">🏷️ <span class="label">Categories</span></button>
             <button class="tab-btn" data-tab="reports" role="tab">📈 <span class="label">Reports</span></button>
         </div>
@@ -1145,7 +1295,6 @@
                 <form id="addForm" autocomplete="off">
                     <input type="hidden" id="editId" value="" />
 
-                    <!-- 🔢 Dedicated Barcode Field -->
                     <div class="form-group">
                         <label>🔢 Barcode Number</label>
                         <input type="text" id="itemBarcode" placeholder="Scanned or manually entered barcode" readonly />
@@ -1233,14 +1382,13 @@
         </div>
 
         <!-- ══════════════════════════════════════════════ -->
-        <!-- PANEL: SCAN -->
+        <!-- PANEL: SCAN (Barcode) -->
         <!-- ══════════════════════════════════════════════ -->
         <div class="panel" id="panel-scan" role="tabpanel">
             <div class="card">
                 <div class="card-title">📷 Barcode Scanner</div>
                 <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
-                    Point your camera at a barcode (EAN-13, UPC, Code-128, etc.).<br>
-                    <strong>Note:</strong> Camera requires HTTPS or localhost. If it doesn't work, use manual entry below.
+                    Point your camera at a barcode (EAN-13, UPC, Code-128, etc.).
                 </p>
 
                 <div id="scanner-container">
@@ -1256,7 +1404,6 @@
                     <button class="btn btn-danger" id="stopScanBtn" disabled style="flex:1;">⏹ Stop</button>
                 </div>
 
-                <!-- Scan Result -->
                 <div class="scan-result-box" id="scanResultBox">
                     <div>
                         <span class="code" id="scannedCode">123456789012</span>
@@ -1265,7 +1412,6 @@
                     <button class="btn btn-success btn-sm" id="useScannedBtn" style="width:auto;">➕ Add to Inventory</button>
                 </div>
 
-                <!-- Manual barcode entry (fallback) -->
                 <div class="manual-input-area">
                     <label>🔢 Or enter barcode manually:</label>
                     <div class="manual-input-row">
@@ -1275,6 +1421,52 @@
                 </div>
 
                 <div class="scan-error" id="scanError"></div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- PANEL: OCR (Image to Text Scanner) - NEW -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div class="panel" id="panel-ocr" role="tabpanel">
+            <div class="card">
+                <div class="card-title">🖼️ Image to Text Scanner (OCR)</div>
+                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">
+                    Upload a product label image or take a photo. The system will extract text like <strong>Product Name, Price, Barcode, Description</strong> and auto-fill the form.
+                </p>
+
+                <div class="ocr-section">
+                    <div class="ocr-title">📸 Upload Image</div>
+                    <div class="ocr-upload-area">
+                        <div class="ocr-upload-box" id="ocrUploadBox">
+                            <input type="file" id="ocrFileInput" accept="image/*" capture="environment" />
+                            <img class="ocr-preview" id="ocrPreview" />
+                            <span class="ocr-placeholder-text" id="ocrPlaceholder">📷 Tap to upload or take photo</span>
+                            <button type="button" class="remove-ocr-img" id="ocrRemoveBtn">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ocr-progress" id="ocrProgress">
+                    <div class="progress-bar">
+                        <div class="fill" id="ocrProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="ocrProgressText">Processing...</div>
+                </div>
+
+                <div class="ocr-result" id="ocrResult"></div>
+
+                <div class="ocr-extracted-data" id="ocrExtractedData">
+                    <div style="font-weight:600;font-size:13px;color:#0f172a;margin-bottom:6px;">📝 Extracted Data</div>
+                    <div id="ocrDataRows"></div>
+                    <button class="btn btn-success btn-sm" id="ocrFillFormBtn" style="width:100%;margin-top:8px;">
+                        ⚡ Auto-fill Form
+                    </button>
+                </div>
+
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" id="ocrStartBtn">🔍 Start OCR</button>
+                    <button class="btn btn-outline" id="ocrClearBtn">🗑️ Clear</button>
+                </div>
             </div>
         </div>
 
@@ -1420,7 +1612,6 @@
                 items = [];
                 categories = [];
             }
-            // Ensure each item has all fields
             items = items.map(it => ({
                 ...it,
                 barcode: it.barcode || '',
@@ -1431,7 +1622,6 @@
                 category: it.category || '',
                 updatedAt: it.updatedAt || it.createdAt || new Date().toISOString()
             }));
-            // Ensure categories have id
             categories = categories.map(c => ({ ...c, id: c.id || Date.now() + Math.random() * 1000 }));
         }
 
@@ -1511,6 +1701,318 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  OCR (Image to Text) - NEW
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        let ocrImageData = null;
+        let ocrExtractedText = '';
+        let ocrParsedData = {};
+
+        function setupOCR() {
+            const fileInput = document.getElementById('ocrFileInput');
+            const preview = document.getElementById('ocrPreview');
+            const placeholder = document.getElementById('ocrPlaceholder');
+            const removeBtn = document.getElementById('ocrRemoveBtn');
+            const uploadBox = document.getElementById('ocrUploadBox');
+
+            fileInput.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (!file) return;
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Image too large. Max 5MB.', 'error');
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    ocrImageData = ev.target.result;
+                    preview.src = ocrImageData;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    removeBtn.style.display = 'flex';
+                    showToast('✅ Image loaded. Click "Start OCR" to extract text.');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            removeBtn.addEventListener('click', function() {
+                ocrImageData = null;
+                preview.src = '';
+                preview.style.display = 'none';
+                placeholder.style.display = 'block';
+                removeBtn.style.display = 'none';
+                fileInput.value = '';
+                document.getElementById('ocrResult').classList.remove('show');
+                document.getElementById('ocrResult').textContent = '';
+                document.getElementById('ocrExtractedData').classList.remove('show');
+                document.getElementById('ocrProgress').style.display = 'none';
+            });
+
+            uploadBox.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IMG') {
+                    fileInput.click();
+                }
+            });
+
+            document.getElementById('ocrStartBtn').addEventListener('click', startOCR);
+            document.getElementById('ocrClearBtn').addEventListener('click', clearOCR);
+            document.getElementById('ocrFillFormBtn').addEventListener('click', fillFormFromOCR);
+        }
+
+        async function startOCR() {
+            if (!ocrImageData) {
+                showToast('Please upload an image first.', 'error');
+                return;
+            }
+
+            const progress = document.getElementById('ocrProgress');
+            const progressFill = document.getElementById('ocrProgressFill');
+            const progressText = document.getElementById('ocrProgressText');
+            const resultDiv = document.getElementById('ocrResult');
+
+            progress.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Initializing OCR...';
+            resultDiv.classList.remove('show');
+            resultDiv.textContent = '';
+            document.getElementById('ocrExtractedData').classList.remove('show');
+
+            try {
+                // Use Tesseract.js for OCR
+                const worker = await Tesseract.createWorker('eng');
+
+                progressText.textContent = 'Processing image...';
+                progressFill.style.width = '30%';
+
+                const { data: { text } } = await worker.recognize(ocrImageData);
+
+                progressFill.style.width = '80%';
+                progressText.textContent = 'Extracting data...';
+
+                ocrExtractedText = text || '';
+
+                await worker.terminate();
+
+                progressFill.style.width = '100%';
+                progressText.textContent = '✅ OCR Complete!';
+
+                // Show raw text
+                if (ocrExtractedText.trim()) {
+                    resultDiv.textContent = ocrExtractedText.trim();
+                    resultDiv.classList.add('show');
+                    showToast('✅ Text extracted successfully!');
+
+                    // Parse extracted text
+                    parseOCRText(ocrExtractedText);
+                } else {
+                    resultDiv.textContent = '❌ No text found in the image. Try a clearer image.';
+                    resultDiv.classList.add('show');
+                    showToast('No text found.', 'error');
+                }
+
+            } catch (err) {
+                console.error('OCR Error:', err);
+                showToast('OCR failed: ' + err.message, 'error');
+                progressText.textContent = '❌ OCR failed';
+            }
+
+            setTimeout(() => {
+                progress.style.display = 'none';
+            }, 2000);
+        }
+
+        function parseOCRText(text) {
+            const data = {};
+            const lines = text.split('\n').filter(l => l.trim());
+
+            // Try to find product name - usually the first few lines
+            let nameFound = false;
+
+            for (let i = 0; i < Math.min(lines.length, 5); i++) {
+                const line = lines[i].trim();
+                // Skip if it looks like a number or barcode
+                if (/^[\d\s\-]+$/.test(line) && line.length > 8) {
+                    // Could be barcode
+                    if (!data.barcode) {
+                        data.barcode = line.replace(/\s/g, '');
+                    }
+                    continue;
+                }
+                // Skip if it's a price
+                if (/Rs\.?|LKR|price/i.test(line) && /\d/.test(line)) {
+                    const priceMatch = line.match(/(\d+\.?\d*)/);
+                    if (priceMatch && !data.price) {
+                        data.price = parseFloat(priceMatch[1]);
+                    }
+                    continue;
+                }
+                // First non-numeric line could be name
+                if (!nameFound && line.length > 2 && line.length < 100) {
+                    data.name = line;
+                    nameFound = true;
+                }
+            }
+
+            // Find price
+            const priceRegex = /(?:Rs\.?|LKR|price|Rs)\s*[:]?\s*(\d+\.?\d*)/i;
+            const priceMatch = text.match(priceRegex);
+            if (priceMatch && !data.price) {
+                data.price = parseFloat(priceMatch[1]);
+            }
+
+            // Alternative price: just numbers with Rs
+            const altPrice = text.match(/Rs\.?\s*(\d+\.?\d*)/i);
+            if (altPrice && !data.price) {
+                data.price = parseFloat(altPrice[1]);
+            }
+
+            // Find barcode
+            const barcodeMatch = text.match(/\b(\d{8,})\b/);
+            if (barcodeMatch && !data.barcode) {
+                data.barcode = barcodeMatch[1];
+            }
+
+            // Find description - everything after name and price
+            if (data.name) {
+                const nameIndex = text.indexOf(data.name);
+                const descStart = nameIndex + data.name.length;
+                let desc = text.substring(descStart).trim();
+                // Remove price and barcode from description
+                if (data.price) {
+                    desc = desc.replace(new RegExp(`Rs\\.?\\s*${data.price}`, 'i'), '');
+                }
+                if (data.barcode) {
+                    desc = desc.replace(new RegExp(data.barcode, 'g'), '');
+                }
+                data.desc = desc.replace(/\s+/g, ' ').trim().substring(0, 200);
+            }
+
+            // If no name found, use first line
+            if (!data.name && lines.length > 0) {
+                data.name = lines[0].trim().substring(0, 50);
+            }
+
+            // Try to find category from text
+            const categoriesList = categories.map(c => c.name);
+            for (const cat of categoriesList) {
+                if (text.toLowerCase().includes(cat.toLowerCase())) {
+                    data.category = cat;
+                    break;
+                }
+            }
+
+            // Set default qty if not found
+            data.qty = 1;
+
+            ocrParsedData = data;
+
+            // Display extracted data
+            displayExtractedData(data);
+        }
+
+        function displayExtractedData(data) {
+            const container = document.getElementById('ocrExtractedData');
+            const rows = document.getElementById('ocrDataRows');
+
+            if (!data.name && !data.barcode && !data.price) {
+                rows.innerHTML = `<div class="text-muted">Could not parse structured data from the text. Use the raw text above.</div>`;
+                container.classList.add('show');
+                return;
+            }
+
+            let html = '';
+            const fields = [
+                { label: '📝 Name', key: 'name' },
+                { label: '🔢 Barcode', key: 'barcode' },
+                { label: '💰 Price (LKR)', key: 'price' },
+                { label: '📦 Quantity', key: 'qty' },
+                { label: '🏷️ Category', key: 'category' },
+                { label: '📄 Description', key: 'desc' }
+            ];
+
+            for (const field of fields) {
+                if (data[field.key]) {
+                    html += `
+                        <div class="data-row">
+                            <span class="data-label">${field.label}</span>
+                            <span>${escapeHtml(String(data[field.key]))}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            if (!html) {
+                html = `<div class="text-muted">No structured data found. Use the raw text above.</div>`;
+            }
+
+            rows.innerHTML = html;
+            container.classList.add('show');
+        }
+
+        function fillFormFromOCR() {
+            const data = ocrParsedData;
+
+            if (!data.name && !data.barcode) {
+                showToast('No data to fill. Try OCR first.', 'error');
+                return;
+            }
+
+            // Switch to Add tab
+            switchTab('add');
+
+            // Fill form
+            if (data.barcode) {
+                document.getElementById('itemBarcode').value = data.barcode;
+            }
+            if (data.name) {
+                document.getElementById('itemName').value = data.name;
+            }
+            if (data.qty) {
+                document.getElementById('itemQty').value = data.qty;
+            } else {
+                document.getElementById('itemQty').value = 1;
+            }
+            if (data.price) {
+                document.getElementById('itemPrice').value = data.price;
+            }
+            if (data.category) {
+                const catSelect = document.getElementById('itemCategory');
+                // Check if category exists
+                const catExists = categories.some(c => c.name === data.category);
+                if (catExists) {
+                    catSelect.value = data.category;
+                } else if (categories.length > 0) {
+                    catSelect.value = categories[0].name;
+                }
+            } else if (categories.length > 0) {
+                document.getElementById('itemCategory').value = categories[0].name;
+            }
+            if (data.desc) {
+                document.getElementById('itemDesc').value = data.desc;
+            }
+
+            showToast('✅ Form filled from OCR data!');
+        }
+
+        function clearOCR() {
+            ocrImageData = null;
+            ocrExtractedText = '';
+            ocrParsedData = {};
+            document.getElementById('ocrFileInput').value = '';
+            document.getElementById('ocrPreview').src = '';
+            document.getElementById('ocrPreview').style.display = 'none';
+            document.getElementById('ocrPlaceholder').style.display = 'block';
+            document.getElementById('ocrRemoveBtn').style.display = 'none';
+            document.getElementById('ocrResult').classList.remove('show');
+            document.getElementById('ocrResult').textContent = '';
+            document.getElementById('ocrExtractedData').classList.remove('show');
+            document.getElementById('ocrProgress').style.display = 'none';
+            showToast('🧹 OCR cleared');
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         //  RENDER FUNCTIONS
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1555,7 +2057,6 @@
                 return (matchName || matchBarcode) && matchCat && it.status !== 'inactive';
             });
 
-            // Sort
             filtered.sort((a, b) => {
                 switch (sortBy) {
                     case 'name':
@@ -1638,7 +2139,6 @@
                 }).join('');
             }
 
-            // Category stats
             const statsContainer = document.getElementById('categoryStats');
             if (categories.length === 0) {
                 statsContainer.innerHTML = `<div class="text-muted text-center" style="padding:8px;">No categories yet.</div>`;
@@ -1654,7 +2154,6 @@
                 }).join('');
             }
 
-            // Update category dropdowns
             populateCategoryDropdowns();
         }
 
@@ -1677,13 +2176,11 @@
                     opt.textContent = c.name;
                     el.appendChild(opt);
                 });
-                // Restore value if possible
                 if (currentVal && [...el.options].some(o => o.value === currentVal)) {
                     el.value = currentVal;
                 } else {
                     el.value = 'all';
                 }
-                // For itemCategory, also add empty option
                 if (id === 'itemCategory') {
                     const emptyOpt = document.createElement('option');
                     emptyOpt.value = '';
@@ -1704,7 +2201,6 @@
                 filtered = filtered.filter(it => it.category === catFilter);
             }
 
-            // Sort
             filtered.sort((a, b) => {
                 switch (sortBy) {
                     case 'name':
@@ -1786,10 +2282,8 @@
             document.getElementById('submitBtn').textContent = '💾 Save Item';
             document.getElementById('cancelEditBtn').style.display = 'none';
             document.getElementById('itemBarcode').value = '';
-            // Clear images
             clearImagePreviews();
             editingId = null;
-            // Set default category
             const catSelect = document.getElementById('itemCategory');
             if (categories.length > 0) catSelect.value = categories[0].name;
             else catSelect.value = '';
@@ -1827,7 +2321,6 @@
             document.getElementById('itemStatus').value = item.status || 'active';
             document.getElementById('itemDesc').value = item.desc || '';
 
-            // Load images
             clearImagePreviews();
             if (item.images && item.images.length > 0) {
                 for (let i = 0; i < Math.min(item.images.length, 2); i++) {
@@ -2296,14 +2789,12 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            // Stop scanning after a successful scan
             stopScanner();
             lastScannedCode = decodedText;
             scannedCodeEl.textContent = decodedText;
             scanResultBox.classList.add('show');
             showToast(`✅ Scanned: ${decodedText}`, 'success');
 
-            // Pre-fill the Add form with barcode data (including the dedicated barcode field)
             document.getElementById('itemBarcode').value = decodedText;
             document.getElementById('itemName').value = `Item ${decodedText.slice(-6)}`;
             document.getElementById('itemDesc').value = `Barcode: ${decodedText}`;
@@ -2311,21 +2802,16 @@
             if (categories.length > 0) {
                 document.getElementById('itemCategory').value = categories[0].name;
             }
-            // Switch to Add tab so user can complete or adjust
             switchTab('add');
         }
 
-        function onScanError(err) {
-            // Ignore continuous errors
-        }
+        function onScanError(err) {}
 
-        // ─── Use scanned barcode ───
         function useScannedCode() {
             if (!lastScannedCode) {
                 showToast("No barcode scanned yet.", "error");
                 return;
             }
-            // Ensure the Add form is pre-filled
             document.getElementById('itemBarcode').value = lastScannedCode;
             const name = document.getElementById('itemName').value.trim() || `Item ${lastScannedCode.slice(-6)}`;
             document.getElementById('itemName').value = name;
@@ -2336,15 +2822,12 @@
             if (categories.length > 0 && !document.getElementById('itemCategory').value) {
                 document.getElementById('itemCategory').value = categories[0].name;
             }
-            // Switch to Add tab
             switchTab('add');
             showToast(`📦 Barcode ${lastScannedCode} ready to add!`, 'success');
-            // Clear scan result
             scanResultBox.classList.remove('show');
             lastScannedCode = '';
         }
 
-        // ─── Manual barcode entry ───
         function handleManualBarcode() {
             const input = document.getElementById('manualBarcode');
             const code = input.value.trim();
@@ -2364,7 +2847,7 @@
             }
             switchTab('add');
             showToast(`✅ Barcode ${code} ready to add!`);
-            input.value = ''; // clear
+            input.value = '';
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2378,15 +2861,14 @@
             document.querySelectorAll('.panel').forEach(p => {
                 p.classList.toggle('active', p.id === 'panel-' + tabId);
             });
-            // Refresh data when switching
             if (tabId === 'dashboard') renderDashboard();
             if (tabId === 'inventory') renderInventory();
             if (tabId === 'reports') renderReports();
             if (tabId === 'categories') renderCategories();
-            // Stop scanner if switching away from scan
             if (tabId !== 'scan' && isScannerRunning) {
                 stopScanner();
             }
+            // OCR panel - nothing special needed
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2453,7 +2935,7 @@
                 }
             });
 
-            // Category list delegation (edit/delete)
+            // Category list delegation
             document.getElementById('categoryList').addEventListener('click', function(e) {
                 const target = e.target;
                 if (target.classList.contains('del')) {
@@ -2550,6 +3032,9 @@
                     handleManualBarcode();
                 }
             });
+
+            // ── OCR Setup ──
+            setupOCR();
 
             // ── Initial render ──
             renderAll();
