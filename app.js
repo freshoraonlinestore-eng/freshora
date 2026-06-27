@@ -55,9 +55,48 @@ function showToast(msg) {
 }
 
 /* =========================
+DARK MODE PERSISTENCE
+========================= */
+function loadDarkModePreference() {
+    const darkMode = localStorage.getItem("freshora_dark_mode");
+    const icon = document.querySelector("#darkModeBtn i");
+    if (darkMode === "true") {
+        document.body.classList.add("dark");
+        if (icon) {
+            icon.classList.remove("fa-moon");
+            icon.classList.add("fa-sun");
+        }
+    } else {
+        document.body.classList.remove("dark");
+        if (icon) {
+            icon.classList.remove("fa-sun");
+            icon.classList.add("fa-moon");
+        }
+    }
+}
+
+window.toggleDarkMode = () => {
+    const isDark = document.body.classList.toggle("dark");
+    const icon = document.querySelector("#darkModeBtn i");
+    if (icon) {
+        if (isDark) {
+            icon.classList.remove("fa-moon");
+            icon.classList.add("fa-sun");
+        } else {
+            icon.classList.remove("fa-sun");
+            icon.classList.add("fa-moon");
+        }
+    }
+    localStorage.setItem("freshora_dark_mode", isDark);
+};
+
+/* =========================
 INIT
 ========================= */
 document.addEventListener("DOMContentLoaded", () => {
+    // Load dark mode preference
+    loadDarkModePreference();
+
     updateCartDisplay();
     updateWishlistUI();
 
@@ -943,14 +982,6 @@ UI
 ========================= */
 window.toggleCart = () => {
     document.getElementById("cartDrawer")?.classList.toggle("open");
-};
-
-window.toggleDarkMode = () => {
-    document.body.classList.toggle("dark");
-    const icon = document.querySelector("#darkModeBtn i");
-    if (!icon) return;
-    icon.classList.toggle("fa-sun");
-    icon.classList.toggle("fa-moon");
 };
 
 /* =========================
