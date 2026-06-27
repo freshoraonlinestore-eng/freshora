@@ -94,7 +94,6 @@ window.toggleDarkMode = () => {
 INIT
 ========================= */
 document.addEventListener("DOMContentLoaded", () => {
-    // Load dark mode preference
     loadDarkModePreference();
 
     updateCartDisplay();
