@@ -157,7 +157,7 @@ window.updateCartDisplay = () => {
     let totalQty = 0;
 
     if (cart.length === 0) {
-        cartItems.innerHTML = `<p style="text-align:center;padding:20px;">Cart is empty</p>`;
+        cartItems.innerHTML = `<p style="text-align:center;padding:20px;color:var(--muted);">Cart is empty</p>`;
         if (cartTotal) cartTotal.innerText = "Total: Rs 0";
         if (floating) floating.innerText = "0";
         saveCart();
@@ -172,7 +172,7 @@ window.updateCartDisplay = () => {
 
         return `
         <div class="cart-item">
-            <img src="${item.image}">
+            <img src="${item.image}" alt="${item.name}">
             <div style="flex:1">
                 <h4>${item.name}</h4>
                 <p>Rs ${price * qty}</p>
@@ -271,7 +271,7 @@ window.applyCoupon = () => {
     if (!code) {
         appliedCoupon = null;
         msg.innerText = "Enter a coupon code";
-        msg.style.color = "red";
+        msg.style.color = "var(--danger)";
         updateCartDisplay();
         return;
     }
@@ -284,7 +284,7 @@ window.applyCoupon = () => {
             if (expiryDate < new Date()) {
                 appliedCoupon = null;
                 msg.innerText = "❌ Coupon has expired!";
-                msg.style.color = "red";
+                msg.style.color = "var(--danger)";
                 updateCartDisplay();
                 showToast("Coupon expired");
                 return;
@@ -298,7 +298,7 @@ window.applyCoupon = () => {
         };
         
         msg.innerText = `✅ Coupon applied! ${appliedCoupon.discount}% off (Max Rs ${appliedCoupon.maxDiscount || '∞'})`;
-        msg.style.color = "green";
+        msg.style.color = "var(--green)";
         
         updateCartDisplay();
         showToast(`🎉 Coupon "${code}" applied!`);
@@ -307,7 +307,7 @@ window.applyCoupon = () => {
     } else {
         appliedCoupon = null;
         msg.innerText = "❌ Invalid or inactive coupon code";
-        msg.style.color = "red";
+        msg.style.color = "var(--danger)";
         updateCartDisplay();
         showToast("Invalid coupon code");
     }
@@ -393,16 +393,16 @@ window.renderProducts = (products) => {
         if (isWishlistView) {
             html += `
                 <div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);">
-                    <i class="fa-regular fa-heart" style="font-size:48px;display:block;margin-bottom:15px;"></i>
-                    <h3>Your wishlist is empty</h3>
-                    <p style="margin-top:8px;">Start adding your favorite products!</p>
+                    <i class="fa-regular fa-heart" style="font-size:48px;display:block;margin-bottom:15px;color:var(--muted);"></i>
+                    <h3 style="color:var(--text);">Your wishlist is empty</h3>
+                    <p style="margin-top:8px;color:var(--muted);">Start adding your favorite products!</p>
                     <button onclick="backToHome()" style="margin-top:15px;background:var(--primary);color:#fff;border:none;padding:10px 30px;border-radius:10px;cursor:pointer;">
                         🏠 Browse Products
                     </button>
                 </div>
             `;
         } else {
-            html += `<p style="text-align:center;width:100%;grid-column:1/-1;">No products found</p>`;
+            html += `<p style="text-align:center;width:100%;grid-column:1/-1;color:var(--muted);">No products found</p>`;
         }
         grid.innerHTML = html;
         return;
@@ -428,7 +428,7 @@ window.renderProducts = (products) => {
         if (p.bestseller) tags += `<span class="tag bestseller">🔥 Bestseller</span>`;
         if (p.newArrival) tags += `<span class="tag new">🆕 New</span>`;
         if (isLowStock) tags += `<span class="tag lowstock">⚠️ Low Stock</span>`;
-        if (isOutOfStock) tags += `<span class="tag lowstock" style="background:#999;">Out of Stock</span>`;
+        if (isOutOfStock) tags += `<span class="tag lowstock" style="background:#6b7280;">Out of Stock</span>`;
         if (isGiftPack) tags += `<span class="tag gift-tag">🎁 Gift Pack</span>`;
 
         const cardClass = isGiftPack ? 'card gift-pack' : 'card';
@@ -438,7 +438,7 @@ window.renderProducts = (products) => {
 
             ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
 
-            <img src="${p.image || ''}" onclick="openModal('${p.id}')" style="cursor:pointer;">
+            <img src="${p.image || ''}" alt="${p.name || 'Product'}" onclick="openModal('${p.id}')" style="cursor:pointer;">
 
             <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlistProduct('${p.id}')">
                 <i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i>
@@ -463,7 +463,7 @@ window.renderProducts = (products) => {
 
                 <div class="card-buttons">
                     <button onclick="openModal('${p.id}')">View</button>
-                    <button onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')" ${isOutOfStock ? 'disabled style="opacity:0.5;"' : ''}>${isOutOfStock ? 'Out of Stock' : 'Add'}</button>
+                    <button onclick="addToCart('${p.id}','${p.name}',${finalPrice},'${p.image}')" ${isOutOfStock ? 'disabled' : ''}>${isOutOfStock ? 'Out of Stock' : 'Add'}</button>
                 </div>
 
             </div>
@@ -508,7 +508,7 @@ function renderReviews(productId) {
                 <span style="color:#ffb400;">${'★'.repeat(Math.min(r.rating, 5))}${'☆'.repeat(Math.max(0, 5 - Math.min(r.rating, 5)))}</span>
                 <span style="font-size:12px;color:var(--muted);">${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ''}</span>
             </div>
-            <p style="margin-top:4px;">${r.text || ''}</p>
+            <p style="margin-top:4px;color:var(--text);">${r.text || ''}</p>
         </div>
     `).join("");
 }
@@ -567,7 +567,7 @@ window.openModal = (id) => {
         <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
             <div style="display:flex;align-items:center;gap:8px;">
                 <span style="color:#ffb400;font-size:18px;">${'★'.repeat(Math.min(5, Math.round(avg)))}${'☆'.repeat(5 - Math.min(5, Math.round(avg)))}</span>
-                <span style="font-weight:600;">${avg}</span>
+                <span style="font-weight:600;color:var(--text);">${avg}</span>
                 <span style="color:var(--muted);font-size:13px;">(${count} reviews)</span>
             </div>
         </div>
@@ -576,19 +576,28 @@ window.openModal = (id) => {
     document.getElementById("modalDesc").innerHTML = descriptionHTML + ratingHTML;
 
     let galleryHTML = `
-        <img src="${images[0]}" class="main-img" id="mainModalImg" onclick="zoomImage()">
+        <img src="${images[0]}" class="main-img" id="mainModalImg" alt="${p.name}" onclick="zoomImage()">
     `;
     if (images.length > 1) {
         galleryHTML += `
             <div class="thumbnail-grid">
                 ${images.map(img => `
-                    <img src="${img}" class="thumbnail"
-                    onclick="document.getElementById('mainModalImg').src='${img}'">
+                    <img src="${img}" class="thumbnail" alt="Thumbnail" onclick="document.getElementById('mainModalImg').src='${img}'">
                 `).join("")}
             </div>
         `;
     }
     document.getElementById("galleryContainer").innerHTML = galleryHTML;
+
+    // Add zoom button
+    const galleryContainer = document.getElementById("galleryContainer");
+    if (!document.querySelector(".zoom-btn")) {
+        const zoomBtn = document.createElement("button");
+        zoomBtn.className = "zoom-btn";
+        zoomBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-plus"></i> Zoom';
+        zoomBtn.onclick = zoomImage;
+        galleryContainer.appendChild(zoomBtn);
+    }
 
     document.getElementById("productModal")?.classList.add("show");
 
