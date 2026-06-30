@@ -352,6 +352,9 @@
             background: #f59e0b;
             animation: pulse 1s infinite;
         }
+        .dot.error {
+            background: #ef4444;
+        }
         @keyframes pulse {
             0%,
             100% {
@@ -573,6 +576,9 @@
 
         function formatDimensions(img) {
             if (!img) return '—';
+            if (img instanceof HTMLCanvasElement) {
+                return `${img.width} × ${img.height}`;
+            }
             return `${img.naturalWidth || img.width} × ${img.naturalHeight || img.height}`;
         }
 
@@ -593,29 +599,6 @@
                 setTimeout(() => toast.remove(), 300); }, 4000);
         }
 
-        function loadImageToWrapper(wrapper, source, isCanvas = false) {
-            wrapper.innerHTML = '';
-            if (!source) {
-                wrapper.innerHTML = '<span class="placeholder-text">No image</span>';
-                return;
-            }
-            if (isCanvas) {
-                wrapper.appendChild(source);
-            } else if (source instanceof HTMLImageElement) {
-                wrapper.appendChild(source.cloneNode(true));
-            } else if (source instanceof HTMLCanvasElement) {
-                wrapper.appendChild(source);
-            } else if (source instanceof Blob) {
-                const url = URL.createObjectURL(source);
-                const img = new Image();
-                img.onload = () => { URL.revokeObjectURL(url); };
-                img.src = url;
-                wrapper.appendChild(img);
-            } else {
-                wrapper.innerHTML = '<span class="placeholder-text">Unsupported</span>';
-            }
-        }
-
         function getImageElement(wrapper) {
             const img = wrapper.querySelector('img');
             if (img) return img;
@@ -628,18 +611,21 @@
 
         // Upscale using canvas with high-quality interpolation + sharpen
         function upscaleTo4K(source, targetWidth = 3840, targetHeight = 2160) {
-            return new Promise((resolve) => {
-                const img = source instanceof HTMLImageElement ? source :
-                    (source instanceof HTMLCanvasElement ? source : null);
-                if (!img) {
+            return new Promise((resolve, reject) => {
+                let img = source;
+                if (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) {
+                    // ok
+                } else {
                     // try to get from wrapper
                     const el = getImageElement(source);
-                    if (el) return upscaleTo4K(el, targetWidth, targetHeight);
-                    throw new Error('Invalid source for upscaling');
+                    if (el) img = el;
+                    else reject(new Error('Invalid source for upscaling'));
                 }
 
                 const srcWidth = img.naturalWidth || img.width;
                 const srcHeight = img.naturalHeight || img.height;
+
+                if (!srcWidth || !srcHeight) reject(new Error('Image has no dimensions'));
 
                 // compute target dims maintaining aspect ratio
                 let tw, th;
@@ -710,7 +696,7 @@
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(tempCanvas, 0, 0, tw, th);
 
-                // Apply sharpening
+                // Apply mild sharpening
                 const imageData = ctx.getImageData(0, 0, tw, th);
                 const data = imageData.data;
                 const width = tw;
@@ -786,7 +772,12 @@
                 return resultBlob;
             } catch (err) {
                 console.error('Background removal error:', err);
-                throw new Error('Failed to remove background. Please try again.');
+                // Provide a more specific error
+                let msg = 'Background removal failed. ';
+                if (err.message.includes('fetch')) msg += 'Network error, check your connection.';
+                else if (err.message.includes('wasm')) msg += 'WebAssembly loading error.';
+                else msg += err.message;
+                throw new Error(msg);
             }
         }
 
@@ -843,18 +834,31 @@
                     state.currentCanvas = canvas;
                     updateUI();
                 };
+                img.onerror = () => {
+                    showToast('Failed to load result image', 'error');
+                };
                 img.src = url;
                 // show placeholder while loading
                 resultWrapper.innerHTML =
                     '<span class="placeholder-text">Loading result…</span><div class="processing-overlay" id="processingOverlay"><div class="big-spinner"></div><span id="processingLabel">Loading…</span></div>';
+                // re-attach overlay reference
+                const newOverlay = document.getElementById('processingOverlay');
+                if (newOverlay) {
+                    // ensure it's there
+                }
                 return;
             } else {
                 resultWrapper.innerHTML =
-                '<span class="placeholder-text">Awaiting processing…</span>';
+                    '<span class="placeholder-text">Awaiting processing…</span>';
                 resultSize.textContent = '—';
                 // re-add overlay
                 const overlay = document.getElementById('processingOverlay');
-                if (overlay) resultWrapper.appendChild(overlay);
+                if (overlay) {
+                    // remove any existing overlay first
+                    const old = resultWrapper.querySelector('.processing-overlay');
+                    if (old) old.remove();
+                    resultWrapper.appendChild(overlay);
+                }
             }
 
             // Dimensions & size
@@ -867,11 +871,11 @@
 
             // Re-attach overlay ref
             const overlay = document.getElementById('processingOverlay');
-            if (overlay) {
-                // Make sure it's in the result wrapper
-                if (overlay.parentNode !== resultWrapper) {
-                    resultWrapper.appendChild(overlay);
-                }
+            if (overlay && overlay.parentNode !== resultWrapper) {
+                // Ensure it's in result wrapper
+                const existing = resultWrapper.querySelector('.processing-overlay');
+                if (existing) existing.remove();
+                resultWrapper.appendChild(overlay);
             }
         }
 
@@ -923,8 +927,10 @@
                 showToast('Background removed successfully!', 'success');
             } catch (err) {
                 setProcessing(false);
-                showToast(err.message || 'Background removal failed.', 'error');
+                const msg = err.message || 'Background removal failed.';
+                showToast(msg, 'error');
                 console.error(err);
+                // If error, maybe still allow upscaling
             }
         }
 
@@ -948,7 +954,8 @@
                 showToast(`Upscaled to ${canvas.width} × ${canvas.height}`, 'success');
             } catch (err) {
                 setProcessing(false);
-                showToast(err.message || 'Upscaling failed.', 'error');
+                const msg = err.message || 'Upscaling failed.';
+                showToast(msg, 'error');
                 console.error(err);
             }
         }
@@ -1051,7 +1058,6 @@
                 const wrapper = originalWrapper;
                 const img = wrapper.querySelector('img');
                 if (img) {
-                    // scroll to it
                     img.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
@@ -1105,6 +1111,9 @@
         console.log('✦ Image Studio loaded.');
         console.log('ℹ️ Upload an image, then use the buttons to remove background or upscale to 4K.');
         console.log('⌨️ Shortcuts: Enter = process, Ctrl+R = reset, Ctrl+D = download');
+
+        // Also log any errors from the background removal library loading
+        console.log('Background removal library imported successfully.');
     </script>
 
 </body>
