@@ -136,6 +136,34 @@
             cursor: pointer;
         }
 
+        /* ---------- Upload Progress ---------- */
+        .progress-container {
+            margin-top: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+        .progress-container .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-container .progress-bar .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-gradient);
+            border-radius: 10px;
+            transition: width 0.15s ease;
+        }
+        .progress-container .progress-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 48px;
+            text-align: right;
+        }
+
         /* ---------- Toolbar ---------- */
         .toolbar {
             display: flex;
@@ -377,6 +405,13 @@
                 padding: 8px 14px;
                 font-size: 0.8rem;
             }
+            .progress-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .progress-container .progress-label {
+                text-align: center;
+            }
         }
 
         /* ---------- Utility ---------- */
@@ -462,6 +497,14 @@
             <h3>Drop your image here</h3>
             <p>or click to browse · JPG, PNG, WEBP</p>
             <input type="file" id="fileInput" accept="image/*" />
+
+            <!-- Progress bar (hidden initially) -->
+            <div class="progress-container" id="uploadProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width:0%;"></div>
+                </div>
+                <span class="progress-label" id="progressLabel">0%</span>
+            </div>
         </div>
 
         <!-- Toolbar -->
@@ -553,6 +596,9 @@
         const processingLabel = document.getElementById('processingLabel');
         const btnViewOriginal = document.getElementById('btnViewOriginal');
         const btnViewResult = document.getElementById('btnViewResult');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('progressFill');
+        const progressLabel = document.getElementById('progressLabel');
 
         // ----- state -----
         const state = {
@@ -605,6 +651,17 @@
             const canvas = wrapper.querySelector('canvas');
             if (canvas) return canvas;
             return null;
+        }
+
+        // ----- Progress Bar helpers -----
+        function showProgressBar(show) {
+            uploadProgress.style.display = show ? 'flex' : 'none';
+        }
+
+        function updateProgress(percent) {
+            const clamped = Math.min(100, Math.max(0, percent));
+            progressFill.style.width = clamped + '%';
+            progressLabel.textContent = Math.round(clamped) + '%';
         }
 
         // ----- image processing -----
@@ -990,7 +1047,7 @@
             showToast('Reset to original', 'info');
         }
 
-        // ----- file upload -----
+        // ----- file upload with progress -----
         function handleFile(file) {
             if (!file || !file.type.startsWith('image/')) {
                 showToast('Please upload a valid image.', 'error');
@@ -998,10 +1055,28 @@
             }
             if (state.isProcessing) return;
 
+            // Show progress bar
+            showProgressBar(true);
+            updateProgress(0);
+            showToast(`Uploading "${file.name}"…`, 'info');
+
             const reader = new FileReader();
+
+            // Track progress
+            reader.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = (e.loaded / e.total) * 100;
+                    updateProgress(percent);
+                }
+            };
+
             reader.onload = (e) => {
+                // Image decoding progress - we'll simulate from 90% to 100%
+                updateProgress(90);
                 const img = new Image();
                 img.onload = () => {
+                    // Complete
+                    updateProgress(100);
                     state.originalImage = img;
                     state.originalBlob = file;
                     state.currentCanvas = null;
@@ -1014,13 +1089,29 @@
                         '<span class="placeholder-text">Awaiting processing…</span><div class="processing-overlay" id="processingOverlay"><div class="big-spinner"></div><span id="processingLabel">Processing…</span></div>';
                     updateUI();
                     setStatus('Image loaded', 'idle');
+
+                    // Hide progress bar after a short delay
+                    setTimeout(() => {
+                        showProgressBar(false);
+                        updateProgress(0);
+                    }, 600);
+
                     showToast(`Loaded: ${file.name} (${formatFileSize(file.size)})`, 'success');
                 };
                 img.onerror = () => {
-                    showToast('Failed to load image.', 'error');
+                    showToast('Failed to decode image.', 'error');
+                    showProgressBar(false);
+                    updateProgress(0);
                 };
                 img.src = e.target.result;
             };
+
+            reader.onerror = () => {
+                showToast('Failed to read file.', 'error');
+                showProgressBar(false);
+                updateProgress(0);
+            };
+
             reader.readAsDataURL(file);
         }
 
@@ -1098,6 +1189,8 @@
         // ----- init -----
         setStatus('Ready', 'idle');
         updateUI();
+        // Hide progress bar initially
+        showProgressBar(false);
 
         // ----- handle global errors from the library -----
         window.addEventListener('unhandledrejection', (e) => {
@@ -1111,9 +1204,6 @@
         console.log('✦ Image Studio loaded.');
         console.log('ℹ️ Upload an image, then use the buttons to remove background or upscale to 4K.');
         console.log('⌨️ Shortcuts: Enter = process, Ctrl+R = reset, Ctrl+D = download');
-
-        // Also log any errors from the background removal library loading
-        console.log('Background removal library imported successfully.');
     </script>
 
 </body>
