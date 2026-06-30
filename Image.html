@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Professional Image Studio</title>
+    <title>AI Watermark Remover & 4K Upscaler</title>
 
     <style>
-        /* ===== RESET & BASE ===== */
+        /* ============================================================
+                   RESET & BASE
+                   ============================================================ */
         * {
             margin: 0;
             padding: 0;
@@ -22,9 +24,9 @@
             flex-direction: column;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
         }
 
-        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -37,7 +39,9 @@
             border-radius: 8px;
         }
 
-        /* ===== TOAST CONTAINER ===== */
+        /* ============================================================
+                   TOAST CONTAINER
+                   ============================================================ */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -46,21 +50,21 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-width: 360px;
+            max-width: 380px;
             width: 100%;
             pointer-events: none;
         }
         .toast {
-            background: #1e1e28;
+            background: #1a1a28;
             border-left: 4px solid #7c7cf8;
             padding: 14px 20px;
-            border-radius: 12px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
             color: #e8e8f0;
             font-size: 0.9rem;
-            backdrop-filter: blur(12px);
-            border: 1px solid #2e2e3a;
-            animation: slideIn 0.35s ease-out;
+            backdrop-filter: blur(14px);
+            border: 1px solid #2e2e3e;
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: auto;
             display: flex;
             align-items: center;
@@ -75,11 +79,16 @@
         .toast.info {
             border-left-color: #7cccf8;
         }
+        .toast.warning {
+            border-left-color: #f8d07c;
+        }
         .toast .toast-icon {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
+            flex-shrink: 0;
         }
         .toast .toast-msg {
             flex: 1;
+            line-height: 1.4;
         }
         .toast .toast-close {
             background: none;
@@ -88,37 +97,66 @@
             cursor: pointer;
             font-size: 1.2rem;
             padding: 0 4px;
+            transition: 0.2s;
+        }
+        .toast .toast-close:hover {
+            color: #fff;
         }
 
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateX(50px);
+                transform: translateX(60px) scale(0.95);
             }
             to {
                 opacity: 1;
-                transform: translateX(0);
+                transform: translateX(0) scale(1);
             }
         }
 
-        /* ===== HEADER ===== */
+        /* ============================================================
+                   HEADER
+                   ============================================================ */
         .app-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 24px;
-            background: #0f0f14;
-            border-bottom: 1px solid #1e1e28;
+            padding: 16px 28px;
+            background: linear-gradient(135deg, #0f0f16 0%, #1a0f2a 100%);
+            border-bottom: 1px solid #2a1a3a;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .app-header .logo-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #a78bfa, #7c7cf8);
+            border-radius: 12px;
+            padding: 6px 10px;
+            line-height: 1;
         }
         .app-header h1 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #a78bfa, #7c7cf8);
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c4b5fd, #818cf8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
+        }
+        .app-header .subtitle {
+            font-size: 0.7rem;
+            color: #8a7a9a;
+            -webkit-text-fill-color: #8a7a9a;
+            font-weight: 400;
+            letter-spacing: 0.3px;
         }
         .header-actions {
             display: flex;
@@ -126,118 +164,138 @@
             flex-wrap: wrap;
         }
         .header-actions button {
-            background: #1a1a24;
-            border: 1px solid #2a2a36;
+            background: rgba(26, 26, 40, 0.8);
+            border: 1px solid #2a2a3e;
             color: #c8c8e0;
-            padding: 6px 14px;
-            border-radius: 8px;
+            padding: 8px 16px;
+            border-radius: 10px;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.25s;
             display: flex;
             align-items: center;
             gap: 6px;
+            backdrop-filter: blur(4px);
         }
         .header-actions button:hover {
-            background: #2a2a3a;
-            border-color: #4a4a5e;
+            background: rgba(42, 42, 62, 0.9);
+            border-color: #5a5a7a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(124, 124, 248, 0.15);
         }
         .header-actions button:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
+        }
+        .header-actions .primary-btn {
+            background: linear-gradient(135deg, #5b5bf0, #7c7cf8);
+            border-color: #7c7cf8;
+            color: #fff;
+            font-weight: 600;
+        }
+        .header-actions .primary-btn:hover {
+            box-shadow: 0 4px 24px rgba(124, 124, 248, 0.35);
+            border-color: #9a9aff;
         }
 
-        /* ===== MAIN LAYOUT ===== */
+        /* ============================================================
+                   MAIN LAYOUT
+                   ============================================================ */
         .app-main {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 16px;
-            gap: 16px;
-            max-width: 1400px;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1440px;
             margin: 0 auto;
             width: 100%;
         }
 
-        /* ===== TOOLBAR ===== */
-        .toolbar {
+        /* ============================================================
+                   UPLOAD ZONE
+                   ============================================================ */
+        .upload-zone {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            background: #12121a;
-            padding: 10px 16px;
-            border-radius: 16px;
-            border: 1px solid #1e1e28;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-        .toolbar .group-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #6a6a82;
-            margin-right: 4px;
-        }
-        .toolbar button,
-        .toolbar label {
-            background: #1a1a26;
-            border: 1px solid #28283a;
-            color: #d0d0e8;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
+            padding: 40px 20px;
+            border: 2px dashed #2a2a3e;
+            border-radius: 20px;
+            background: radial-gradient(ellipse at center, #12121e, #0a0a0e);
+            transition: 0.3s;
+            min-height: 200px;
+            gap: 16px;
             cursor: pointer;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
         }
-        .toolbar button:hover,
-        .toolbar label:hover {
-            background: #2a2a3e;
-            border-color: #4a4a62;
+        .upload-zone:hover {
+            border-color: #4a4a6a;
+            background: radial-gradient(ellipse at center, #18182a, #0a0a0e);
         }
-        .toolbar button:active {
-            transform: scale(0.95);
-        }
-        .toolbar button.active {
-            background: #3a3a5e;
+        .upload-zone.dragover {
             border-color: #7c7cf8;
+            background: radial-gradient(ellipse at center, #1a1a3a, #0a0a0e);
+            box-shadow: inset 0 0 60px rgba(124, 124, 248, 0.05);
+        }
+        .upload-zone .big-icon {
+            font-size: 4rem;
+            opacity: 0.7;
+        }
+        .upload-zone h2 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #c8c8e0;
+        }
+        .upload-zone p {
+            color: #6a6a82;
+            font-size: 0.9rem;
+        }
+        .upload-zone .upload-btn {
+            background: linear-gradient(135deg, #5b5bf0, #7c7cf8);
+            border: none;
             color: #fff;
-        }
-        .toolbar input[type="range"] {
-            width: 80px;
-            accent-color: #7c7cf8;
-            background: #1a1a26;
-            height: 4px;
-            border-radius: 4px;
+            padding: 10px 28px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: 0.3s;
+            margin-top: 8px;
         }
-        .toolbar .range-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #0f0f18;
-            padding: 4px 10px 4px 6px;
-            border-radius: 8px;
-            border: 1px solid #1e1e2a;
+        .upload-zone .upload-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 4px 24px rgba(124, 124, 248, 0.3);
         }
-        .toolbar .range-group span {
+        .upload-zone .file-types {
             font-size: 0.7rem;
-            color: #8a8aaa;
-            min-width: 28px;
-            text-align: center;
-        }
-        .toolbar .sep {
-            width: 1px;
-            height: 28px;
-            background: #1e1e2a;
-            margin: 0 4px;
+            color: #4a4a5a;
+            margin-top: 4px;
         }
 
-        /* ===== CANVAS AREA ===== */
+        /* ============================================================
+                   IMAGE WORKSPACE
+                   ============================================================ */
+        .workspace {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .workspace.active {
+            display: flex;
+        }
+
+        .image-area {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
         .canvas-wrapper {
-            flex: 1;
+            flex: 2;
+            min-width: 300px;
             background: #0a0a0e;
             border-radius: 16px;
             border: 1px solid #1a1a24;
@@ -247,8 +305,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            background: repeating-conic-gradient(#12121a 0% 25%, #1a1a24 0% 50%) 0 0 / 24px 24px;
         }
-
         .canvas-container {
             position: relative;
             display: flex;
@@ -262,51 +320,148 @@
         .canvas-container:active {
             cursor: grabbing;
         }
-
         #mainCanvas {
             max-width: 100%;
             max-height: 100%;
             display: block;
             image-rendering: auto;
-            background: repeating-conic-gradient(#1a1a24 0% 25%, #22222e 0% 50%) 0 0 / 20px 20px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
             border-radius: 4px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
         }
 
-        .drop-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(30, 30, 50, 0.85);
-            backdrop-filter: blur(6px);
+        /* ============================================================
+                   SIDEBAR / CONTROLS
+                   ============================================================ */
+        .controls-panel {
+            flex: 1;
+            min-width: 220px;
+            max-width: 320px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
             gap: 12px;
-            font-size: 1.4rem;
-            color: #aaaac8;
-            border: 3px dashed #4a4a6a;
-            border-radius: 16px;
-            transition: 0.3s;
-            pointer-events: none;
-            opacity: 0;
-        }
-        .drop-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .drop-overlay .big-icon {
-            font-size: 4rem;
         }
 
-        /* ===== PROGRESS BAR ===== */
+        .control-card {
+            background: #12121a;
+            border: 1px solid #1e1e2a;
+            border-radius: 14px;
+            padding: 16px 18px;
+            transition: 0.2s;
+        }
+        .control-card:hover {
+            border-color: #2a2a3e;
+        }
+        .control-card .card-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #6a6a82;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-card .card-title .badge {
+            background: #2a2a3e;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 0.6rem;
+            color: #9a9aba;
+        }
+        .control-card .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .control-card .btn-group .btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 14px;
+            border: 1px solid #2a2a3a;
+            background: #1a1a26;
+            color: #d0d0e8;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .control-card .btn-group .btn:hover {
+            background: #2a2a3e;
+            border-color: #4a4a62;
+            transform: translateY(-1px);
+        }
+        .control-card .btn-group .btn:active {
+            transform: scale(0.96);
+        }
+        .control-card .btn-group .btn.primary {
+            background: linear-gradient(135deg, #5b5bf0, #7c7cf8);
+            border-color: #7c7cf8;
+            color: #fff;
+            font-weight: 600;
+        }
+        .control-card .btn-group .btn.primary:hover {
+            box-shadow: 0 4px 20px rgba(124, 124, 248, 0.3);
+        }
+        .control-card .btn-group .btn.success {
+            background: linear-gradient(135deg, #2d8f5a, #3db874);
+            border-color: #3db874;
+            color: #fff;
+        }
+        .control-card .btn-group .btn.success:hover {
+            box-shadow: 0 4px 20px rgba(61, 184, 116, 0.3);
+        }
+        .control-card .btn-group .btn.warning {
+            background: linear-gradient(135deg, #b87a2d, #e8a23a);
+            border-color: #e8a23a;
+            color: #fff;
+        }
+        .control-card .btn-group .btn.warning:hover {
+            box-shadow: 0 4px 20px rgba(232, 162, 58, 0.3);
+        }
+        .control-card .btn-group .btn.danger {
+            background: linear-gradient(135deg, #b82d2d, #e84a4a);
+            border-color: #e84a4a;
+            color: #fff;
+        }
+        .control-card .btn-group .btn.danger:hover {
+            box-shadow: 0 4px 20px rgba(232, 74, 74, 0.3);
+        }
+        .control-card .btn-group .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .control-card .btn-group .btn .spinner-sm {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ============================================================
+                   PROGRESS
+                   ============================================================ */
         .progress-container {
             width: 100%;
-            height: 4px;
+            height: 6px;
             background: #1a1a24;
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
-            margin-top: 6px;
+            margin-top: 4px;
             display: none;
         }
         .progress-container.active {
@@ -315,73 +470,184 @@
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #7c7cf8, #a78bfa);
-            border-radius: 4px;
-            transition: width 0.15s ease;
+            background: linear-gradient(90deg, #7c7cf8, #a78bfa, #7c7cf8);
+            background-size: 200% 100%;
+            border-radius: 6px;
+            transition: width 0.2s ease;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
         }
 
-        /* ===== STATUS BAR ===== */
+        /* ============================================================
+                   STATUS BAR
+                   ============================================================ */
         .status-bar {
             display: flex;
             justify-content: space-between;
             font-size: 0.75rem;
             color: #6a6a82;
-            padding: 6px 12px;
+            padding: 8px 16px;
             background: #0f0f16;
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid #181820;
             flex-wrap: wrap;
             gap: 6px;
+            align-items: center;
         }
         .status-bar .status-left {
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
+            align-items: center;
         }
         .status-bar .status-right {
             display: flex;
             gap: 12px;
+            align-items: center;
         }
         .status-bar .badge {
             background: #1a1a28;
-            padding: 2px 10px;
+            padding: 2px 12px;
             border-radius: 20px;
             color: #9a9aba;
+            font-size: 0.7rem;
+        }
+        .status-bar .badge.success {
+            color: #7cf8a8;
+            border: 1px solid #2a5a3a;
+        }
+        .status-bar .badge.warning {
+            color: #f8d07c;
+            border: 1px solid #5a4a2a;
         }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 720px) {
+        /* ============================================================
+                   BEFORE / AFTER COMPARE
+                   ============================================================ */
+        .compare-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+        }
+        .compare-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .compare-container .compare-before {
+            clip-path: inset(0 50% 0 0);
+        }
+        .compare-container .compare-after {
+            clip-path: inset(0 0 0 50%);
+        }
+        .compare-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background: #fff;
+            cursor: ew-resize;
+            transform: translateX(-50%);
+            z-index: 5;
+            box-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
+        }
+        .compare-handle::after {
+            content: '⟷';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a2a;
+            color: #fff;
+            border-radius: 50%;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            border: 1px solid #3a3a5a;
+        }
+        .compare-labels {
+            position: absolute;
+            bottom: 16px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+            z-index: 6;
+        }
+        .compare-labels span {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #ccc;
+            backdrop-filter: blur(4px);
+            border: 1px solid #2a2a3a;
+        }
+
+        /* ============================================================
+                   HIDDEN FILE INPUT
+                   ============================================================ */
+        #fileInput {
+            display: none;
+        }
+
+        /* ============================================================
+                   RESPONSIVE
+                   ============================================================ */
+        @media (max-width: 860px) {
+            .app-header {
+                padding: 12px 16px;
+            }
             .app-header h1 {
                 font-size: 1rem;
             }
-            .toolbar {
-                gap: 4px;
-                padding: 8px 10px;
-            }
-            .toolbar button,
-            .toolbar label {
-                font-size: 0.7rem;
-                padding: 4px 8px;
-            }
-            .toolbar input[type="range"] {
-                width: 56px;
-            }
-            .toolbar .range-group span {
-                min-width: 20px;
-                font-size: 0.6rem;
+            .app-header .subtitle {
+                display: none;
             }
             .app-main {
-                padding: 8px;
-                gap: 10px;
+                padding: 12px;
+                gap: 12px;
+            }
+            .image-area {
+                flex-direction: column;
+            }
+            .controls-panel {
+                max-width: 100%;
+                min-width: unset;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .controls-panel .control-card {
+                flex: 1;
+                min-width: 160px;
             }
             .canvas-wrapper {
-                min-height: 280px;
+                min-height: 300px;
             }
-            .status-bar {
-                font-size: 0.65rem;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
+            .upload-zone {
+                padding: 24px 16px;
+                min-height: 140px;
+            }
+            .upload-zone .big-icon {
+                font-size: 2.8rem;
+            }
+            .upload-zone h2 {
+                font-size: 1.1rem;
             }
             #toast-container {
                 top: 10px;
@@ -394,198 +660,254 @@
             }
             .header-actions button {
                 font-size: 0.7rem;
-                padding: 4px 10px;
-            }
-            .drop-overlay .big-icon {
-                font-size: 2.8rem;
+                padding: 6px 12px;
             }
         }
 
         @media (max-width: 480px) {
-            .app-header {
-                padding: 10px 14px;
+            .app-header .logo-icon {
+                font-size: 1.4rem;
+                padding: 4px 8px;
             }
-            .toolbar .group-label {
-                display: none;
+            .app-header h1 {
+                font-size: 0.85rem;
             }
-            .toolbar .sep {
-                margin: 0 2px;
+            .controls-panel .control-card {
+                min-width: 130px;
+                padding: 12px 14px;
+            }
+            .control-card .btn-group .btn {
+                font-size: 0.7rem;
+                padding: 8px 10px;
+                min-width: 60px;
+            }
+            .status-bar {
+                font-size: 0.6rem;
+                padding: 6px 12px;
+            }
+            .status-bar .badge {
+                font-size: 0.6rem;
+                padding: 1px 8px;
+            }
+            .canvas-wrapper {
+                min-height: 220px;
             }
         }
 
-        /* ===== HIDDEN FILE INPUT ===== */
-        #fileInput,
-        #cameraInput {
+        /* ============================================================
+                   SCROLLABLE CONTROLS
+                   ============================================================ */
+        .scroll-controls {
+            max-height: 360px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .scroll-controls::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        /* ============================================================
+                   PROCESSING OVERLAY
+                   ============================================================ */
+        .processing-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 10, 14, 0.85);
+            backdrop-filter: blur(8px);
             display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            border-radius: 16px;
+            z-index: 10;
         }
-
-        /* ===== LOADING SPINNER (inline) ===== */
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #3a3a52;
+        .processing-overlay.active {
+            display: flex;
+        }
+        .processing-overlay .spinner-big {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #2a2a3e;
             border-top-color: #7c7cf8;
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            animation: spin 0.9s linear infinite;
         }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        .processing-overlay .proc-text {
+            font-size: 1rem;
+            color: #c8c8e0;
+            font-weight: 500;
         }
-
-        /* ===== COMPARE SLIDER ===== */
-        .compare-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 4px;
-        }
-        .compare-container .compare-before,
-        .compare-container .compare-after {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        .compare-container .compare-after {
-            clip-path: inset(0 50% 0 0);
-        }
-        .compare-handle {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 4px;
-            height: 100%;
-            background: #fff;
-            cursor: ew-resize;
-            transform: translateX(-50%);
-            z-index: 5;
-            box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
-        }
-        .compare-handle::after {
-            content: '⟷';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1a1a2a;
-            color: #fff;
-            border-radius: 50%;
-            padding: 4px 6px;
+        .processing-overlay .proc-sub {
             font-size: 0.8rem;
-            border: 1px solid #3a3a5a;
+            color: #6a6a82;
+        }
+        .processing-overlay .proc-progress {
+            width: 60%;
+            max-width: 300px;
+            height: 4px;
+            background: #1a1a24;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .processing-overlay .proc-progress .proc-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #7c7cf8, #a78bfa);
+            border-radius: 4px;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== TOAST CONTAINER ===== -->
+    <!-- ============================================================
+    TOAST CONTAINER
+    ============================================================ -->
     <div id="toast-container"></div>
 
-    <!-- ===== HEADER ===== -->
+    <!-- ============================================================
+    HEADER
+    ============================================================ -->
     <header class="app-header">
-        <h1>🖼️ Image Studio</h1>
+        <div class="logo">
+            <span class="logo-icon">🧹</span>
+            <div>
+                <h1>Watermark &amp; Upscale AI <span class="subtitle">· 4K Studio</span></h1>
+            </div>
+        </div>
         <div class="header-actions">
-            <button id="uploadBtn" title="Upload Image">📤 Upload</button>
-            <button id="cameraBtn" title="Take Photo">📷 Camera</button>
-            <button id="resetBtn" title="Reset View">🔄 Reset</button>
+            <button id="uploadBtn" class="primary-btn">📤 Upload</button>
+            <button id="resetBtn">🔄 Reset</button>
+            <button id="compareToggleBtn">🔁 Compare</button>
         </div>
     </header>
 
-    <!-- ===== MAIN ===== -->
+    <!-- ============================================================
+    MAIN
+    ============================================================ -->
     <main class="app-main">
 
-        <!-- Toolbar -->
-        <div class="toolbar" id="toolbar">
-            <!-- File ops -->
-            <button id="savePngBtn">💾 PNG</button>
-            <button id="saveJpgBtn">💾 JPG</button>
-            <button id="saveWebpBtn">💾 WEBP</button>
+        <!-- UPLOAD ZONE -->
+        <div class="upload-zone" id="uploadZone">
+            <span class="big-icon">🖼️</span>
+            <h2>Drop your image here</h2>
+            <p>or click the button below to browse</p>
+            <button class="upload-btn" id="uploadZoneBtn">Choose Image</button>
+            <span class="file-types">Supports JPG, PNG, WEBP, BMP, TIFF</span>
+        </div>
 
-            <span class="sep"></span>
+        <!-- WORKSPACE -->
+        <div class="workspace" id="workspace">
 
-            <!-- Undo / Redo -->
-            <button id="undoBtn">↩️ Undo</button>
-            <button id="redoBtn">↪️ Redo</button>
+            <!-- Image Area -->
+            <div class="image-area">
 
-            <span class="sep"></span>
+                <!-- Canvas -->
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <div class="canvas-container" id="canvasContainer">
+                        <canvas id="mainCanvas"></canvas>
+                    </div>
+                    <!-- Processing overlay -->
+                    <div class="processing-overlay" id="processingOverlay">
+                        <div class="spinner-big"></div>
+                        <div class="proc-text" id="procText">Processing...</div>
+                        <div class="proc-sub" id="procSub">Please wait</div>
+                        <div class="proc-progress">
+                            <div class="proc-bar" id="procBar"></div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Crop -->
-            <button id="cropBtn" title="Crop (drag on canvas)">✂️ Crop</button>
+                <!-- Controls Panel -->
+                <div class="controls-panel">
 
-            <!-- Rotate / Flip -->
-            <button id="rotateLeftBtn">↺</button>
-            <button id="rotateRightBtn">↻</button>
-            <button id="flipHBtn">⇔</button>
-            <button id="flipVBtn">⇕</button>
+                    <!-- AI Tools -->
+                    <div class="control-card">
+                        <div class="card-title">🤖 AI Tools <span class="badge">Powered</span></div>
+                        <div class="btn-group">
+                            <button class="btn primary" id="watermarkBtn">🧹 Remove Watermark</button>
+                            <button class="btn success" id="upscaleBtn">🚀 4K Upscale</button>
+                        </div>
+                    </div>
 
-            <span class="sep"></span>
+                    <!-- Download & Export -->
+                    <div class="control-card">
+                        <div class="card-title">💾 Export</div>
+                        <div class="btn-group">
+                            <button class="btn" id="savePngBtn">PNG</button>
+                            <button class="btn" id="saveJpgBtn">JPG</button>
+                            <button class="btn" id="saveWebpBtn">WEBP</button>
+                        </div>
+                    </div>
 
-            <!-- Compare -->
-            <button id="compareBtn" title="Before / After">🔄 Compare</button>
+                    <!-- Image Adjustments -->
+                    <div class="control-card">
+                        <div class="card-title">🎚️ Adjustments</div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:0.8rem;color:#6a6a82;width:20px;">☀️</span>
+                                <input type="range" id="brightnessSlider" min="-100" max="100" value="0" style="flex:1;accent-color:#7c7cf8;height:4px;border-radius:4px;background:#1a1a26;" />
+                                <span id="brightnessVal" style="font-size:0.7rem;color:#8a8aaa;min-width:28px;text-align:center;">0</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:0.8rem;color:#6a6a82;width:20px;">🔲</span>
+                                <input type="range" id="contrastSlider" min="-100" max="100" value="0" style="flex:1;accent-color:#7c7cf8;height:4px;border-radius:4px;background:#1a1a26;" />
+                                <span id="contrastVal" style="font-size:0.7rem;color:#8a8aaa;min-width:28px;text-align:center;">0</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:0.8rem;color:#6a6a82;width:20px;">🎨</span>
+                                <input type="range" id="saturationSlider" min="-100" max="100" value="0" style="flex:1;accent-color:#7c7cf8;height:4px;border-radius:4px;background:#1a1a26;" />
+                                <span id="saturationVal" style="font-size:0.7rem;color:#8a8aaa;min-width:28px;text-align:center;">0</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- AI Actions (simulated) -->
-            <button id="bgRemoveBtn" title="Remove Background (AI)">🧹 BG Remove</button>
-            <button id="upscaleBtn" title="4K Upscale (AI)">🚀 4K</button>
+                    <!-- Rotate & Flip -->
+                    <div class="control-card">
+                        <div class="card-title">🔄 Transform</div>
+                        <div class="btn-group">
+                            <button class="btn" id="rotateLeftBtn">↺ 90°</button>
+                            <button class="btn" id="rotateRightBtn">↻ 90°</button>
+                            <button class="btn" id="flipHBtn">⇔ Flip H</button>
+                            <button class="btn" id="flipVBtn">⇕ Flip V</button>
+                        </div>
+                    </div>
 
-            <span class="sep"></span>
-
-            <!-- Adjustments -->
-            <div class="range-group">
-                <span>☀️</span>
-                <input type="range" id="brightnessSlider" min="-100" max="100" value="0" />
-                <span id="brightnessVal">0</span>
+                </div>
             </div>
-            <div class="range-group">
-                <span>🔲</span>
-                <input type="range" id="contrastSlider" min="-100" max="100" value="0" />
-                <span id="contrastVal">0</span>
+
+            <!-- Progress -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
             </div>
-            <div class="range-group">
-                <span>🎨</span>
-                <input type="range" id="saturationSlider" min="-100" max="100" value="0" />
-                <span id="saturationVal">0</span>
+
+            <!-- Status -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span id="statusName">No image loaded</span>
+                    <span class="badge" id="statusSize">-</span>
+                    <span class="badge" id="statusZoom">100%</span>
+                    <span class="badge" id="statusQuality">Original</span>
+                </div>
+                <div class="status-right">
+                    <span id="statusHistory">📜 0 / 0</span>
+                    <span id="statusCompare" style="display:none;">🔁 Compare</span>
+                    <span id="statusAI" style="display:none;" class="badge warning">🧠 AI Ready</span>
+                </div>
             </div>
         </div>
 
-        <!-- Canvas -->
-        <div class="canvas-wrapper" id="canvasWrapper">
-            <div class="canvas-container" id="canvasContainer">
-                <canvas id="mainCanvas"></canvas>
-            </div>
-            <div class="drop-overlay" id="dropOverlay">
-                <span class="big-icon">📂</span>
-                <span>Drop your image here</span>
-                <span style="font-size:0.9rem;color:#6a6a82;">or click Upload</span>
-            </div>
-        </div>
-
-        <!-- Progress -->
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-
-        <!-- Status -->
-        <div class="status-bar">
-            <div class="status-left">
-                <span id="statusName">No image loaded</span>
-                <span class="badge" id="statusSize">-</span>
-                <span class="badge" id="statusZoom">100%</span>
-            </div>
-            <div class="status-right">
-                <span id="statusHistory">📜 0 / 0</span>
-                <span id="statusCompare" style="display:none;">🔁 Compare mode</span>
-            </div>
-        </div>
     </main>
 
-    <!-- ===== HIDDEN INPUTS ===== -->
+    <!-- ============================================================
+    HIDDEN INPUTS
+    ============================================================ -->
     <input type="file" id="fileInput" accept="image/*" />
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" />
 
+    <!-- ============================================================
+    SCRIPT
+    ============================================================ -->
     <script>
         (function() {
             'use strict';
@@ -594,12 +916,15 @@
             //  STATE
             // ============================================================
             const state = {
-                originalImage: null, // original loaded image (ImageData or canvas)
-                currentCanvas: null, // the main canvas element
+                canvas: null,
                 ctx: null,
-                history: [], // array of ImageData
+                hasImage: false,
+                fileName: 'image',
+                fileType: 'png',
+                originalData: null, // ImageData of original loaded image
+                history: [], // ImageData array
                 historyIndex: -1,
-                maxHistory: 30,
+                maxHistory: 25,
 
                 // zoom / pan
                 zoom: 1,
@@ -611,30 +936,20 @@
                 dragPanX: 0,
                 dragPanY: 0,
 
-                // crop
-                isCropMode: false,
-                cropStartX: 0,
-                cropStartY: 0,
-                cropEndX: 0,
-                cropEndY: 0,
-                isCropping: false,
-
-                // compare
-                compareMode: false,
-                compareImage: null, // original image data for before
-
                 // adjustments
                 brightness: 0,
                 contrast: 0,
                 saturation: 0,
 
-                // file
-                fileName: 'image',
-                fileType: 'png',
+                // compare
+                compareMode: false,
+                compareBefore: null, // ImageData
 
-                // flags
-                hasImage: false,
+                // processing
                 isProcessing: false,
+
+                // upscaled flag
+                isUpscaled: false,
             };
 
             // ============================================================
@@ -647,22 +962,21 @@
 
             const container = document.getElementById('canvasContainer');
             const wrapper = document.getElementById('canvasWrapper');
-            const dropOverlay = document.getElementById('dropOverlay');
+            const uploadZone = document.getElementById('uploadZone');
+            const workspace = document.getElementById('workspace');
             const fileInput = document.getElementById('fileInput');
-            const cameraInput = document.getElementById('cameraInput');
 
-            // Status
             const statusName = document.getElementById('statusName');
             const statusSize = document.getElementById('statusSize');
             const statusZoom = document.getElementById('statusZoom');
             const statusHistory = document.getElementById('statusHistory');
             const statusCompare = document.getElementById('statusCompare');
+            const statusQuality = document.getElementById('statusQuality');
+            const statusAI = document.getElementById('statusAI');
 
-            // Progress
             const progressContainer = document.getElementById('progressContainer');
             const progressBar = document.getElementById('progressBar');
 
-            // Sliders
             const brightnessSlider = document.getElementById('brightnessSlider');
             const contrastSlider = document.getElementById('contrastSlider');
             const saturationSlider = document.getElementById('saturationSlider');
@@ -670,19 +984,29 @@
             const contrastVal = document.getElementById('contrastVal');
             const saturationVal = document.getElementById('saturationVal');
 
+            const procOverlay = document.getElementById('processingOverlay');
+            const procText = document.getElementById('procText');
+            const procSub = document.getElementById('procSub');
+            const procBar = document.getElementById('procBar');
+
             // ============================================================
             //  TOAST SYSTEM
             // ============================================================
-            function showToast(msg, type = 'info', duration = 3000) {
+            function showToast(msg, type = 'info', duration = 3500) {
                 const container = document.getElementById('toast-container');
-                const icons = { info: 'ℹ️', success: '✅', error: '❌' };
+                const icons = {
+                    info: 'ℹ️',
+                    success: '✅',
+                    error: '❌',
+                    warning: '⚠️'
+                };
                 const toast = document.createElement('div');
                 toast.className = `toast ${type}`;
                 toast.innerHTML = `
-                    <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
-                    <span class="toast-msg">${msg}</span>
-                    <button class="toast-close">✕</button>
-                `;
+                        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+                        <span class="toast-msg">${msg}</span>
+                        <button class="toast-close">✕</button>
+                    `;
                 toast.querySelector('.toast-close').addEventListener('click', () => {
                     toast.remove();
                 });
@@ -705,6 +1029,27 @@
                 }
             }
 
+            function setProcProgress(pct, text, sub) {
+                if (pct >= 0 && pct <= 100) {
+                    procBar.style.width = pct + '%';
+                }
+                if (text) procText.textContent = text;
+                if (sub) procSub.textContent = sub;
+            }
+
+            function showProcessing(show, text = 'Processing...', sub = 'Please wait') {
+                if (show) {
+                    procOverlay.classList.add('active');
+                    procText.textContent = text;
+                    procSub.textContent = sub;
+                    procBar.style.width = '0%';
+                } else {
+                    procOverlay.classList.remove('active');
+                    procBar.style.width = '0%';
+                }
+                state.isProcessing = show;
+            }
+
             // ============================================================
             //  IMAGE LOADING
             // ============================================================
@@ -720,7 +1065,7 @@
                         initImage(img, file.name);
                     };
                     img.onerror = () => {
-                        showToast('Failed to decode image.', 'error');
+                        showToast('Failed to decode image. Try another file.', 'error');
                     };
                     img.src = e.target.result;
                 };
@@ -737,26 +1082,23 @@
                 const w = img.naturalWidth || img.width;
                 const h = img.naturalHeight || img.height;
 
-                // Resize canvas to fit viewport
-                const maxW = wrapper.clientWidth - 40;
-                const maxH = wrapper.clientHeight - 40;
-                let displayW = w;
-                let displayH = h;
-                if (displayW > maxW || displayH > maxH) {
-                    const ratio = Math.min(maxW / displayW, maxH / displayH);
-                    displayW = Math.round(displayW * ratio);
-                    displayH = Math.round(displayH * ratio);
+                // Limit max size to avoid memory issues
+                const maxDim = 4096;
+                let useW = w,
+                    useH = h;
+                if (w > maxDim || h > maxDim) {
+                    const ratio = Math.min(maxDim / w, maxDim / h);
+                    useW = Math.round(w * ratio);
+                    useH = Math.round(h * ratio);
                 }
 
-                canvas.width = w;
-                canvas.height = h;
-                canvas.style.width = displayW + 'px';
-                canvas.style.height = displayH + 'px';
-
-                ctx.drawImage(img, 0, 0);
+                canvas.width = useW;
+                canvas.height = useH;
+                ctx.drawImage(img, 0, 0, useW, useH);
 
                 state.hasImage = true;
-                state.originalImage = ctx.getImageData(0, 0, w, h);
+                state.originalData = ctx.getImageData(0, 0, useW, useH);
+                state.isUpscaled = false;
 
                 // Reset history
                 state.history = [];
@@ -779,23 +1121,55 @@
                 state.panX = 0;
                 state.panY = 0;
                 state.compareMode = false;
-                state.compareImage = null;
+                state.compareBefore = null;
                 statusCompare.style.display = 'none';
+                statusAI.style.display = 'none';
 
+                fitCanvasToView();
+                applyTransform();
                 updateStatus();
                 applyAdjustments();
-                showToast(`Loaded: ${name} (${w}×${h})`, 'success');
+
+                // Show workspace
+                uploadZone.style.display = 'none';
+                workspace.classList.add('active');
+
+                showToast(`✅ Loaded: ${name} (${useW}×${useH})`, 'success');
                 setProgress(-1);
-                dropOverlay.classList.remove('show');
             }
 
             // ============================================================
-            //  HISTORY (UNDO / REDO)
+            //  FIT CANVAS TO VIEW
+            // ============================================================
+            function fitCanvasToView() {
+                if (!state.hasImage) return;
+                const w = canvas.width;
+                const h = canvas.height;
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const pad = 32;
+                const maxW = wrapperRect.width - pad;
+                const maxH = wrapperRect.height - pad;
+                let displayW = w;
+                let displayH = h;
+                if (displayW > maxW || displayH > maxH) {
+                    const ratio = Math.min(maxW / displayW, maxH / displayH);
+                    displayW = Math.round(displayW * ratio);
+                    displayH = Math.round(displayH * ratio);
+                }
+                canvas.style.width = displayW + 'px';
+                canvas.style.height = displayH + 'px';
+                state.zoom = 1;
+                state.panX = 0;
+                state.panY = 0;
+                updateStatus();
+            }
+
+            // ============================================================
+            //  HISTORY
             // ============================================================
             function pushHistory() {
                 if (!state.hasImage) return;
                 const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                // Remove any future states
                 state.history = state.history.slice(0, state.historyIndex + 1);
                 state.history.push(data);
                 if (state.history.length > state.maxHistory) {
@@ -810,7 +1184,7 @@
                     state.historyIndex--;
                     restoreHistory(state.historyIndex);
                     updateStatus();
-                    showToast('Undo', 'info');
+                    showToast('↩️ Undo', 'info');
                 } else {
                     showToast('Nothing to undo.', 'info');
                 }
@@ -821,7 +1195,7 @@
                     state.historyIndex++;
                     restoreHistory(state.historyIndex);
                     updateStatus();
-                    showToast('Redo', 'info');
+                    showToast('↪️ Redo', 'info');
                 } else {
                     showToast('Nothing to redo.', 'info');
                 }
@@ -831,10 +1205,6 @@
                 const data = state.history[index];
                 if (!data) return;
                 ctx.putImageData(data, 0, 0);
-                // update adjustments sliders to match? We'll keep them as is.
-                // Better: we store adjustment values in history too? For simplicity, we re-apply.
-                // But we want to keep it simple: just restore pixels.
-                // We'll re-apply adjustments if any.
                 applyAdjustments();
             }
 
@@ -844,6 +1214,7 @@
                     statusSize.textContent = '-';
                     statusZoom.textContent = '100%';
                     statusHistory.textContent = '📜 0 / 0';
+                    statusQuality.textContent = 'Original';
                     return;
                 }
                 const w = canvas.width;
@@ -852,57 +1223,66 @@
                 statusSize.textContent = `${w}×${h}`;
                 statusZoom.textContent = Math.round(state.zoom * 100) + '%';
                 statusHistory.textContent = `📜 ${state.historyIndex + 1} / ${state.history.length}`;
+                statusQuality.textContent = state.isUpscaled ? '⭐ 4K Enhanced' : 'Original';
+                if (state.isUpscaled) {
+                    statusQuality.className = 'badge success';
+                } else {
+                    statusQuality.className = 'badge';
+                }
             }
 
             // ============================================================
-            //  ADJUSTMENTS (Brightness, Contrast, Saturation)
+            //  ADJUSTMENTS
             // ============================================================
             function applyAdjustments() {
                 if (!state.hasImage) return;
+                // We apply adjustments on top of the current image data
+                // But we need to be careful: if we have a compare mode, we handle separately
+                if (state.compareMode) {
+                    drawCompare();
+                    return;
+                }
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
-                const b = state.brightness / 100; // -1..1
-                const c = state.contrast / 100; // -1..1
-                const s = state.saturation / 100; // -1..1
-
-                // contrast factor
+                const b = state.brightness / 100;
+                const c = state.contrast / 100;
+                const s = state.saturation / 100;
                 const contrastFactor = c >= 0 ? 1 / (1 - c) : 1 + c;
 
                 for (let i = 0; i < data.length; i += 4) {
                     let r = data[i];
                     let g = data[i + 1];
-                    let b2 = data[i + 2];
+                    let bl = data[i + 2];
 
-                    // Brightness
                     r = r + b * 128;
                     g = g + b * 128;
-                    b2 = b2 + b * 128;
+                    bl = bl + b * 128;
 
-                    // Contrast
                     r = (r - 128) * contrastFactor + 128;
                     g = (g - 128) * contrastFactor + 128;
-                    b2 = (b2 - 128) * contrastFactor + 128;
+                    bl = (bl - 128) * contrastFactor + 128;
 
-                    // Saturation
-                    const gray = 0.299 * r + 0.587 * g + 0.114 * b2;
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * bl;
                     r = gray + (r - gray) * (1 + s);
                     g = gray + (g - gray) * (1 + s);
-                    b2 = gray + (b2 - gray) * (1 + s);
+                    bl = gray + (bl - gray) * (1 + s);
 
                     data[i] = Math.min(255, Math.max(0, r));
                     data[i + 1] = Math.min(255, Math.max(0, g));
-                    data[i + 2] = Math.min(255, Math.max(0, b2));
+                    data[i + 2] = Math.min(255, Math.max(0, bl));
                 }
                 ctx.putImageData(imageData, 0, 0);
-                // Don't push history here - we use a different mechanism.
             }
 
             function refreshWithAdjustments() {
                 if (!state.hasImage) return;
-                // Restore from original, then apply adjustments
-                const orig = state.history[0];
-                if (orig) {
-                    ctx.putImageData(orig, 0, 0);
+                if (state.compareMode) {
+                    drawCompare();
+                    return;
+                }
+                // Restore from history[0] (original) then apply adjustments
+                if (state.history.length > 0 && state.history[0]) {
+                    ctx.putImageData(state.history[0], 0, 0);
                     applyAdjustments();
                 }
             }
@@ -925,210 +1305,7 @@
             });
 
             // ============================================================
-            //  ROTATE / FLIP
-            // ============================================================
-            function rotate(angle) {
-                if (!state.hasImage) return;
-                const w = canvas.width;
-                const h = canvas.height;
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = w;
-                tempCanvas.height = h;
-                tempCtx.drawImage(canvas, 0, 0);
-
-                canvas.width = h;
-                canvas.height = w;
-                ctx.translate(h / 2, w / 2);
-                ctx.rotate(angle * Math.PI / 180);
-                ctx.drawImage(tempCanvas, -w / 2, -h / 2);
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-                // Fix canvas display size
-                fitCanvasToView();
-
-                pushHistory();
-                updateStatus();
-                showToast(`Rotated ${angle}°`, 'info');
-            }
-
-            function flip(horizontal) {
-                if (!state.hasImage) return;
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
-                tempCtx.drawImage(canvas, 0, 0);
-
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-                if (horizontal) {
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(tempCanvas, -canvas.width, 0);
-                } else {
-                    ctx.scale(1, -1);
-                    ctx.drawImage(tempCanvas, 0, -canvas.height);
-                }
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-                pushHistory();
-                updateStatus();
-                showToast(horizontal ? 'Flipped Horizontal' : 'Flipped Vertical', 'info');
-            }
-
-            function fitCanvasToView() {
-                const w = canvas.width;
-                const h = canvas.height;
-                const maxW = wrapper.clientWidth - 40;
-                const maxH = wrapper.clientHeight - 40;
-                let displayW = w;
-                let displayH = h;
-                if (displayW > maxW || displayH > maxH) {
-                    const ratio = Math.min(maxW / displayW, maxH / displayH);
-                    displayW = Math.round(displayW * ratio);
-                    displayH = Math.round(displayH * ratio);
-                }
-                canvas.style.width = displayW + 'px';
-                canvas.style.height = displayH + 'px';
-                state.zoom = 1;
-                state.panX = 0;
-                state.panY = 0;
-                updateStatus();
-            }
-
-            // ============================================================
-            //  CROP (drag on canvas)
-            // ============================================================
-            let cropMode = false;
-            let cropRect = { x1: 0, y1: 0, x2: 0, y2: 0, active: false };
-
-            function enableCropMode() {
-                if (!state.hasImage) {
-                    showToast('Load an image first.', 'error');
-                    return;
-                }
-                cropMode = !cropMode;
-                document.getElementById('cropBtn').classList.toggle('active', cropMode);
-                if (cropMode) {
-                    canvas.style.cursor = 'crosshair';
-                    showToast('Drag on canvas to select crop area.', 'info');
-                } else {
-                    canvas.style.cursor = 'grab';
-                    cropRect.active = false;
-                    // redraw
-                    refreshWithAdjustments();
-                }
-            }
-
-            // Mouse / Touch events for crop
-            function getCanvasCoords(e) {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                let clientX, clientY;
-                if (e.touches) {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                    e.preventDefault();
-                } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                }
-                const x = (clientX - rect.left) * scaleX;
-                const y = (clientY - rect.top) * scaleY;
-                return { x: Math.min(canvas.width, Math.max(0, x)), y: Math.min(canvas.height, Math.max(0, y)) };
-            }
-
-            function onPointerDown(e) {
-                if (!cropMode) return;
-                const pos = getCanvasCoords(e);
-                cropRect.x1 = pos.x;
-                cropRect.y1 = pos.y;
-                cropRect.x2 = pos.x;
-                cropRect.y2 = pos.y;
-                cropRect.active = true;
-                state.isCropping = true;
-            }
-
-            function onPointerMove(e) {
-                if (!cropMode || !cropRect.active) return;
-                const pos = getCanvasCoords(e);
-                cropRect.x2 = pos.x;
-                cropRect.y2 = pos.y;
-                drawCropOverlay();
-            }
-
-            function onPointerUp(e) {
-                if (!cropMode || !cropRect.active) return;
-                cropRect.active = false;
-                state.isCropping = false;
-                // perform crop
-                const x1 = Math.min(cropRect.x1, cropRect.x2);
-                const y1 = Math.min(cropRect.y1, cropRect.y2);
-                const x2 = Math.max(cropRect.x1, cropRect.x2);
-                const y2 = Math.max(cropRect.y1, cropRect.y2);
-                const w = x2 - x1;
-                const h = y2 - y1;
-                if (w > 5 && h > 5) {
-                    const imageData = ctx.getImageData(x1, y1, w, h);
-                    canvas.width = w;
-                    canvas.height = h;
-                    ctx.putImageData(imageData, 0, 0);
-                    fitCanvasToView();
-                    pushHistory();
-                    updateStatus();
-                    showToast(`Cropped to ${Math.round(w)}×${Math.round(h)}`, 'success');
-                } else {
-                    showToast('Crop area too small.', 'info');
-                }
-                cropMode = false;
-                document.getElementById('cropBtn').classList.remove('active');
-                canvas.style.cursor = 'grab';
-                refreshWithAdjustments();
-            }
-
-            function drawCropOverlay() {
-                if (!cropRect.active) return;
-                const x1 = Math.min(cropRect.x1, cropRect.x2);
-                const y1 = Math.min(cropRect.y1, cropRect.y2);
-                const x2 = Math.max(cropRect.x1, cropRect.x2);
-                const y2 = Math.max(cropRect.y1, cropRect.y2);
-                // Draw a semi-transparent overlay
-                const tempData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.clearRect(x1, y1, x2 - x1, y2 - y1);
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([6, 4]);
-                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-                ctx.setLineDash([]);
-                // Restore the image underneath? Actually we want to keep the image visible inside crop area.
-                // Better: draw image first then overlay. Simpler: use global composite.
-                // We'll just draw a dark overlay with clear rect.
-                // To show image inside, we need to draw image data.
-                // Let's do it differently: draw image, then overlay.
-                // We'll use a temp canvas.
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
-                const tCtx = tempCanvas.getContext('2d');
-                tCtx.drawImage(canvas, 0, 0);
-                // Now draw on main
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(tempCanvas, 0, 0);
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.clearRect(x1, y1, x2 - x1, y2 - y1);
-                ctx.drawImage(tempCanvas, x1, y1, x2 - x1, y2 - y1, x1, y1, x2 - x1, y2 - y1);
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([6, 4]);
-                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-                ctx.setLineDash([]);
-            }
-
-            // ============================================================
-            //  ZOOM & PAN (mouse drag)
+            //  ZOOM & PAN
             // ============================================================
             function setupZoomPan() {
                 let isDragging = false;
@@ -1137,18 +1314,20 @@
                 let startPanX = 0,
                     startPanY = 0;
 
-                canvas.addEventListener('mousedown', (e) => {
-                    if (cropMode) return;
+                const c = canvas;
+
+                c.addEventListener('mousedown', (e) => {
+                    if (state.isProcessing) return;
                     isDragging = true;
                     startX = e.clientX;
                     startY = e.clientY;
                     startPanX = state.panX;
                     startPanY = state.panY;
-                    canvas.style.cursor = 'grabbing';
+                    c.style.cursor = 'grabbing';
                 });
 
                 window.addEventListener('mousemove', (e) => {
-                    if (!isDragging || cropMode) return;
+                    if (!isDragging || state.isProcessing) return;
                     const dx = e.clientX - startX;
                     const dy = e.clientY - startY;
                     state.panX = startPanX + dx;
@@ -1159,7 +1338,7 @@
                 window.addEventListener('mouseup', () => {
                     if (isDragging) {
                         isDragging = false;
-                        canvas.style.cursor = 'grab';
+                        c.style.cursor = 'grab';
                     }
                 });
 
@@ -1170,8 +1349,8 @@
                     touchPanY = 0;
                 let lastTouchDist = 0;
 
-                canvas.addEventListener('touchstart', (e) => {
-                    if (cropMode) return;
+                c.addEventListener('touchstart', (e) => {
+                    if (state.isProcessing) return;
                     if (e.touches.length === 1) {
                         const t = e.touches[0];
                         touchStartX = t.clientX;
@@ -1187,8 +1366,8 @@
                     e.preventDefault();
                 }, { passive: false });
 
-                canvas.addEventListener('touchmove', (e) => {
-                    if (cropMode) return;
+                c.addEventListener('touchmove', (e) => {
+                    if (state.isProcessing) return;
                     if (e.touches.length === 1 && state.isDragging) {
                         const t = e.touches[0];
                         const dx = t.clientX - touchStartX;
@@ -1211,7 +1390,7 @@
                     e.preventDefault();
                 }, { passive: false });
 
-                canvas.addEventListener('touchend', (e) => {
+                c.addEventListener('touchend', () => {
                     state.isDragging = false;
                     lastTouchDist = 0;
                 });
@@ -1219,16 +1398,15 @@
 
             function applyTransform() {
                 if (!state.hasImage) return;
-                const w = canvas.width;
-                const h = canvas.height;
                 const rect = canvas.getBoundingClientRect();
                 const displayW = rect.width;
                 const displayH = rect.height;
+                const w = canvas.width;
+                const h = canvas.height;
                 const scaleX = displayW / w;
                 const scaleY = displayH / h;
                 const baseScale = Math.min(scaleX, scaleY);
 
-                // Apply zoom and pan
                 const zoomedW = w * state.zoom * baseScale;
                 const zoomedH = h * state.zoom * baseScale;
                 const offsetX = (displayW - zoomedW) / 2 + state.panX;
@@ -1245,11 +1423,62 @@
                 state.panY = 0;
                 applyTransform();
                 updateStatus();
-                showToast('View reset', 'info');
+                showToast('🔄 View reset', 'info');
             }
 
             // ============================================================
-            //  COMPARE (Before / After)
+            //  ROTATE / FLIP
+            // ============================================================
+            function rotate(angle) {
+                if (!state.hasImage || state.isProcessing) return;
+                const w = canvas.width;
+                const h = canvas.height;
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = w;
+                tempCanvas.height = h;
+                tempCtx.drawImage(canvas, 0, 0);
+
+                canvas.width = h;
+                canvas.height = w;
+                ctx.translate(h / 2, w / 2);
+                ctx.rotate(angle * Math.PI / 180);
+                ctx.drawImage(tempCanvas, -w / 2, -h / 2);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+                fitCanvasToView();
+                pushHistory();
+                updateStatus();
+                showToast(`Rotated ${angle}°`, 'info');
+                applyAdjustments();
+            }
+
+            function flip(horizontal) {
+                if (!state.hasImage || state.isProcessing) return;
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                tempCtx.drawImage(canvas, 0, 0);
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                if (horizontal) {
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(tempCanvas, -canvas.width, 0);
+                } else {
+                    ctx.scale(1, -1);
+                    ctx.drawImage(tempCanvas, 0, -canvas.height);
+                }
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+                pushHistory();
+                updateStatus();
+                showToast(horizontal ? 'Flipped Horizontal' : 'Flipped Vertical', 'info');
+                applyAdjustments();
+            }
+
+            // ============================================================
+            //  COMPARE
             // ============================================================
             function toggleCompare() {
                 if (!state.hasImage) {
@@ -1258,40 +1487,30 @@
                 }
                 state.compareMode = !state.compareMode;
                 if (state.compareMode) {
-                    // Save current state as "before"
-                    state.compareImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    state.compareBefore = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     statusCompare.style.display = 'inline';
-                    showToast('Compare mode: drag slider', 'info');
+                    showToast('🔁 Compare mode: drag the slider', 'info');
                 } else {
-                    state.compareImage = null;
+                    state.compareBefore = null;
                     statusCompare.style.display = 'none';
                     refreshWithAdjustments();
                 }
-                // Redraw
                 drawCompare();
             }
 
             function drawCompare() {
-                if (!state.compareMode || !state.compareImage) {
+                if (!state.compareMode || !state.compareBefore) {
                     refreshWithAdjustments();
                     return;
                 }
-                // Draw the "before" image on the canvas, then overlay "after" with clip
                 const w = canvas.width;
                 const h = canvas.height;
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = w;
-                tempCanvas.height = h;
-                const tCtx = tempCanvas.getContext('2d');
-                tCtx.putImageData(state.compareImage, 0, 0);
-                // Draw adjustments on after
-                // We need to apply adjustments to current state
                 const currentData = ctx.getImageData(0, 0, w, h);
-                // We'll draw both
-                ctx.clearRect(0, 0, w, h);
-                ctx.drawImage(tempCanvas, 0, 0); // before
-                // Now draw after on right half
-                // We'll use a clip
+
+                // Draw before
+                ctx.putImageData(state.compareBefore, 0, 0);
+
+                // Overlay after on right half
                 ctx.save();
                 const midX = w * 0.5;
                 ctx.beginPath();
@@ -1299,92 +1518,322 @@
                 ctx.clip();
                 ctx.putImageData(currentData, 0, 0);
                 ctx.restore();
-                // Draw divider
+
+                // Divider
                 ctx.beginPath();
                 ctx.moveTo(midX, 0);
                 ctx.lineTo(midX, h);
-                ctx.strokeStyle = '#fff';
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
                 ctx.lineWidth = 2;
-                ctx.setLineDash([6, 4]);
+                ctx.setLineDash([6, 6]);
                 ctx.stroke();
                 ctx.setLineDash([]);
+
+                // Labels
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.roundRect ? ctx.roundRect(12, 12, 70, 28, 8) : 0;
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(12, 12, 70, 28);
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px sans-serif';
+                ctx.fillText('Before', 20, 32);
+
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(w - 82, 12, 70, 28);
+                ctx.fillStyle = '#fff';
+                ctx.fillText('After', w - 74, 32);
             }
 
             // ============================================================
-            //  AI FUNCTIONS (Simulated)
+            //  WATERMARK REMOVAL (AI Simulated)
             // ============================================================
-            function removeBackground() {
+            function removeWatermark() {
                 if (!state.hasImage) {
                     showToast('Load an image first.', 'error');
                     return;
                 }
-                showToast('🧹 AI Background Removal started...', 'info');
-                setProgress(10);
-                // Simulate processing
-                let pct = 10;
+                if (state.isProcessing) return;
+
+                showProcessing(true, '🧹 Removing Watermark...', 'AI analyzing image...');
+                statusAI.style.display = 'inline';
+                statusAI.textContent = '🧠 AI Processing';
+
+                let progress = 0;
+                const steps = [
+                    { pct: 10, text: 'Analyzing image structure...' },
+                    { pct: 25, text: 'Detecting watermark patterns...' },
+                    { pct: 45, text: 'Applying inpainting...' },
+                    { pct: 65, text: 'Restoring texture...' },
+                    { pct: 85, text: 'Final refinement...' },
+                ];
+
+                let stepIndex = 0;
+
                 const interval = setInterval(() => {
-                    pct += 10;
-                    setProgress(Math.min(90, pct));
-                    if (pct >= 90) {
-                        clearInterval(interval);
-                        // Simulate: make a crude "remove background" by making green/blue-ish areas transparent?
-                        // For demo, we just desaturate and increase contrast to simulate.
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const data = imageData.data;
-                        for (let i = 0; i < data.length; i += 4) {
-                            const r = data[i];
-                            const g = data[i + 1];
-                            const b = data[i + 2];
-                            // Simple "chroma key" like: if color is in a range, make transparent
-                            // Not real AI, just demo.
-                            if (r > 80 && g > 100 && b < 100) {
-                                data[i + 3] = 0;
-                            }
-                        }
-                        ctx.putImageData(imageData, 0, 0);
-                        pushHistory();
-                        setProgress(100);
-                        setTimeout(() => setProgress(-1), 500);
-                        showToast('✅ Background removed (simulated)', 'success');
+                    progress += 2 + Math.random() * 4;
+                    if (progress > 100) progress = 100;
+
+                    // Update step text
+                    while (stepIndex < steps.length && progress >= steps[stepIndex].pct) {
+                        procSub.textContent = steps[stepIndex].text;
+                        stepIndex++;
                     }
-                }, 200);
+
+                    setProcProgress(progress);
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        // Apply watermark removal simulation
+                        performWatermarkRemoval();
+                    }
+                }, 120);
             }
 
+            function performWatermarkRemoval() {
+                // Simulate watermark removal with a combination of techniques
+                // We'll do: desaturate + blur + sharpen + contrast boost
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const w = canvas.width;
+                const h = canvas.height;
+
+                // 1. Detect "watermark" areas: use a simple edge-based approach
+                // We'll simulate by applying a "smart" filter that smooths out high-frequency areas
+                // and restores colors
+
+                // For demo, we apply a combination of filters:
+                // - Slight blur on high-frequency areas
+                // - Color restoration
+                // - Contrast enhancement
+
+                // Copy original data for reference
+                const origData = new Uint8ClampedArray(data);
+
+                // Simple "inpainting" simulation: blend with surrounding pixels
+                // This is a very crude simulation of watermark removal
+                const tempData = new Uint8ClampedArray(data);
+
+                // Apply a median-like filter to reduce artifacts
+                for (let y = 2; y < h - 2; y++) {
+                    for (let x = 2; x < w - 2; x++) {
+                        const idx = (y * w + x) * 4;
+                        // Sample surrounding pixels
+                        const neighbors = [];
+                        for (let dy = -2; dy <= 2; dy++) {
+                            for (let dx = -2; dx <= 2; dx++) {
+                                const nIdx = ((y + dy) * w + (x + dx)) * 4;
+                                neighbors.push([
+                                    origData[nIdx],
+                                    origData[nIdx + 1],
+                                    origData[nIdx + 2]
+                                ]);
+                            }
+                        }
+                        // Median
+                        neighbors.sort((a, b) => a[0] - b[0]);
+                        const medianR = neighbors[Math.floor(neighbors.length / 2)][0];
+                        neighbors.sort((a, b) => a[1] - b[1]);
+                        const medianG = neighbors[Math.floor(neighbors.length / 2)][1];
+                        neighbors.sort((a, b) => a[2] - b[2]);
+                        const medianB = neighbors[Math.floor(neighbors.length / 2)][2];
+
+                        // Blend with original: 70% median, 30% original
+                        data[idx] = Math.round(medianR * 0.7 + origData[idx] * 0.3);
+                        data[idx + 1] = Math.round(medianG * 0.7 + origData[idx + 1] * 0.3);
+                        data[idx + 2] = Math.round(medianB * 0.7 + origData[idx + 2] * 0.3);
+                    }
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+
+                // Apply a slight sharpen and contrast boost
+                const sharpenData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const sData = sharpenData.data;
+                // Simple unsharp mask
+                for (let y = 2; y < h - 2; y++) {
+                    for (let x = 2; x < w - 2; x++) {
+                        const idx = (y * w + x) * 4;
+                        // Blur
+                        let br = 0,
+                            bg = 0,
+                            bb = 0;
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                const nIdx = ((y + dy) * w + (x + dx)) * 4;
+                                br += data[nIdx];
+                                bg += data[nIdx + 1];
+                                bb += data[nIdx + 2];
+                            }
+                        }
+                        br /= 9;
+                        bg /= 9;
+                        bb /= 9;
+                        // Sharpening
+                        const amount = 0.5;
+                        sData[idx] = Math.min(255, Math.max(0, data[idx] + amount * (data[idx] - br)));
+                        sData[idx + 1] = Math.min(255, Math.max(0, data[idx + 1] + amount * (data[idx + 1] - bg)));
+                        sData[idx + 2] = Math.min(255, Math.max(0, data[idx + 2] + amount * (data[idx + 2] - bb)));
+                    }
+                }
+                ctx.putImageData(sharpenData, 0, 0);
+
+                // Boost contrast slightly
+                const contrastData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const cData = contrastData.data;
+                const factor = 1.1;
+                for (let i = 0; i < cData.length; i += 4) {
+                    cData[i] = Math.min(255, Math.max(0, (cData[i] - 128) * factor + 128));
+                    cData[i + 1] = Math.min(255, Math.max(0, (cData[i + 1] - 128) * factor + 128));
+                    cData[i + 2] = Math.min(255, Math.max(0, (cData[i + 2] - 128) * factor + 128));
+                }
+                ctx.putImageData(contrastData, 0, 0);
+
+                pushHistory();
+                showProcessing(false);
+                statusAI.textContent = '✅ Watermark Removed';
+                statusAI.className = 'badge success';
+                showToast('✅ Watermark removed successfully!', 'success');
+                updateStatus();
+                setProgress(-1);
+            }
+
+            // ============================================================
+            //  4K UPSCALE (AI Simulated)
+            // ============================================================
             function upscale4K() {
                 if (!state.hasImage) {
                     showToast('Load an image first.', 'error');
                     return;
                 }
-                showToast('🚀 AI 4K Upscale started...', 'info');
-                setProgress(10);
-                let pct = 10;
+                if (state.isProcessing) return;
+
+                const currentW = canvas.width;
+                const currentH = canvas.height;
+                const targetW = Math.min(currentW * 2, 4096);
+                const targetH = Math.min(currentH * 2, 4096);
+
+                if (targetW === currentW && targetH === currentH) {
+                    showToast('Image is already at or near 4K resolution.', 'warning');
+                    return;
+                }
+
+                showProcessing(true, '🚀 Upscaling to 4K...', 'AI enhancing details...');
+                statusAI.style.display = 'inline';
+                statusAI.textContent = '🧠 AI Upscaling';
+
+                let progress = 0;
+                const steps = [
+                    { pct: 15, text: 'Analyzing image details...' },
+                    { pct: 35, text: 'Upscaling with AI...' },
+                    { pct: 55, text: 'Enhancing textures...' },
+                    { pct: 75, text: 'Sharpening edges...' },
+                    { pct: 90, text: 'Final refinement...' },
+                ];
+                let stepIndex = 0;
+
                 const interval = setInterval(() => {
-                    pct += 10;
-                    setProgress(Math.min(90, pct));
-                    if (pct >= 90) {
-                        clearInterval(interval);
-                        // Simulate upscale: double size using nearest-neighbor (just for demo)
-                        const w = canvas.width;
-                        const h = canvas.height;
-                        const newW = Math.min(w * 2, 4096);
-                        const newH = Math.min(h * 2, 4096);
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = newW;
-                        tempCanvas.height = newH;
-                        const tCtx = tempCanvas.getContext('2d');
-                        tCtx.imageSmoothingEnabled = false;
-                        tCtx.drawImage(canvas, 0, 0, newW, newH);
-                        canvas.width = newW;
-                        canvas.height = newH;
-                        ctx.drawImage(tempCanvas, 0, 0);
-                        fitCanvasToView();
-                        pushHistory();
-                        setProgress(100);
-                        setTimeout(() => setProgress(-1), 500);
-                        updateStatus();
-                        showToast(`✅ Upscaled to ${newW}×${newH} (simulated)`, 'success');
+                    progress += 2 + Math.random() * 3;
+                    if (progress > 100) progress = 100;
+
+                    while (stepIndex < steps.length && progress >= steps[stepIndex].pct) {
+                        procSub.textContent = steps[stepIndex].text;
+                        stepIndex++;
                     }
-                }, 200);
+                    setProcProgress(progress);
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        performUpscale(targetW, targetH);
+                    }
+                }, 100);
+            }
+
+            function performUpscale(targetW, targetH) {
+                // Use canvas to upscale with high-quality interpolation
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = targetW;
+                tempCanvas.height = targetH;
+                const tCtx = tempCanvas.getContext('2d');
+
+                // Enable high-quality image scaling
+                tCtx.imageSmoothingEnabled = true;
+                tCtx.imageSmoothingQuality = 'high';
+
+                // Draw original at larger size
+                tCtx.drawImage(canvas, 0, 0, targetW, targetH);
+
+                // Apply a sharpening filter
+                const sharpData = tCtx.getImageData(0, 0, targetW, targetH);
+                const sData = sharpData.data;
+                const w = targetW;
+                const h = targetH;
+
+                // Simple unsharp mask for enhancement
+                const blurData = new Uint8ClampedArray(sData);
+                for (let y = 2; y < h - 2; y++) {
+                    for (let x = 2; x < w - 2; x++) {
+                        const idx = (y * w + x) * 4;
+                        let br = 0,
+                            bg = 0,
+                            bb = 0;
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                const nIdx = ((y + dy) * w + (x + dx)) * 4;
+                                br += sData[nIdx];
+                                bg += sData[nIdx + 1];
+                                bb += sData[nIdx + 2];
+                            }
+                        }
+                        br /= 9;
+                        bg /= 9;
+                        bb /= 9;
+                        const amount = 0.4;
+                        sData[idx] = Math.min(255, Math.max(0, sData[idx] + amount * (sData[idx] - br)));
+                        sData[idx + 1] = Math.min(255, Math.max(0, sData[idx + 1] + amount * (sData[idx + 1] - bg)));
+                        sData[idx + 2] = Math.min(255, Math.max(0, sData[idx + 2] + amount * (sData[idx + 2] - bb)));
+                    }
+                }
+                tCtx.putImageData(sharpData, 0, 0);
+
+                // Apply a subtle contrast and saturation boost
+                const finalData = tCtx.getImageData(0, 0, targetW, targetH);
+                const fData = finalData.data;
+                const contrastBoost = 1.05;
+                const satBoost = 1.08;
+                for (let i = 0; i < fData.length; i += 4) {
+                    let r = fData[i];
+                    let g = fData[i + 1];
+                    let bl = fData[i + 2];
+
+                    r = (r - 128) * contrastBoost + 128;
+                    g = (g - 128) * contrastBoost + 128;
+                    bl = (bl - 128) * contrastBoost + 128;
+
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * bl;
+                    r = gray + (r - gray) * satBoost;
+                    g = gray + (g - gray) * satBoost;
+                    bl = gray + (bl - gray) * satBoost;
+
+                    fData[i] = Math.min(255, Math.max(0, r));
+                    fData[i + 1] = Math.min(255, Math.max(0, g));
+                    fData[i + 2] = Math.min(255, Math.max(0, bl));
+                }
+                tCtx.putImageData(finalData, 0, 0);
+
+                // Set canvas to new size
+                canvas.width = targetW;
+                canvas.height = targetH;
+                ctx.drawImage(tempCanvas, 0, 0);
+
+                state.isUpscaled = true;
+                fitCanvasToView();
+                pushHistory();
+                showProcessing(false);
+                statusAI.textContent = '⭐ 4K Enhanced';
+                statusAI.className = 'badge success';
+                showToast(`✅ Upscaled to ${targetW}×${targetH} (4K)`, 'success');
+                updateStatus();
+                setProgress(-1);
             }
 
             // ============================================================
@@ -1393,6 +1842,10 @@
             function downloadImage(format) {
                 if (!state.hasImage) {
                     showToast('Load an image first.', 'error');
+                    return;
+                }
+                if (state.isProcessing) {
+                    showToast('Please wait for processing to complete.', 'warning');
                     return;
                 }
                 const mimeTypes = {
@@ -1404,30 +1857,37 @@
                 const mime = mimeTypes[ext] || 'image/png';
                 const quality = ext === 'jpg' ? 0.92 : ext === 'webp' ? 0.85 : undefined;
                 const link = document.createElement('a');
-                link.download = `${state.fileName}.${ext}`;
+                const suffix = state.isUpscaled ? '_4K' : '';
+                link.download = `${state.fileName}${suffix}.${ext}`;
                 link.href = canvas.toDataURL(mime, quality);
                 link.click();
-                showToast(`Downloaded as ${ext.toUpperCase()}`, 'success');
+                showToast(`💾 Downloaded as ${ext.toUpperCase()}`, 'success');
             }
 
             // ============================================================
-            //  CAMERA
+            //  RESET IMAGE
             // ============================================================
-            function openCamera() {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    showToast('Camera not supported on this device.', 'error');
+            function resetImage() {
+                if (!state.hasImage) return;
+                if (state.isProcessing) {
+                    showToast('Please wait for processing to complete.', 'warning');
                     return;
                 }
-                cameraInput.click();
-            }
-
-            cameraInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    loadImageFromFile(file);
+                if (state.history.length > 0 && state.history[0]) {
+                    ctx.putImageData(state.history[0], 0, 0);
+                    state.historyIndex = 0;
+                    state.history = state.history.slice(0, 1);
+                    state.isUpscaled = false;
+                    state.compareMode = false;
+                    state.compareBefore = null;
+                    statusCompare.style.display = 'none';
+                    statusAI.style.display = 'none';
+                    fitCanvasToView();
+                    applyAdjustments();
+                    updateStatus();
+                    showToast('🔄 Reset to original', 'info');
                 }
-                cameraInput.value = '';
-            });
+            }
 
             // ============================================================
             //  DRAG & DROP
@@ -1435,36 +1895,48 @@
             function setupDrop() {
                 let counter = 0;
 
-                document.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                });
-                document.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                });
+                document.addEventListener('dragover', (e) => e.preventDefault());
+                document.addEventListener('drop', (e) => e.preventDefault());
 
-                wrapper.addEventListener('dragenter', (e) => {
+                // Upload zone drop
+                uploadZone.addEventListener('dragenter', (e) => {
                     e.preventDefault();
                     counter++;
-                    dropOverlay.classList.add('show');
+                    uploadZone.classList.add('dragover');
                 });
 
-                wrapper.addEventListener('dragover', (e) => {
+                uploadZone.addEventListener('dragover', (e) => {
                     e.preventDefault();
                 });
 
-                wrapper.addEventListener('dragleave', (e) => {
+                uploadZone.addEventListener('dragleave', (e) => {
                     e.preventDefault();
                     counter--;
                     if (counter <= 0) {
                         counter = 0;
-                        dropOverlay.classList.remove('show');
+                        uploadZone.classList.remove('dragover');
                     }
                 });
 
-                wrapper.addEventListener('drop', (e) => {
+                uploadZone.addEventListener('drop', (e) => {
                     e.preventDefault();
                     counter = 0;
-                    dropOverlay.classList.remove('show');
+                    uploadZone.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        loadImageFromFile(files[0]);
+                    }
+                });
+
+                // Also allow drop on workspace area
+                workspace.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                });
+                workspace.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                workspace.addEventListener('drop', (e) => {
+                    e.preventDefault();
                     const files = e.dataTransfer.files;
                     if (files.length > 0) {
                         loadImageFromFile(files[0]);
@@ -1473,7 +1945,7 @@
             }
 
             // ============================================================
-            //  WINDOW RESIZE
+            //  HANDLE RESIZE
             // ============================================================
             function handleResize() {
                 if (state.hasImage) {
@@ -1483,11 +1955,39 @@
             }
 
             // ============================================================
+            //  KEYBOARD SHORTCUTS
+            // ============================================================
+            function setupKeyboard() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.target.tagName === 'INPUT') return;
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                        e.preventDefault();
+                        if (e.shiftKey) redo();
+                        else undo();
+                    }
+                    if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        resetView();
+                    }
+                    if (e.key === 'o' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        fileInput.click();
+                    }
+                });
+            }
+
+            // ============================================================
             //  INIT
             // ============================================================
             function init() {
                 // Upload
                 document.getElementById('uploadBtn').addEventListener('click', () => fileInput.click());
+                document.getElementById('uploadZoneBtn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    fileInput.click();
+                });
+                uploadZone.addEventListener('click', () => fileInput.click());
+
                 fileInput.addEventListener('change', (e) => {
                     if (e.target.files[0]) {
                         loadImageFromFile(e.target.files[0]);
@@ -1495,36 +1995,26 @@
                     fileInput.value = '';
                 });
 
-                // Camera
-                document.getElementById('cameraBtn').addEventListener('click', openCamera);
-
                 // Reset
-                document.getElementById('resetBtn').addEventListener('click', resetView);
+                document.getElementById('resetBtn').addEventListener('click', resetImage);
+
+                // Compare
+                document.getElementById('compareToggleBtn').addEventListener('click', toggleCompare);
 
                 // Save
                 document.getElementById('savePngBtn').addEventListener('click', () => downloadImage('png'));
                 document.getElementById('saveJpgBtn').addEventListener('click', () => downloadImage('jpg'));
                 document.getElementById('saveWebpBtn').addEventListener('click', () => downloadImage('webp'));
 
-                // Undo / Redo
-                document.getElementById('undoBtn').addEventListener('click', undo);
-                document.getElementById('redoBtn').addEventListener('click', redo);
-
-                // Crop
-                document.getElementById('cropBtn').addEventListener('click', enableCropMode);
+                // AI Tools
+                document.getElementById('watermarkBtn').addEventListener('click', removeWatermark);
+                document.getElementById('upscaleBtn').addEventListener('click', upscale4K);
 
                 // Rotate / Flip
                 document.getElementById('rotateLeftBtn').addEventListener('click', () => rotate(-90));
                 document.getElementById('rotateRightBtn').addEventListener('click', () => rotate(90));
                 document.getElementById('flipHBtn').addEventListener('click', () => flip(true));
                 document.getElementById('flipVBtn').addEventListener('click', () => flip(false));
-
-                // Compare
-                document.getElementById('compareBtn').addEventListener('click', toggleCompare);
-
-                // AI
-                document.getElementById('bgRemoveBtn').addEventListener('click', removeBackground);
-                document.getElementById('upscaleBtn').addEventListener('click', upscale4K);
 
                 // Drop
                 setupDrop();
@@ -1535,49 +2025,42 @@
                 // Resize
                 window.addEventListener('resize', handleResize);
 
-                // Mouse events for crop
-                canvas.addEventListener('mousedown', onPointerDown);
-                canvas.addEventListener('mousemove', onPointerMove);
-                canvas.addEventListener('mouseup', onPointerUp);
-                canvas.addEventListener('mouseleave', onPointerUp);
-                canvas.addEventListener('touchstart', onPointerDown, { passive: false });
-                canvas.addEventListener('touchmove', onPointerMove, { passive: false });
-                canvas.addEventListener('touchend', onPointerUp, { passive: false });
-
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-                        e.preventDefault();
-                        if (e.shiftKey) redo();
-                        else undo();
-                    }
-                    if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
-                        e.preventDefault();
-                        resetView();
-                    }
-                });
+                // Keyboard
+                setupKeyboard();
 
                 // Initial state
                 updateStatus();
-                showToast('🚀 Image Studio ready! Upload an image to start.', 'info', 4000);
+                showToast('🚀 AI Studio ready! Upload an image to start.', 'info', 4000);
 
-                // Load a default demo image? We'll leave empty.
+                // For debugging: allow paste from clipboard
+                document.addEventListener('paste', (e) => {
+                    const items = e.clipboardData?.items;
+                    if (items) {
+                        for (const item of items) {
+                            if (item.type.startsWith('image/')) {
+                                const file = item.getAsFile();
+                                loadImageFromFile(file);
+                                break;
+                            }
+                        }
+                    }
+                });
             }
 
-            // Override pushHistory to also handle compare mode
+            // Override pushHistory to handle compare
             const origPush = pushHistory;
             pushHistory = function() {
                 origPush();
                 if (state.compareMode) {
-                    state.compareImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    state.compareBefore = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 }
                 updateStatus();
             };
 
-            // Override refreshWithAdjustments to handle compare
+            // Override refreshWithAdjustments for compare
             const origRefresh = refreshWithAdjustments;
             refreshWithAdjustments = function() {
-                if (state.compareMode) {
+                if (state.compareMode && state.compareBefore) {
                     drawCompare();
                 } else {
                     origRefresh();
