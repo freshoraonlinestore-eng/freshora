@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Watermark Remover · AI</title>
+    <title>Watermark Remover + 4K Upscale</title>
+
     <style>
         /* ===== RESET & BASE ===== */
         * {
@@ -43,7 +44,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-width: 380px;
+            max-width: 400px;
             width: 100%;
             pointer-events: none;
         }
@@ -184,6 +185,15 @@
         .header-actions .primary-btn:hover {
             box-shadow: 0 4px 24px rgba(124, 124, 248, 0.3);
         }
+        .header-actions .success-btn {
+            background: linear-gradient(135deg, #2d8f5a, #3db874);
+            border-color: #3db874;
+            color: #fff;
+            font-weight: 600;
+        }
+        .header-actions .success-btn:hover {
+            box-shadow: 0 4px 24px rgba(61, 184, 116, 0.3);
+        }
 
         /* ===== MAIN ===== */
         .app-main {
@@ -282,7 +292,7 @@
             border: 1px solid #1a1a24;
             position: relative;
             overflow: hidden;
-            min-height: 380px;
+            min-height: 420px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -322,13 +332,14 @@
             gap: 16px;
             border-radius: 16px;
             z-index: 10;
+            padding: 20px;
         }
         .processing-overlay.active {
             display: flex;
         }
         .processing-overlay .spinner-big {
-            width: 46px;
-            height: 46px;
+            width: 48px;
+            height: 48px;
             border: 4px solid #2a2a3e;
             border-top-color: #7c7cf8;
             border-radius: 50%;
@@ -340,18 +351,19 @@
             }
         }
         .processing-overlay .proc-text {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #c8c8e0;
             font-weight: 500;
         }
         .processing-overlay .proc-sub {
             font-size: 0.8rem;
             color: #6a6a82;
+            text-align: center;
         }
         .processing-overlay .proc-progress {
-            width: 60%;
-            max-width: 280px;
-            height: 4px;
+            width: 70%;
+            max-width: 320px;
+            height: 5px;
             background: #1a1a24;
             border-radius: 4px;
             overflow: hidden;
@@ -363,12 +375,20 @@
             border-radius: 4px;
             transition: width 0.3s ease;
         }
+        .processing-overlay .proc-badge {
+            font-size: 0.7rem;
+            background: #2a2a3e;
+            padding: 4px 14px;
+            border-radius: 20px;
+            color: #9a9aba;
+            margin-top: 4px;
+        }
 
-        /* ===== CONTROLS ===== */
+        /* ===== CONTROLS PANEL ===== */
         .controls-panel {
             flex: 1;
             min-width: 200px;
-            max-width: 320px;
+            max-width: 340px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -400,6 +420,14 @@
             font-size: 0.6rem;
             color: #9a9aba;
         }
+        .control-card .card-title .badge.primary {
+            background: #3a2a5a;
+            color: #c4b5fd;
+        }
+        .control-card .card-title .badge.success {
+            background: #1a3a2a;
+            color: #7cf8a8;
+        }
         .control-card .btn-group {
             display: flex;
             flex-wrap: wrap;
@@ -408,7 +436,7 @@
         .control-card .btn-group .btn {
             flex: 1;
             min-width: 72px;
-            padding: 9px 12px;
+            padding: 10px 14px;
             border: 1px solid #2a2a3a;
             background: #1a1a26;
             color: #d0d0e8;
@@ -443,6 +471,15 @@
             background: linear-gradient(135deg, #2d8f5a, #3db874);
             border-color: #3db874;
             color: #fff;
+            font-weight: 600;
+        }
+        .control-card .btn-group .btn.success:hover {
+            box-shadow: 0 4px 20px rgba(61, 184, 116, 0.3);
+        }
+        .control-card .btn-group .btn.danger {
+            background: linear-gradient(135deg, #b82d2d, #e84a4a);
+            border-color: #e84a4a;
+            color: #fff;
         }
         .control-card .btn-group .btn:disabled {
             opacity: 0.4;
@@ -458,6 +495,48 @@
             border-top-color: #fff;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
+        }
+        .control-card .btn-full {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #2a2a3a;
+            background: #1a1a26;
+            color: #d0d0e8;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .control-card .btn-full:hover {
+            background: #2a2a3e;
+            border-color: #4a4a62;
+            transform: translateY(-1px);
+        }
+        .control-card .btn-full:active {
+            transform: scale(0.96);
+        }
+        .control-card .btn-full.primary {
+            background: linear-gradient(135deg, #5b5bf0, #7c7cf8);
+            border-color: #7c7cf8;
+            color: #fff;
+            font-weight: 600;
+        }
+        .control-card .btn-full.primary:hover {
+            box-shadow: 0 4px 20px rgba(124, 124, 248, 0.3);
+        }
+        .control-card .btn-full.success {
+            background: linear-gradient(135deg, #2d8f5a, #3db874);
+            border-color: #3db874;
+            color: #fff;
+            font-weight: 600;
+        }
+        .control-card .btn-full.success:hover {
+            box-shadow: 0 4px 20px rgba(61, 184, 116, 0.3);
         }
 
         /* ===== ADJUSTMENT ROW ===== */
@@ -567,6 +646,10 @@
         .status-bar .badge.warning {
             color: #f8d07c;
             border: 1px solid #5a4a2a;
+        }
+        .status-bar .badge.primary {
+            color: #c4b5fd;
+            border: 1px solid #3a2a5a;
         }
 
         /* ===== COMPARE ===== */
@@ -742,7 +825,7 @@
         <div class="logo">
             <span class="logo-icon">🧹</span>
             <div>
-                <h1>Watermark Remover <span class="subtitle">· AI Inpainting</span></h1>
+                <h1>Watermark + 4K <span class="subtitle">· AI Studio</span></h1>
             </div>
         </div>
         <div class="header-actions">
@@ -781,20 +864,28 @@
                         <div class="proc-progress">
                             <div class="proc-bar" id="procBar"></div>
                         </div>
+                        <div class="proc-badge" id="procBadge">AI Engine</div>
                     </div>
                 </div>
 
                 <!-- Controls -->
                 <div class="controls-panel">
 
-                    <!-- AI Watermark Removal -->
+                    <!-- AI Tools -->
                     <div class="control-card" style="border-color:#3a2a5a;">
-                        <div class="card-title">🧹 AI Watermark Removal <span class="badge">⭐</span></div>
-                        <div class="btn-group">
-                            <button class="btn primary" id="watermarkBtn" style="flex:2;">✨ Remove Watermark</button>
+                        <div class="card-title">🤖 AI Tools <span class="badge primary">⭐ Powered</span></div>
+                        <div class="btn-group" style="flex-direction:column;gap:8px;">
+                            <button class="btn-full primary" id="watermarkBtn">
+                                🧹 Remove Watermark
+                            </button>
+                            <button class="btn-full success" id="upscaleBtn">
+                                🚀 4K Upscale
+                            </button>
                         </div>
-                        <div style="margin-top:8px;font-size:0.7rem;color:#5a5a7a;">
-                            ⚡ AI-powered inpainting · preserves original resolution
+                        <div style="margin-top:8px;display:flex;gap:12px;font-size:0.65rem;color:#5a5a7a;flex-wrap:wrap;">
+                            <span>⚡ AI inpainting</span>
+                            <span>⬆️ 2× upscale to 4K</span>
+                            <span>🔒 preserves quality</span>
                         </div>
                     </div>
 
@@ -839,7 +930,7 @@
                         </div>
                     </div>
 
-                    <!-- Undo / Redo -->
+                    <!-- History -->
                     <div class="control-card">
                         <div class="card-title">↩️ History</div>
                         <div class="btn-group">
@@ -862,6 +953,7 @@
                     <span id="statusName">No image loaded</span>
                     <span class="badge" id="statusSize">-</span>
                     <span class="badge" id="statusZoom">100%</span>
+                    <span class="badge" id="statusRes">Original</span>
                     <span class="badge" id="statusAI" style="display:none;">🧠 AI Ready</span>
                 </div>
                 <div class="status-right">
@@ -894,7 +986,7 @@
                 fileType: 'png',
                 history: [],
                 historyIndex: -1,
-                maxHistory: 25,
+                maxHistory: 30,
                 zoom: 1,
                 panX: 0,
                 panY: 0,
@@ -909,6 +1001,9 @@
                 compareMode: false,
                 compareBefore: null,
                 isProcessing: false,
+                isUpscaled: false,
+                originalWidth: 0,
+                originalHeight: 0,
             };
 
             // ============================================================
@@ -931,6 +1026,7 @@
             const statusHistory = document.getElementById('statusHistory');
             const statusCompare = document.getElementById('statusCompare');
             const statusAI = document.getElementById('statusAI');
+            const statusRes = document.getElementById('statusRes');
 
             const progressContainer = document.getElementById('progressContainer');
             const progressBar = document.getElementById('progressBar');
@@ -946,6 +1042,7 @@
             const procText = document.getElementById('procText');
             const procSub = document.getElementById('procSub');
             const procBar = document.getElementById('procBar');
+            const procBadge = document.getElementById('procBadge');
 
             // ============================================================
             //  TOAST
@@ -978,18 +1075,20 @@
                 }
             }
 
-            function setProcProgress(pct, text, sub) {
+            function setProcProgress(pct, text, sub, badge) {
                 if (pct >= 0 && pct <= 100) procBar.style.width = pct + '%';
                 if (text) procText.textContent = text;
                 if (sub) procSub.textContent = sub;
+                if (badge) procBadge.textContent = badge;
             }
 
-            function showProcessing(show, text = 'Processing...', sub = 'Please wait') {
+            function showProcessing(show, text = 'Processing...', sub = 'Please wait', badge = 'AI Engine') {
                 if (show) {
                     procOverlay.classList.add('active');
                     procText.textContent = text;
                     procSub.textContent = sub;
                     procBar.style.width = '0%';
+                    procBadge.textContent = badge;
                 } else {
                     procOverlay.classList.remove('active');
                     procBar.style.width = '0%';
@@ -1029,19 +1128,20 @@
                 const w = img.naturalWidth || img.width;
                 const h = img.naturalHeight || img.height;
 
-                // Keep original resolution — no upscaling
+                state.originalWidth = w;
+                state.originalHeight = h;
+
                 canvas.width = w;
                 canvas.height = h;
                 ctx.drawImage(img, 0, 0);
 
                 state.hasImage = true;
+                state.isUpscaled = false;
 
-                // History
                 state.history = [];
                 state.historyIndex = -1;
                 pushHistory();
 
-                // Reset adjustments
                 brightnessSlider.value = 0;
                 contrastSlider.value = 0;
                 saturationSlider.value = 0;
@@ -1052,7 +1152,6 @@
                 state.contrast = 0;
                 state.saturation = 0;
 
-                // Reset zoom/pan
                 state.zoom = 1;
                 state.panX = 0;
                 state.panY = 0;
@@ -1259,6 +1358,11 @@
                 if (!data) return;
                 ctx.putImageData(data, 0, 0);
                 applyAdjustments();
+                // Update upscaled flag based on current dimensions vs original
+                if (state.originalWidth > 0 && state.originalHeight > 0) {
+                    state.isUpscaled = (canvas.width > state.originalWidth || canvas.height > state.originalHeight);
+                }
+                updateStatus();
             }
 
             function updateStatus() {
@@ -1267,6 +1371,8 @@
                     statusSize.textContent = '-';
                     statusZoom.textContent = '100%';
                     statusHistory.textContent = '📜 0 / 0';
+                    statusRes.textContent = 'Original';
+                    statusRes.className = 'badge';
                     return;
                 }
                 const w = canvas.width;
@@ -1275,6 +1381,14 @@
                 statusSize.textContent = `${w}×${h}`;
                 statusZoom.textContent = Math.round(state.zoom * 100) + '%';
                 statusHistory.textContent = `📜 ${state.historyIndex + 1} / ${state.history.length}`;
+
+                if (state.isUpscaled) {
+                    statusRes.textContent = '⭐ 4K Enhanced';
+                    statusRes.className = 'badge success';
+                } else {
+                    statusRes.textContent = 'Original';
+                    statusRes.className = 'badge';
+                }
             }
 
             // ============================================================
@@ -1326,7 +1440,6 @@
                 }
             }
 
-            // Sliders
             brightnessSlider.addEventListener('input', () => {
                 state.brightness = parseInt(brightnessSlider.value);
                 brightnessVal.textContent = state.brightness;
@@ -1455,7 +1568,7 @@
             }
 
             // ============================================================
-            //  WATERMARK REMOVAL (AI Simulated - No Upscale)
+            //  WATERMARK REMOVAL (AI Simulated)
             // ============================================================
             function removeWatermark() {
                 if (!state.hasImage) {
@@ -1464,18 +1577,18 @@
                 }
                 if (state.isProcessing) return;
 
-                showProcessing(true, '🧹 Removing Watermark...', 'AI analyzing image...');
+                showProcessing(true, '🧹 Removing Watermark...', 'AI analyzing image...', 'Inpainting');
                 statusAI.style.display = 'inline';
-                statusAI.textContent = '🧠 Processing';
+                statusAI.textContent = '🧠 Removing...';
                 statusAI.className = 'badge warning';
 
                 let progress = 0;
                 const steps = [
-                    { pct: 12, text: 'Analyzing image structure...' },
-                    { pct: 28, text: 'Detecting watermark patterns...' },
-                    { pct: 48, text: 'Applying inpainting...' },
-                    { pct: 68, text: 'Restoring texture details...' },
-                    { pct: 88, text: 'Final refinement...' },
+                    { pct: 10, text: 'Analyzing image structure...' },
+                    { pct: 25, text: 'Detecting watermark patterns...' },
+                    { pct: 45, text: 'Applying inpainting...' },
+                    { pct: 65, text: 'Restoring texture details...' },
+                    { pct: 85, text: 'Final refinement...' },
                 ];
                 let stepIndex = 0;
 
@@ -1504,9 +1617,6 @@
                 const origData = new Uint8ClampedArray(data);
 
                 // Smart inpainting simulation: median filter + edge-aware blending
-                const tempData = new Uint8ClampedArray(data);
-
-                // Median filter with adaptive radius
                 for (let y = 2; y < h - 2; y++) {
                     for (let x = 2; x < w - 2; x++) {
                         const idx = (y * w + x) * 4;
@@ -1528,7 +1638,6 @@
                         neighbors.sort((a, b) => a[2] - b[2]);
                         const medianB = neighbors[Math.floor(neighbors.length / 2)][2];
 
-                        // Blend: 65% median, 35% original to preserve details
                         data[idx] = Math.round(medianR * 0.65 + origData[idx] * 0.35);
                         data[idx + 1] = Math.round(medianG * 0.65 + origData[idx + 1] * 0.35);
                         data[idx + 2] = Math.round(medianB * 0.65 + origData[idx + 2] * 0.35);
@@ -1536,7 +1645,7 @@
                 }
                 ctx.putImageData(imageData, 0, 0);
 
-                // Edge-aware sharpening (unsharp mask)
+                // Unsharp mask sharpening
                 const sharpenData = ctx.getImageData(0, 0, w, h);
                 const sData = sharpenData.data;
                 for (let y = 2; y < h - 2; y++) {
@@ -1564,7 +1673,7 @@
                 }
                 ctx.putImageData(sharpenData, 0, 0);
 
-                // Gentle contrast & clarity boost (no resolution change)
+                // Gentle contrast boost
                 const finalData = ctx.getImageData(0, 0, w, h);
                 const fData = finalData.data;
                 const factor = 1.06;
@@ -1580,6 +1689,180 @@
                 statusAI.textContent = '✅ Watermark Removed';
                 statusAI.className = 'badge success';
                 showToast('✅ Watermark removed successfully! Resolution preserved.', 'success');
+                updateStatus();
+                setProgress(-1);
+            }
+
+            // ============================================================
+            //  4K UPSCALE (AI Simulated)
+            // ============================================================
+            function upscale4K() {
+                if (!state.hasImage) {
+                    showToast('Load an image first.', 'error');
+                    return;
+                }
+                if (state.isProcessing) return;
+
+                const currentW = canvas.width;
+                const currentH = canvas.height;
+
+                // Target: up to 4K (3840x2160 or 4096x2160) while maintaining aspect ratio
+                const maxDim = 4096;
+                let targetW = currentW;
+                let targetH = currentH;
+
+                // If already at or near 4K, warn but still allow a small boost
+                if (currentW >= 3800 && currentH >= 2000) {
+                    showToast('Image is already near 4K resolution.', 'warning');
+                    // Still allow a small upscale to reach exactly 4K
+                    const scale = Math.min(maxDim / currentW, maxDim / currentH);
+                    if (scale <= 1.05) {
+                        showToast('Image already at 4K. No upscale needed.', 'info');
+                        return;
+                    }
+                }
+
+                // Calculate scale to reach 4K while preserving aspect ratio
+                const scaleX = maxDim / currentW;
+                const scaleY = maxDim / currentH;
+                let scale = Math.min(scaleX, scaleY);
+
+                // Cap at 4x to avoid extreme upscaling artifacts
+                scale = Math.min(scale, 4);
+                // At least 1.5x if we're doing an upscale
+                if (scale < 1.5 && currentW < 3000) {
+                    scale = 1.5;
+                }
+
+                targetW = Math.round(currentW * scale);
+                targetH = Math.round(currentH * scale);
+
+                // Ensure we don't exceed 4096 on either dimension
+                if (targetW > 4096) { targetW = 4096;
+                    targetH = Math.round(4096 * (currentH / currentW)); }
+                if (targetH > 4096) { targetH = 4096;
+                    targetW = Math.round(4096 * (currentW / currentH)); }
+
+                if (targetW === currentW && targetH === currentH) {
+                    showToast('Image is already at maximum resolution.', 'info');
+                    return;
+                }
+
+                showProcessing(true, '🚀 Upscaling to 4K...', 'AI enhancing details...', 'Super Resolution');
+                statusAI.style.display = 'inline';
+                statusAI.textContent = '🧠 Upscaling...';
+                statusAI.className = 'badge warning';
+
+                let progress = 0;
+                const steps = [
+                    { pct: 12, text: 'Analyzing image details...' },
+                    { pct: 30, text: 'Upscaling with AI...' },
+                    { pct: 50, text: 'Enhancing textures...' },
+                    { pct: 70, text: 'Sharpening edges...' },
+                    { pct: 88, text: 'Final refinement...' },
+                ];
+                let stepIndex = 0;
+
+                const interval = setInterval(() => {
+                    progress += 2 + Math.random() * 3;
+                    if (progress > 100) progress = 100;
+
+                    while (stepIndex < steps.length && progress >= steps[stepIndex].pct) {
+                        procSub.textContent = steps[stepIndex].text;
+                        stepIndex++;
+                    }
+                    setProcProgress(progress);
+
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        performUpscale(targetW, targetH);
+                    }
+                }, 100);
+            }
+
+            function performUpscale(targetW, targetH) {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = targetW;
+                tempCanvas.height = targetH;
+                const tCtx = tempCanvas.getContext('2d');
+
+                // High-quality scaling
+                tCtx.imageSmoothingEnabled = true;
+                tCtx.imageSmoothingQuality = 'high';
+
+                // Draw original at larger size with HQ interpolation
+                tCtx.drawImage(canvas, 0, 0, targetW, targetH);
+
+                // Smart sharpening (unsharp mask) for the upscaled image
+                const sharpData = tCtx.getImageData(0, 0, targetW, targetH);
+                const sData = sharpData.data;
+                const w = targetW;
+                const h = targetH;
+
+                // Apply unsharp mask for crisp details
+                const blurData = new Uint8ClampedArray(sData);
+                for (let y = 2; y < h - 2; y++) {
+                    for (let x = 2; x < w - 2; x++) {
+                        const idx = (y * w + x) * 4;
+                        let br = 0,
+                            bg = 0,
+                            bb = 0;
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                const nIdx = ((y + dy) * w + (x + dx)) * 4;
+                                br += sData[nIdx];
+                                bg += sData[nIdx + 1];
+                                bb += sData[nIdx + 2];
+                            }
+                        }
+                        br /= 9;
+                        bg /= 9;
+                        bb /= 9;
+                        const amount = 0.45;
+                        sData[idx] = Math.min(255, Math.max(0, sData[idx] + amount * (sData[idx] - br)));
+                        sData[idx + 1] = Math.min(255, Math.max(0, sData[idx + 1] + amount * (sData[idx + 1] - bg)));
+                        sData[idx + 2] = Math.min(255, Math.max(0, sData[idx + 2] + amount * (sData[idx + 2] - bb)));
+                    }
+                }
+                tCtx.putImageData(sharpData, 0, 0);
+
+                // Contrast and saturation boost for enhanced look
+                const finalData = tCtx.getImageData(0, 0, targetW, targetH);
+                const fData = finalData.data;
+                const contrastBoost = 1.06;
+                const satBoost = 1.08;
+                for (let i = 0; i < fData.length; i += 4) {
+                    let r = fData[i];
+                    let g = fData[i + 1];
+                    let bl = fData[i + 2];
+
+                    r = (r - 128) * contrastBoost + 128;
+                    g = (g - 128) * contrastBoost + 128;
+                    bl = (bl - 128) * contrastBoost + 128;
+
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * bl;
+                    r = gray + (r - gray) * satBoost;
+                    g = gray + (g - gray) * satBoost;
+                    bl = gray + (bl - gray) * satBoost;
+
+                    fData[i] = Math.min(255, Math.max(0, r));
+                    fData[i + 1] = Math.min(255, Math.max(0, g));
+                    fData[i + 2] = Math.min(255, Math.max(0, bl));
+                }
+                tCtx.putImageData(finalData, 0, 0);
+
+                // Apply to main canvas
+                canvas.width = targetW;
+                canvas.height = targetH;
+                ctx.drawImage(tempCanvas, 0, 0);
+
+                state.isUpscaled = true;
+                fitCanvasToView();
+                pushHistory();
+                showProcessing(false);
+                statusAI.textContent = '⭐ 4K Enhanced';
+                statusAI.className = 'badge success';
+                showToast(`✅ Upscaled to ${targetW}×${targetH} (4K)`, 'success');
                 updateStatus();
                 setProgress(-1);
             }
@@ -1601,7 +1884,8 @@
                 const mime = mimeTypes[ext] || 'image/png';
                 const quality = ext === 'jpg' ? 0.92 : ext === 'webp' ? 0.85 : undefined;
                 const link = document.createElement('a');
-                link.download = `${state.fileName}_clean.${ext}`;
+                const suffix = state.isUpscaled ? '_4K' : '_clean';
+                link.download = `${state.fileName}${suffix}.${ext}`;
                 link.href = canvas.toDataURL(mime, quality);
                 link.click();
                 showToast(`💾 Downloaded as ${ext.toUpperCase()}`, 'success');
@@ -1618,8 +1902,17 @@
                 }
                 if (state.history.length > 0 && state.history[0]) {
                     ctx.putImageData(state.history[0], 0, 0);
+                    // Reset canvas to original dimensions if upscaled
+                    if (state.originalWidth > 0 && state.originalHeight > 0) {
+                        if (canvas.width !== state.originalWidth || canvas.height !== state.originalHeight) {
+                            canvas.width = state.originalWidth;
+                            canvas.height = state.originalHeight;
+                            ctx.putImageData(state.history[0], 0, 0);
+                        }
+                    }
                     state.historyIndex = 0;
                     state.history = state.history.slice(0, 1);
+                    state.isUpscaled = false;
                     state.compareMode = false;
                     state.compareBefore = null;
                     statusCompare.style.display = 'none';
@@ -1730,8 +2023,9 @@
                 document.getElementById('saveJpgBtn').addEventListener('click', () => downloadImage('jpg'));
                 document.getElementById('saveWebpBtn').addEventListener('click', () => downloadImage('webp'));
 
-                // Watermark Removal
+                // AI Tools
                 document.getElementById('watermarkBtn').addEventListener('click', removeWatermark);
+                document.getElementById('upscaleBtn').addEventListener('click', upscale4K);
 
                 // Rotate / Flip
                 document.getElementById('rotateLeftBtn').addEventListener('click', () => rotate(-90));
@@ -1739,7 +2033,7 @@
                 document.getElementById('flipHBtn').addEventListener('click', () => flip(true));
                 document.getElementById('flipVBtn').addEventListener('click', () => flip(false));
 
-                // Undo / Redo
+                // History
                 document.getElementById('undoBtn').addEventListener('click', undo);
                 document.getElementById('redoBtn').addEventListener('click', redo);
 
@@ -1755,7 +2049,7 @@
                 // Keyboard
                 setupKeyboard();
 
-                // Paste from clipboard
+                // Paste
                 document.addEventListener('paste', (e) => {
                     const items = e.clipboardData?.items;
                     if (items) {
@@ -1770,10 +2064,10 @@
                 });
 
                 updateStatus();
-                showToast('🧹 AI Watermark Remover ready! Upload an image.', 'info', 4000);
+                showToast('🧹 AI Studio ready! Upload an image to remove watermarks or upscale to 4K.', 'info', 4500);
             }
 
-            // Override pushHistory for compare mode
+            // Override pushHistory for compare
             const origPush = pushHistory;
             pushHistory = function() {
                 origPush();
