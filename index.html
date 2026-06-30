@@ -6,34 +6,27 @@
 
     <title>Freshora Online Store</title>
 
-    <!-- ✅ PWA Manifest -->
     <link rel="manifest" href="manifest.json">
 
-    <!-- ✅ Favicon (Address Bar Icon) -->
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
 
-    <!-- ✅ PWA Theme Colors -->
     <meta name="theme-color" content="#1f8f4d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- CSS -->
     <link rel="stylesheet" href="style.css?v=24" />
 
-    <!-- FONT AWESOME -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 
 <body>
 
-    <!-- TOP BANNER -->
     <div class="top-banner">
         Free Delivery Above Rs 5000 • Cash On Delivery • Fresh Daily Products
     </div>
 
-    <!-- HEADER -->
     <header class="header">
 
         <div class="logo-area"
@@ -51,7 +44,6 @@
 
         </div>
 
-        <!-- SEARCH -->
         <div class="search-box">
 
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -65,7 +57,6 @@
 
         </div>
 
-        <!-- DARK MODE -->
         <button
             id="darkModeBtn"
             class="icon-btn"
@@ -77,7 +68,6 @@
 
         </button>
 
-        <!-- WISHLIST BUTTON -->
         <button
             class="icon-btn"
             type="button"
@@ -92,7 +82,6 @@
 
     </header>
 
-    <!-- FILTERS -->
     <section class="advanced-search">
 
         <div class="filter-grid">
@@ -128,13 +117,11 @@
 
     </section>
 
-    <!-- PRODUCTS -->
     <main
         id="products"
         class="products-grid">
     </main>
 
-    <!-- FLOATING CART -->
     <button
         class="floating-cart"
         type="button"
@@ -149,10 +136,8 @@
 
     </button>
 
-    <!-- CART DRAWER -->
     <div id="cartDrawer" class="cart-drawer">
 
-        <!-- CART HEADER -->
         <div class="cart-header">
 
             <h2>Your Cart</h2>
@@ -169,17 +154,14 @@
 
         </div>
 
-        <!-- CART ITEMS -->
         <div id="cartItems"></div>
 
-        <!-- CHECKOUT -->
         <div class="sticky-checkout">
 
             <h3 id="cartTotal">
                 Total: Rs 0
             </h3>
 
-            <!-- COUPON -->
             <div style="display:flex;gap:8px;margin-top:10px;">
                 <input id="couponInput" placeholder="Coupon Code" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">
                 <button onclick="applyCoupon()" style="padding:10px 15px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;">Apply</button>
@@ -238,12 +220,10 @@
 
     </div>
 
-    <!-- PRODUCT MODAL -->
     <div id="productModal" class="modal">
 
         <div class="modal-content">
 
-            <!-- CLOSE -->
             <button
                 type="button"
                 class="close"
@@ -254,35 +234,25 @@
 
             </button>
 
-            <!-- GALLERY -->
             <div
                 id="galleryContainer"
                 class="gallery-container">
             </div>
 
-            <!-- ZOOM BUTTON -->
-            <button onclick="zoomImage()" style="margin-top:5px;background:none;border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">
-                <i class="fa-solid fa-magnifying-glass-plus"></i> Zoom
-            </button>
-
-            <!-- PRODUCT DETAILS -->
             <h2 id="modalName"></h2>
 
             <p id="modalPrice"
                style="font-weight:bold;font-size:18px;">
             </p>
 
-            <!-- DESCRIPTION + RATING -->
             <div id="modalDesc"
                style="color:var(--text);font-size:14px;">
             </div>
 
-            <!-- SHARE -->
             <button onclick="shareProduct()" style="margin-top:10px;background:none;border:1px solid var(--border);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;">
                 <i class="fa-solid fa-share-nodes"></i> Share
             </button>
 
-            <!-- RATING UI -->
             <div class="rating-ui">
 
                 <span>Rate:</span>
@@ -301,7 +271,6 @@
 
             </div>
 
-            <!-- REVIEW -->
             <textarea
                 id="reviewText"
                 placeholder="Type your review here...">
@@ -316,10 +285,8 @@
 
             </button>
 
-            <!-- REVIEW LIST -->
             <div id="reviewList"></div>
 
-            <!-- MODAL ADD TO CART -->
             <button
                 id="modalAddBtn"
                 type="button"
@@ -338,7 +305,6 @@
 
             </button>
 
-            <!-- WISHLIST TOGGLE -->
             <button
                 id="modalWishlistBtn"
                 type="button"
@@ -360,7 +326,6 @@
 
     </div>
 
-    <!-- ORDER SUCCESS MODAL -->
     <div id="orderSuccessModal" class="modal">
 
         <div class="modal-content" style="text-align:center;">
@@ -379,7 +344,6 @@
 
     </div>
 
-    <!-- ZOOM MODAL -->
     <div id="zoomModal" class="modal">
 
         <div class="modal-content" style="max-width:90%;max-height:90%;padding:10px;background:transparent;border:none;box-shadow:none;">
@@ -394,17 +358,14 @@
 
     </div>
 
-    <!-- LOADING -->
     <div id="loadingScreen" class="loading-screen">
 
         <div class="loader"></div>
 
     </div>
 
-    <!-- TOAST -->
     <div id="toast" class="toast"></div>
 
-    <!-- SOCIAL LINKS -->
     <div class="social-links">
 
         <a href="https://www.facebook.com/share/1BLjrZy3y7/"
@@ -449,7 +410,6 @@
 
     </div>
 
-    <!-- APP JS -->
     <script type="module" src="app.js?v=24"></script>
 
 </body>
