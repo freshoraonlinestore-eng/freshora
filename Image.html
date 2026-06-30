@@ -476,25 +476,11 @@
         .control-card .btn-group .btn.success:hover {
             box-shadow: 0 4px 20px rgba(61, 184, 116, 0.3);
         }
-        .control-card .btn-group .btn.danger {
-            background: linear-gradient(135deg, #b82d2d, #e84a4a);
-            border-color: #e84a4a;
-            color: #fff;
-        }
         .control-card .btn-group .btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none !important;
             box-shadow: none !important;
-        }
-        .control-card .btn-group .btn .spinner-sm {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
         }
         .control-card .btn-full {
             width: 100%;
@@ -1358,7 +1344,6 @@
                 if (!data) return;
                 ctx.putImageData(data, 0, 0);
                 applyAdjustments();
-                // Update upscaled flag based on current dimensions vs original
                 if (state.originalWidth > 0 && state.originalHeight > 0) {
                     state.isUpscaled = (canvas.width > state.originalWidth || canvas.height > state.originalHeight);
                 }
@@ -1568,7 +1553,7 @@
             }
 
             // ============================================================
-            //  WATERMARK REMOVAL (AI Simulated)
+            //  ADVANCED WATERMARK REMOVAL (AI Simulated - Text Aware)
             // ============================================================
             function removeWatermark() {
                 if (!state.hasImage) {
@@ -1577,18 +1562,19 @@
                 }
                 if (state.isProcessing) return;
 
-                showProcessing(true, '🧹 Removing Watermark...', 'AI analyzing image...', 'Inpainting');
+                showProcessing(true, '🧹 Removing Watermark...', 'AI analyzing text patterns...', 'Inpainting');
                 statusAI.style.display = 'inline';
                 statusAI.textContent = '🧠 Removing...';
                 statusAI.className = 'badge warning';
 
                 let progress = 0;
                 const steps = [
-                    { pct: 10, text: 'Analyzing image structure...' },
-                    { pct: 25, text: 'Detecting watermark patterns...' },
-                    { pct: 45, text: 'Applying inpainting...' },
-                    { pct: 65, text: 'Restoring texture details...' },
-                    { pct: 85, text: 'Final refinement...' },
+                    { pct: 8, text: 'Analyzing image structure...' },
+                    { pct: 20, text: 'Detecting text/watermark regions...' },
+                    { pct: 38, text: 'Applying adaptive inpainting...' },
+                    { pct: 58, text: 'Restoring textures & gradients...' },
+                    { pct: 78, text: 'Refining edges & details...' },
+                    { pct: 92, text: 'Final polish...' },
                 ];
                 let stepIndex = 0;
 
@@ -1604,48 +1590,219 @@
 
                     if (progress >= 100) {
                         clearInterval(interval);
-                        performWatermarkRemoval();
+                        performAdvancedWatermarkRemoval();
                     }
                 }, 110);
             }
 
-            function performWatermarkRemoval() {
+            function performAdvancedWatermarkRemoval() {
                 const w = canvas.width;
                 const h = canvas.height;
                 const imageData = ctx.getImageData(0, 0, w, h);
                 const data = imageData.data;
                 const origData = new Uint8ClampedArray(data);
 
-                // Smart inpainting simulation: median filter + edge-aware blending
+                // Step 1: Detect text-like regions using edge detection + contrast analysis
+                // We'll create a mask of areas that likely contain text/watermarks
+                const mask = new Uint8Array(w * h);
+
+                // Compute local contrast and edge density
                 for (let y = 2; y < h - 2; y++) {
                     for (let x = 2; x < w - 2; x++) {
                         const idx = (y * w + x) * 4;
-                        const neighbors = [];
+                        // Compute local variance (contrast)
+                        let meanR = 0,
+                            meanG = 0,
+                            meanB = 0;
+                        let count = 0;
                         for (let dy = -2; dy <= 2; dy++) {
                             for (let dx = -2; dx <= 2; dx++) {
                                 const nIdx = ((y + dy) * w + (x + dx)) * 4;
-                                neighbors.push([
-                                    origData[nIdx],
-                                    origData[nIdx + 1],
-                                    origData[nIdx + 2]
-                                ]);
+                                meanR += origData[nIdx];
+                                meanG += origData[nIdx + 1];
+                                meanB += origData[nIdx + 2];
+                                count++;
                             }
                         }
-                        neighbors.sort((a, b) => a[0] - b[0]);
-                        const medianR = neighbors[Math.floor(neighbors.length / 2)][0];
-                        neighbors.sort((a, b) => a[1] - b[1]);
-                        const medianG = neighbors[Math.floor(neighbors.length / 2)][1];
-                        neighbors.sort((a, b) => a[2] - b[2]);
-                        const medianB = neighbors[Math.floor(neighbors.length / 2)][2];
+                        meanR /= count;
+                        meanG /= count;
+                        meanB /= count;
 
-                        data[idx] = Math.round(medianR * 0.65 + origData[idx] * 0.35);
-                        data[idx + 1] = Math.round(medianG * 0.65 + origData[idx + 1] * 0.35);
-                        data[idx + 2] = Math.round(medianB * 0.65 + origData[idx + 2] * 0.35);
+                        let varR = 0,
+                            varG = 0,
+                            varB = 0;
+                        for (let dy = -2; dy <= 2; dy++) {
+                            for (let dx = -2; dx <= 2; dx++) {
+                                const nIdx = ((y + dy) * w + (x + dx)) * 4;
+                                varR += (origData[nIdx] - meanR) ** 2;
+                                varG += (origData[nIdx + 1] - meanG) ** 2;
+                                varB += (origData[nIdx + 2] - meanB) ** 2;
+                            }
+                        }
+                        varR /= count;
+                        varG /= count;
+                        varB /= count;
+                        const variance = (varR + varG + varB) / 3;
+
+                        // High variance areas are likely text/edges
+                        const threshold = 250;
+                        const isTextRegion = variance > threshold;
+
+                        // Also check for high frequency (edge density)
+                        let edgeCount = 0;
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                if (dx === 0 && dy === 0) continue;
+                                const nIdx = ((y + dy) * w + (x + dx)) * 4;
+                                const diffR = Math.abs(origData[idx] - origData[nIdx]);
+                                const diffG = Math.abs(origData[idx + 1] - origData[nIdx + 1]);
+                                const diffB = Math.abs(origData[idx + 2] - origData[nIdx + 2]);
+                                const diff = (diffR + diffG + diffB) / 3;
+                                if (diff > 30) edgeCount++;
+                            }
+                        }
+
+                        const isEdgeDense = edgeCount > 5;
+
+                        // Mark as watermark region if high contrast OR dense edges with high contrast
+                        if (isTextRegion || (isEdgeDense && variance > 150)) {
+                            mask[y * w + x] = 1;
+                        }
                     }
                 }
+
+                // Step 2: Dilate the mask to cover surrounding areas
+                const dilatedMask = new Uint8Array(w * h);
+                for (let y = 2; y < h - 2; y++) {
+                    for (let x = 2; x < w - 2; x++) {
+                        let isDilated = false;
+                        for (let dy = -3; dy <= 3; dy++) {
+                            for (let dx = -3; dx <= 3; dx++) {
+                                const idx = (y + dy) * w + (x + dx);
+                                if (idx >= 0 && idx < w * h && mask[idx] === 1) {
+                                    isDilated = true;
+                                    break;
+                                }
+                            }
+                            if (isDilated) break;
+                        }
+                        dilatedMask[y * w + x] = isDilated ? 1 : 0;
+                    }
+                }
+
+                // Step 3: Apply inpainting using a patch-based approach
+                // For each pixel in the mask, fill using surrounding non-mask pixels
+                const resultData = new Uint8ClampedArray(data);
+
+                // First pass: fill from nearest neighbors
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const idx = y * w + x;
+                        if (dilatedMask[idx] === 0) continue;
+
+                        // Search for nearest non-mask pixel
+                        let found = false;
+                        let radius = 1;
+                        let maxRadius = 20;
+                        let bestR = 0,
+                            bestG = 0,
+                            bestB = 0;
+                        let bestWeight = 0;
+
+                        while (!found && radius <= maxRadius) {
+                            let matches = 0;
+                            let totalR = 0,
+                                totalG = 0,
+                                totalB = 0;
+                            let weightSum = 0;
+
+                            for (let dy = -radius; dy <= radius; dy++) {
+                                for (let dx = -radius; dx <= radius; dx++) {
+                                    if (dx === 0 && dy === 0) continue;
+                                    const nx = x + dx;
+                                    const ny = y + dy;
+                                    if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+                                    const nIdx = ny * w + nx;
+                                    if (dilatedMask[nIdx] === 0) {
+                                        const dist = Math.sqrt(dx * dx + dy * dy);
+                                        const weight = 1 / (dist + 1);
+                                        const nDataIdx = nIdx * 4;
+                                        totalR += origData[nDataIdx] * weight;
+                                        totalG += origData[nDataIdx + 1] * weight;
+                                        totalB += origData[nDataIdx + 2] * weight;
+                                        weightSum += weight;
+                                        matches++;
+                                    }
+                                }
+                            }
+
+                            if (matches > 0) {
+                                bestR = totalR / weightSum;
+                                bestG = totalG / weightSum;
+                                bestB = totalB / weightSum;
+                                found = true;
+                            }
+                            radius++;
+                        }
+
+                        if (found) {
+                            const dIdx = idx * 4;
+                            resultData[dIdx] = Math.round(bestR);
+                            resultData[dIdx + 1] = Math.round(bestG);
+                            resultData[dIdx + 2] = Math.round(bestB);
+                        }
+                    }
+                }
+
+                // Step 4: Second pass - use patch-based refinement
+                // This smooths out the inpainted areas
+                const refinedData = new Uint8ClampedArray(resultData);
+                for (let y = 2; y < h - 2; y++) {
+                    for (let x = 2; x < w - 2; x++) {
+                        const idx = y * w + x;
+                        if (dilatedMask[idx] === 0) continue;
+
+                        let avgR = 0,
+                            avgG = 0,
+                            avgB = 0;
+                        let count = 0;
+                        for (let dy = -2; dy <= 2; dy++) {
+                            for (let dx = -2; dx <= 2; dx++) {
+                                const nx = x + dx;
+                                const ny = y + dy;
+                                if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+                                const nIdx = ny * w + nx;
+                                const nd = nIdx * 4;
+                                avgR += resultData[nd];
+                                avgG += resultData[nd + 1];
+                                avgB += resultData[nd + 2];
+                                count++;
+                            }
+                        }
+                        if (count > 0) {
+                            const dIdx = idx * 4;
+                            refinedData[dIdx] = Math.round(avgR / count);
+                            refinedData[dIdx + 1] = Math.round(avgG / count);
+                            refinedData[dIdx + 2] = Math.round(avgB / count);
+                        }
+                    }
+                }
+
+                // Step 5: Blend with original to preserve details outside watermark areas
+                for (let i = 0; i < data.length; i += 4) {
+                    const idx = i / 4;
+                    if (dilatedMask[idx] === 1) {
+                        data[i] = refinedData[i];
+                        data[i + 1] = refinedData[i + 1];
+                        data[i + 2] = refinedData[i + 2];
+                    }
+                    // Keep original alpha
+                    data[i + 3] = origData[i + 3];
+                }
+
                 ctx.putImageData(imageData, 0, 0);
 
-                // Unsharp mask sharpening
+                // Step 6: Apply gentle sharpening and contrast enhancement
                 const sharpenData = ctx.getImageData(0, 0, w, h);
                 const sData = sharpenData.data;
                 for (let y = 2; y < h - 2; y++) {
@@ -1665,7 +1822,7 @@
                         br /= 9;
                         bg /= 9;
                         bb /= 9;
-                        const amount = 0.45;
+                        const amount = 0.35;
                         sData[idx] = Math.min(255, Math.max(0, data[idx] + amount * (data[idx] - br)));
                         sData[idx + 1] = Math.min(255, Math.max(0, data[idx + 1] + amount * (data[idx + 1] - bg)));
                         sData[idx + 2] = Math.min(255, Math.max(0, data[idx + 2] + amount * (data[idx + 2] - bb)));
@@ -1676,7 +1833,7 @@
                 // Gentle contrast boost
                 const finalData = ctx.getImageData(0, 0, w, h);
                 const fData = finalData.data;
-                const factor = 1.06;
+                const factor = 1.05;
                 for (let i = 0; i < fData.length; i += 4) {
                     fData[i] = Math.min(255, Math.max(0, (fData[i] - 128) * factor + 128));
                     fData[i + 1] = Math.min(255, Math.max(0, (fData[i + 1] - 128) * factor + 128));
@@ -1688,13 +1845,13 @@
                 showProcessing(false);
                 statusAI.textContent = '✅ Watermark Removed';
                 statusAI.className = 'badge success';
-                showToast('✅ Watermark removed successfully! Resolution preserved.', 'success');
+                showToast('✅ Watermark removed successfully! Text patterns eliminated.', 'success');
                 updateStatus();
                 setProgress(-1);
             }
 
             // ============================================================
-            //  4K UPSCALE (AI Simulated)
+            //  4K UPSCALE
             // ============================================================
             function upscale4K() {
                 if (!state.hasImage) {
@@ -1706,30 +1863,14 @@
                 const currentW = canvas.width;
                 const currentH = canvas.height;
 
-                // Target: up to 4K (3840x2160 or 4096x2160) while maintaining aspect ratio
                 const maxDim = 4096;
                 let targetW = currentW;
                 let targetH = currentH;
 
-                // If already at or near 4K, warn but still allow a small boost
-                if (currentW >= 3800 && currentH >= 2000) {
-                    showToast('Image is already near 4K resolution.', 'warning');
-                    // Still allow a small upscale to reach exactly 4K
-                    const scale = Math.min(maxDim / currentW, maxDim / currentH);
-                    if (scale <= 1.05) {
-                        showToast('Image already at 4K. No upscale needed.', 'info');
-                        return;
-                    }
-                }
-
-                // Calculate scale to reach 4K while preserving aspect ratio
                 const scaleX = maxDim / currentW;
                 const scaleY = maxDim / currentH;
                 let scale = Math.min(scaleX, scaleY);
-
-                // Cap at 4x to avoid extreme upscaling artifacts
                 scale = Math.min(scale, 4);
-                // At least 1.5x if we're doing an upscale
                 if (scale < 1.5 && currentW < 3000) {
                     scale = 1.5;
                 }
@@ -1737,7 +1878,6 @@
                 targetW = Math.round(currentW * scale);
                 targetH = Math.round(currentH * scale);
 
-                // Ensure we don't exceed 4096 on either dimension
                 if (targetW > 4096) { targetW = 4096;
                     targetH = Math.round(4096 * (currentH / currentW)); }
                 if (targetH > 4096) { targetH = 4096;
@@ -1786,20 +1926,16 @@
                 tempCanvas.height = targetH;
                 const tCtx = tempCanvas.getContext('2d');
 
-                // High-quality scaling
                 tCtx.imageSmoothingEnabled = true;
                 tCtx.imageSmoothingQuality = 'high';
-
-                // Draw original at larger size with HQ interpolation
                 tCtx.drawImage(canvas, 0, 0, targetW, targetH);
 
-                // Smart sharpening (unsharp mask) for the upscaled image
+                // Unsharp mask
                 const sharpData = tCtx.getImageData(0, 0, targetW, targetH);
                 const sData = sharpData.data;
                 const w = targetW;
                 const h = targetH;
 
-                // Apply unsharp mask for crisp details
                 const blurData = new Uint8ClampedArray(sData);
                 for (let y = 2; y < h - 2; y++) {
                     for (let x = 2; x < w - 2; x++) {
@@ -1826,32 +1962,28 @@
                 }
                 tCtx.putImageData(sharpData, 0, 0);
 
-                // Contrast and saturation boost for enhanced look
+                // Contrast & saturation
                 const finalData = tCtx.getImageData(0, 0, targetW, targetH);
                 const fData = finalData.data;
                 const contrastBoost = 1.06;
                 const satBoost = 1.08;
                 for (let i = 0; i < fData.length; i += 4) {
-                    let r = fData[i];
-                    let g = fData[i + 1];
-                    let bl = fData[i + 2];
-
+                    let r = fData[i],
+                        g = fData[i + 1],
+                        bl = fData[i + 2];
                     r = (r - 128) * contrastBoost + 128;
                     g = (g - 128) * contrastBoost + 128;
                     bl = (bl - 128) * contrastBoost + 128;
-
                     const gray = 0.299 * r + 0.587 * g + 0.114 * bl;
                     r = gray + (r - gray) * satBoost;
                     g = gray + (g - gray) * satBoost;
                     bl = gray + (bl - gray) * satBoost;
-
                     fData[i] = Math.min(255, Math.max(0, r));
                     fData[i + 1] = Math.min(255, Math.max(0, g));
                     fData[i + 2] = Math.min(255, Math.max(0, bl));
                 }
                 tCtx.putImageData(finalData, 0, 0);
 
-                // Apply to main canvas
                 canvas.width = targetW;
                 canvas.height = targetH;
                 ctx.drawImage(tempCanvas, 0, 0);
@@ -1902,7 +2034,6 @@
                 }
                 if (state.history.length > 0 && state.history[0]) {
                     ctx.putImageData(state.history[0], 0, 0);
-                    // Reset canvas to original dimensions if upscaled
                     if (state.originalWidth > 0 && state.originalHeight > 0) {
                         if (canvas.width !== state.originalWidth || canvas.height !== state.originalHeight) {
                             canvas.width = state.originalWidth;
@@ -1997,7 +2128,6 @@
             //  INIT
             // ============================================================
             function init() {
-                // Upload
                 document.getElementById('uploadBtn').addEventListener('click', () => fileInput.click());
                 document.getElementById('uploadZoneBtn').addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -2012,44 +2142,29 @@
                     fileInput.value = '';
                 });
 
-                // Reset
                 document.getElementById('resetBtn').addEventListener('click', resetImage);
-
-                // Compare
                 document.getElementById('compareBtn').addEventListener('click', toggleCompare);
 
-                // Save
                 document.getElementById('savePngBtn').addEventListener('click', () => downloadImage('png'));
                 document.getElementById('saveJpgBtn').addEventListener('click', () => downloadImage('jpg'));
                 document.getElementById('saveWebpBtn').addEventListener('click', () => downloadImage('webp'));
 
-                // AI Tools
                 document.getElementById('watermarkBtn').addEventListener('click', removeWatermark);
                 document.getElementById('upscaleBtn').addEventListener('click', upscale4K);
 
-                // Rotate / Flip
                 document.getElementById('rotateLeftBtn').addEventListener('click', () => rotate(-90));
                 document.getElementById('rotateRightBtn').addEventListener('click', () => rotate(90));
                 document.getElementById('flipHBtn').addEventListener('click', () => flip(true));
                 document.getElementById('flipVBtn').addEventListener('click', () => flip(false));
 
-                // History
                 document.getElementById('undoBtn').addEventListener('click', undo);
                 document.getElementById('redoBtn').addEventListener('click', redo);
 
-                // Drop
                 setupDrop();
-
-                // Zoom/Pan
                 setupZoomPan();
-
-                // Resize
                 window.addEventListener('resize', handleResize);
-
-                // Keyboard
                 setupKeyboard();
 
-                // Paste
                 document.addEventListener('paste', (e) => {
                     const items = e.clipboardData?.items;
                     if (items) {
@@ -2064,10 +2179,9 @@
                 });
 
                 updateStatus();
-                showToast('🧹 AI Studio ready! Upload an image to remove watermarks or upscale to 4K.', 'info', 4500);
+                showToast('🧹 Advanced AI Watermark Remover ready! Upload an image.', 'info', 4000);
             }
 
-            // Override pushHistory for compare
             const origPush = pushHistory;
             pushHistory = function() {
                 origPush();
